@@ -169,7 +169,7 @@ namespace System.Management.Automation.Remoting
         internal const uint TRUNCATE_EXISTING = 5;
 
         internal const uint SECURITY_IMPERSONATIONLEVEL_ANONYMOUS = 0;
-        internal const uint SECURITY_IMPERSONATIONLEVEL_IDENTIFCATION = 1;
+        internal const uint SECURITY_IMPERSONATIONLEVEL_IDENTIFICATION = 1;
         internal const uint SECURITY_IMPERSONATIONLEVEL_IMPERSONATION = 2;
         internal const uint SECURITY_IMPERSONATIONLEVEL_DELEGATION = 3;
 
@@ -264,7 +264,7 @@ namespace System.Management.Automation.Remoting
         #region Properties
 
         /// <summary>
-        /// Exception reson for listener end event.  Can be null
+        /// Exception reason for listener end event.  Can be null
         /// which indicates listener thread end is not due to an error.
         /// </summary>
         public Exception Reason
@@ -306,7 +306,7 @@ namespace System.Management.Automation.Remoting
 
     /// <summary>
     /// Light wrapper class for BCL NamedPipeServerStream class, that
-    /// creates the named pipe server with process named pipe name, 
+    /// creates the named pipe server with process named pipe name,
     /// having correct access restrictions, and provides a listener
     /// thread loop.
     /// </summary>
@@ -490,9 +490,8 @@ namespace System.Management.Automation.Remoting
                     false,                      // IsConnected
                     pipeHandle);
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                CommandProcessorBase.CheckForSevereException(e);
                 pipeHandle.Dispose();
                 throw;
             }
@@ -503,7 +502,7 @@ namespace System.Management.Automation.Remoting
             s_syncObject = new object();
 
             // All PowerShell instances will start with the named pipe
-            // and listner created and running.
+            // and listener created and running.
             if (Platform.IsWindows)
             {
                 IPCNamedPipeServerEnabled = true;
@@ -579,10 +578,10 @@ namespace System.Management.Automation.Remoting
                 IsListenerRunning = true;
 
                 // Create listener thread.
-                Thread listenterThread = new Thread(ProcessListeningThread);
-                listenterThread.Name = _threadName;
-                listenterThread.IsBackground = true;
-                listenterThread.Start(clientConnectCallback);
+                Thread listenerThread = new Thread(ProcessListeningThread);
+                listenerThread.Name = _threadName;
+                listenerThread.IsBackground = true;
+                listenerThread.Start(clientConnectCallback);
             } // Lock _syncObject.
         }
 
@@ -679,7 +678,6 @@ namespace System.Management.Automation.Remoting
             }
             catch (Exception e)
             {
-                CommandProcessorBase.CheckForSevereException(e);
                 ex = e;
             }
             if (ex != null)
@@ -719,7 +717,6 @@ namespace System.Management.Automation.Remoting
             }
             catch (Exception e)
             {
-                CommandProcessorBase.CheckForSevereException(e);
                 ex = e;
                 restartListenerThread = false;
             }
@@ -832,9 +829,8 @@ namespace System.Management.Automation.Remoting
                         // Start the pipe server listening thread, and provide client connection callback.
                         IPCNamedPipeServer.StartListening(ClientConnectionCallback);
                     }
-                    catch (Exception e)
+                    catch (Exception)
                     {
-                        CommandProcessorBase.CheckForSevereException(e);
                         IPCNamedPipeServer = null;
                     }
                 }
@@ -857,10 +853,9 @@ namespace System.Management.Automation.Remoting
                             namedPipeServer.Dispose();
                         }
                         catch (ObjectDisposedException) { }
-                        catch (Exception e)
+                        catch (Exception)
                         {
                             // Don't throw an exception on the app domain unload event thread.
-                            CommandProcessorBase.CheckForSevereException(e);
                         }
                     }
                 };
@@ -961,8 +956,8 @@ namespace System.Management.Automation.Remoting
         #region Methods
 
         /// <summary>
-        /// Connect to named pipe server.  This is a blocking call until a 
-        /// connection occurs or the timeout time has ellapsed.
+        /// Connect to named pipe server.  This is a blocking call until a
+        /// connection occurs or the timeout time has elapsed.
         /// </summary>
         /// <param name="timeout">Connection attempt timeout in milliseconds</param>
         public void Connect(
@@ -1157,9 +1152,8 @@ namespace System.Management.Automation.Remoting
                     true,                   // IsConnected
                     pipeHandle);
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                CommandProcessorBase.CheckForSevereException(e);
                 pipeHandle.Dispose();
                 throw;
             }
@@ -1262,9 +1256,8 @@ namespace System.Management.Automation.Remoting
                     true,
                     pipeHandle);
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                CommandProcessorBase.CheckForSevereException(e);
                 pipeHandle.Dispose();
                 throw;
             }

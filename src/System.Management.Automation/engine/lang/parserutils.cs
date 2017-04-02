@@ -37,10 +37,10 @@ namespace System.Management.Automation
         public const char emDash = (char)0x2014;
         public const char horizontalBar = (char)0x2015;
 
-        public const char quoteSingleLeft = (char)0x2018;   // left single quotation mark  
-        public const char quoteSingleRight = (char)0x2019;  // right single quotation mark 
+        public const char quoteSingleLeft = (char)0x2018;   // left single quotation mark
+        public const char quoteSingleRight = (char)0x2019;  // right single quotation mark
         public const char quoteSingleBase = (char)0x201a;   // single low-9 quotation mark
-        public const char quoteReversed = (char)0x201b;     // single high-reversed-9 quotation mark    
+        public const char quoteReversed = (char)0x201b;     // single high-reversed-9 quotation mark
         public const char quoteDoubleLeft = (char)0x201c;   // left double quotation mark
         public const char quoteDoubleRight = (char)0x201d;  // right double quotation mark
         public const char quoteLowDoubleLeft = (char)0x201E;// low double left quote used in german.
@@ -73,7 +73,7 @@ namespace System.Management.Automation
             return (c == '{' || c == '}');
         }
         /// <summary>
-        /// Canonicalize the quote charater - map all of the aliases for " or '
+        /// Canonicalize the quote character - map all of the aliases for " or '
         /// into their ascii equivalent.
         /// </summary>
         /// <param name="c">The character to map</param>
@@ -270,7 +270,7 @@ namespace System.Management.Automation
     public enum SplitOptions
     {
         /// <summary>
-        /// Use simple string comparison when evaluting the delimiter.
+        /// Use simple string comparison when evaluating the delimiter.
         /// Cannot be used with RegexMatch.
         /// </summary>
         SimpleMatch = 0x01,
@@ -280,7 +280,7 @@ namespace System.Management.Automation
         /// </summary>
         RegexMatch = 0x02,
         /// <summary>
-        /// CultureInvariant: Ignores cultural differences in language when evaluting the delimiter.
+        /// CultureInvariant: Ignores cultural differences in language when evaluating the delimiter.
         /// Valid only with RegexMatch.
         /// </summary>
         CultureInvariant = 0x04,
@@ -404,9 +404,9 @@ namespace System.Management.Automation
         }
 
         /// <summary>
-        /// This is a helper function for converting an object to a particular type. 
-        /// 
-        /// It will throw exception with information about token representing the object. 
+        /// This is a helper function for converting an object to a particular type.
+        ///
+        /// It will throw exception with information about token representing the object.
         /// </summary>
         internal static T ConvertTo<T>(object obj, IScriptExtent errorPosition)
         {
@@ -1026,8 +1026,8 @@ namespace System.Management.Automation
             Regex r = PSObject.Base(rval) as Regex;
             if (r == null)
             {
-                // In this situation, creation of Regex should not fail. We are not 
-                // processing ArgumentException in this case. 
+                // In this situation, creation of Regex should not fail. We are not
+                // processing ArgumentException in this case.
                 r = NewRegex(PSObject.ToStringParser(context, rval), reOptions);
             }
 
@@ -1111,7 +1111,6 @@ namespace System.Management.Automation
                 }
                 catch (Exception e)
                 {
-                    CommandProcessorBase.CheckForSevereException(e);
                     throw InterpreterError.NewInterpreterExceptionWithInnerException(list, typeof(RuntimeException),
                         errorPosition, "BadEnumeration", ParserStrings.BadEnumeration, e, e.Message);
                 }
@@ -1264,7 +1263,6 @@ namespace System.Management.Automation
             }
             catch (Exception e)
             {
-                CommandProcessorBase.CheckForSevereException(e);
                 throw InterpreterError.NewInterpreterExceptionWithInnerException(enumerator, typeof(RuntimeException),
                     errorPosition, "BadEnumeration", ParserStrings.BadEnumeration, e, e.Message);
             }
@@ -1296,7 +1294,6 @@ namespace System.Management.Automation
             }
             catch (Exception e)
             {
-                CommandProcessorBase.CheckForSevereException(e);
                 throw InterpreterError.NewInterpreterExceptionWithInnerException(enumerator, typeof(RuntimeException),
                     errorPosition, "BadEnumeration", ParserStrings.BadEnumeration, e, e.Message);
             }
@@ -1329,8 +1326,8 @@ namespace System.Management.Automation
 
 
         /// <summary>
-        /// Launch a method on an object. This will handle .NET native methods, COM 
-        /// methods and ScriptBlock notes. Native methods currently take precidence over notes...
+        /// Launch a method on an object. This will handle .NET native methods, COM
+        /// methods and ScriptBlock notes. Native methods currently take precedence over notes...
         /// </summary>
         /// <param name="errorPosition">The position to use for error reporting.</param>
         /// <param name="target">The object to call the method on. It shouldn't be an msh object</param>
@@ -1338,10 +1335,9 @@ namespace System.Management.Automation
         /// <param name="invocationConstraints">Invocation constraints</param>
         /// <param name="paramArray">The arguments to pass to the method.</param>
         /// <param name="callStatic">Set to true if you want to call a static method.</param>
-        /// <param name="valueToSet">If not automation null, then this must be a settable propery</param>
+        /// <param name="valueToSet">If not automation null, then this must be a settable property</param>
         /// <exception cref="RuntimeException">Wraps the exception returned from the method call</exception>
-        /// <exception cref="SessionStateOverflowException">The maximum scope depth would be exceeded</exception>
-        /// <exception cref="FlowControlException">Internal exception from a flow control statement</exception>        
+        /// <exception cref="FlowControlException">Internal exception from a flow control statement</exception>
         /// <returns></returns>
         internal static object CallMethod(
             IScriptExtent errorPosition,
@@ -1464,7 +1460,6 @@ namespace System.Management.Automation
             }
             catch (Exception e)
             {
-                CommandProcessorBase.CheckForSevereException(e);
                 // Note - we are catching all methods thrown from a method call and wrap them
                 // unless they are already RuntimeException. This is ok.
 

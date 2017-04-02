@@ -92,10 +92,10 @@ namespace System.Management.Automation
             yield return type.ToString();
 
             // Win8: 186792: PSTypeNames does not include full WMI class derivation
-            // From MSDN: __Derivation; Data type: CIM_STRING array 
-            // Access type: Read-only for both instances and classes 
+            // From MSDN: __Derivation; Data type: CIM_STRING array
+            // Access type: Read-only for both instances and classes
             // Class hierarchy of the current class or instance. The first element is
-            // the immediate parent class, the next is its parent, and so on; the last element 
+            // the immediate parent class, the next is its parent, and so on; the last element
             // is the base class.
             PropertyData derivationData = managementObj.SystemProperties["__Derivation"];
             if (null != derivationData)
@@ -202,7 +202,7 @@ namespace System.Management.Automation
         /// in the first call to GetMember and GetMembers so that subsequent
         /// calls can use the cache.
         /// In the case of the .NET adapter that would be a cache from the .NET type to
-        /// the public properties and fields available in that type. 
+        /// the public properties and fields available in that type.
         /// In the case of the DirectoryEntry adapter, this could be a cache of the objectClass
         /// to the properties available in it.
         /// </summary>
@@ -268,22 +268,22 @@ namespace System.Management.Automation
             }
             catch (ManagementException)
             {
-                // A property that lacks the Write qualifier may still be writeable. 
-                // The provider implementation may allow any properties in the provider 
+                // A property that lacks the Write qualifier may still be writeable.
+                // The provider implementation may allow any properties in the provider
                 // classes to be changed, whether the Write qualifier is present or not.
                 return true;
             }
             catch (UnauthorizedAccessException)
             {
-                // A property that lacks the Write qualifier may still be writeable. 
-                // The provider implementation may allow any properties in the provider 
+                // A property that lacks the Write qualifier may still be writeable.
+                // The provider implementation may allow any properties in the provider
                 // classes to be changed, whether the Write qualifier is present or not.
                 return true;
             }
             catch (System.Runtime.InteropServices.COMException)
             {
-                // A property that lacks the Write qualifier may still be writeable. 
-                // The provider implementation may allow any properties in the provider 
+                // A property that lacks the Write qualifier may still be writeable.
+                // The provider implementation may allow any properties in the provider
                 // classes to be changed, whether the Write qualifier is present or not.
                 return true;
             }
@@ -349,7 +349,7 @@ namespace System.Management.Automation
         /// </summary>
         /// <param name="property">PSProperty coming from a previous call to DoGetProperty</param>
         /// <param name="setValue">value to set the property with</param>
-        /// <param name="convertIfPossible">instructs the adapter to convert before setting, if the adapter suports conversion</param>
+        /// <param name="convertIfPossible">instructs the adapter to convert before setting, if the adapter supports conversion</param>
         protected override void PropertySet(PSProperty property, object setValue, bool convertIfPossible)
         {
             ManagementBaseObject mObj = property.baseObject as ManagementBaseObject;
@@ -452,7 +452,7 @@ namespace System.Management.Automation
                 try
                 {
                     // try to populate method table..if there is any exception
-                    // generati.ng the method metadata..suppress the exception
+                    // generating the method metadata..suppress the exception
                     // but dont store the info in the cache. This is to allow
                     // for method look up again in future (after the wmi object
                     // is fixed)
@@ -498,7 +498,7 @@ namespace System.Management.Automation
                     bool isStatic = IsStaticMethod(mdata);
                     if (isStatic == staticBinding)
                     {
-                        // a method is added depending on 
+                        // a method is added depending on
                         // whether staticBinding is requested or not.
                         string methodName = mdata.Name;
                         WMIMethodCacheEntry mCache = new WMIMethodCacheEntry(methodName, classPath.Path, mdata);
@@ -511,7 +511,7 @@ namespace System.Management.Automation
         /// <summary>
         /// Constructs a ManagementClass object from the supplied mgmtBaseObject.
         /// ManagementObject has scope, options, path which need to be carried over to the ManagementClass for
-        /// retreiveing method/property/parameter metadata
+        /// retrieving method/property/parameter metadata
         /// </summary>
         /// <param name="mgmtBaseObject"></param>
         /// <returns></returns>
@@ -575,7 +575,7 @@ namespace System.Management.Automation
         }
 
         /// <summary>
-        /// Gets the dotnet type of a given PropertyData 
+        /// Gets the dotnet type of a given PropertyData
         /// </summary>
         /// <param name="pData">PropertyData input.</param>
         /// <returns>A string representing dotnet type.</returns>
@@ -724,7 +724,7 @@ namespace System.Management.Automation
                 // and also null ints to 0. But WMI providers do not like these
                 // conversions. So dont convert input arguments if they are null.
                 // We could have done this in the base adapter but the change would be
-                // costly for other adpaters which dont mind the conversion.
+                // costly for other adapters which dont mind the conversion.
                 if ((i < arguments.Length) && (arguments[i] == null))
                 {
                     verifiedArguments[i] = null;
@@ -753,7 +753,7 @@ namespace System.Management.Automation
 
             foreach (PropertyData data in parameters.Properties)
             {
-                // parameter postion..
+                // parameter position..
                 int location = -1;
                 WMIParameterInformation pInfo = new WMIParameterInformation(data.Name, GetDotNetType(data));
 
@@ -764,12 +764,12 @@ namespace System.Management.Automation
                 catch (ManagementException)
                 {
                     // If there is an exception accessing location
-                    // add the parameter to the end.                        
+                    // add the parameter to the end.
                 }
                 catch (System.Runtime.InteropServices.COMException)
                 {
                     // If there is an exception accessing location
-                    // add the parameter to the end.                        
+                    // add the parameter to the end.
                 }
 
                 if (location < 0)
@@ -871,13 +871,13 @@ namespace System.Management.Automation
         /// Retrieves all the properties available in the object.
         /// </summary>
         /// <param name="wmiObject">object to get all the property information from</param>
-        /// <param name="members">collection where the members will be added</param>        
+        /// <param name="members">collection where the members will be added</param>
         protected abstract void AddAllProperties<T>(ManagementBaseObject wmiObject,
             PSMemberInfoInternalCollection<T> members) where T : PSMemberInfo;
 
         /// <summary>
         /// Adds method information of the ManagementObject. This is done by accessing
-        /// the ManagementClass corresponding to this ManagementObject. All the method 
+        /// the ManagementClass corresponding to this ManagementObject. All the method
         /// information is cached for a particular ManagementObject.
         /// </summary>
         /// <typeparam name="T">PSMemberInfo</typeparam>
@@ -927,8 +927,8 @@ namespace System.Management.Automation
 
     /// <summary>
     /// Deals with ManagementClass objects.
-    /// Adapts only static methods and SystemProperties of a 
-    /// ManagemetnClass object.
+    /// Adapts only static methods and SystemProperties of a
+    /// ManagementClass object.
     /// </summary>
     internal class ManagementClassApdapter : BaseWMIAdapter
     {
@@ -961,7 +961,7 @@ namespace System.Management.Automation
         }
 
         /// <summary>
-        /// Invokes method reperesented by <paramref name="mdata"/> using supplied arguments.
+        /// Invokes method represented by <paramref name="mdata"/> using supplied arguments.
         /// </summary>
         /// <param name="wmiObject">ManagementObject on which the method is invoked.</param>
         /// <param name="methodName">Method data.</param>
@@ -980,7 +980,6 @@ namespace System.Management.Automation
             }
             catch (Exception e)
             {
-                CommandProcessorBase.CheckForSevereException(e);
                 throw new MethodInvocationException(
                     "WMIMethodException",
                     e,
@@ -1094,8 +1093,6 @@ namespace System.Management.Automation
             }
             catch (Exception e)
             {
-                CommandProcessorBase.CheckForSevereException(e);
-
                 // TODO: Bug 251457. This is a workaround to unblock partners and find out the root cause.
                 Tracing.PSEtwLogProvider provider = new Tracing.PSEtwLogProvider();
 
@@ -1118,7 +1115,7 @@ namespace System.Management.Automation
         }
 
         /// <summary>
-        /// Invokes method reperesented by <paramref name="mdata"/> using supplied arguments.
+        /// Invokes method represented by <paramref name="mdata"/> using supplied arguments.
         /// </summary>
         /// <param name="obj">ManagementObject on which the method is invoked.</param>
         /// <param name="methodName">Method data.</param>
@@ -1135,7 +1132,6 @@ namespace System.Management.Automation
             }
             catch (Exception e)
             {
-                CommandProcessorBase.CheckForSevereException(e);
                 throw new MethodInvocationException(
                     "WMIMethodException",
                     e,

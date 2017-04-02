@@ -28,9 +28,9 @@ namespace Microsoft.PowerShell.Core.Activities
         /// Gets the fully qualified name of the command invoked by this activity.
         /// </summary>
         public override string PSCommandName { get { return "Microsoft.PowerShell.Core\\Get-PSSession"; } }
-        
+
         // Arguments
-        
+
         /// <summary>
         /// Provides access to the ComputerName parameter.
         /// </summary>
@@ -166,16 +166,16 @@ namespace Microsoft.PowerShell.Core.Activities
 
 
         // Module defining this command
-        
+
 
         // Optional custom code for this activity
-        
+
 
         /// <summary>
         /// Returns a configured instance of System.Management.Automation.PowerShell, pre-populated with the command to run.
         /// </summary>
         /// <param name="context">The NativeActivityContext for the currently running activity.</param>
-        /// <returns>A populated instance of Sytem.Management.Automation.PowerShell</returns>
+        /// <returns>A populated instance of System.Management.Automation.PowerShell</returns>
         /// <remarks>The infrastructure takes responsibility for closing and disposing the PowerShell instance returned.</remarks>
         protected override ActivityImplementationContext GetPowerShell(NativeActivityContext context)
         {
@@ -183,7 +183,7 @@ namespace Microsoft.PowerShell.Core.Activities
             System.Management.Automation.PowerShell targetCommand = invoker.AddCommand(PSCommandName);
 
             // Initialize the arguments
-            
+
             if(ComputerName.Expression != null)
             {
                 targetCommand.AddParameter("ComputerName", ComputerName.Get(context));

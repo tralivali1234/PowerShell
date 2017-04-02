@@ -45,7 +45,7 @@ namespace Microsoft.PowerShell.Commands.ShowCommandInternal
         private List<CommandViewModel> commands;
 
         /// <summary>
-        /// value indicating whether there is a selected command which belongs to an imported module, 
+        /// value indicating whether there is a selected command which belongs to an imported module,
         /// with no parameter sets or with a selected parameter set where all mandatory parameters have values
         /// </summary>
         private bool isThereASelectedImportedCommandWhereAllMandatoryParametersHaveValues;
@@ -240,7 +240,7 @@ namespace Microsoft.PowerShell.Commands.ShowCommandInternal
 
         /// <summary>
         /// Gets or sets a value indicating whether there is a selected command which belongs
-        /// to an imported module, with no parameter sets or with a selected parameter set 
+        /// to an imported module, with no parameter sets or with a selected parameter set
         /// where all mandatory parameters have values
         /// </summary>
         public bool IsThereASelectedImportedCommandWhereAllMandatoryParametersHaveValues
@@ -302,7 +302,7 @@ namespace Microsoft.PowerShell.Commands.ShowCommandInternal
         internal void SortCommands(bool markRepeatedCmdlets)
         {
             this.commands.Sort(this.Compare);
-            
+
             if (!markRepeatedCmdlets || this.commands.Count == 0)
             {
                 return;
@@ -374,7 +374,7 @@ namespace Microsoft.PowerShell.Commands.ShowCommandInternal
         }
 
         /// <summary>
-        /// Callled in response to a GUI event that requires the command to be run
+        /// Called in response to a GUI event that requires the command to be run
         /// </summary>
         internal void OnRunSelectedCommand()
         {
@@ -417,7 +417,7 @@ namespace Microsoft.PowerShell.Commands.ShowCommandInternal
         /// <param name="filterPattern">pattern corresponding to filter</param>
         /// <param name="commandName">command name string</param>
         /// <param name="filter">filter string</param>
-        /// <returns>true if coparisonText matches str or pattern</returns>
+        /// <returns>true if comparisonText matches str or pattern</returns>
         private static bool Matches(WildcardPattern filterPattern, string commandName, string filter)
         {
             if (filterPattern != null)
@@ -492,7 +492,7 @@ namespace Microsoft.PowerShell.Commands.ShowCommandInternal
         }
 
         /// <summary>
-        /// Called to set IsThereASelectedImportedCommandWhereAllMandatoryParametersHaveValues when 
+        /// Called to set IsThereASelectedImportedCommandWhereAllMandatoryParametersHaveValues when
         /// SelectedParameterSetAllMandatoryParametersHaveValues changes in the SelectedCommand or
         /// when the SelectedCommand changes
         /// </summary>

@@ -32,7 +32,7 @@ namespace Microsoft.PowerShell
         private int _visualSelectionCommandCount;
 
         /// <summary>
-        /// Mark the current loction of the cursor for use in a subsequent editing command.
+        /// Mark the current location of the cursor for use in a subsequent editing command.
         /// </summary>
         [SuppressMessage("Microsoft.Design", "CA1026:DefaultParametersShouldNotBeUsed")]
         public static void SetMark(ConsoleKeyInfo? key = null, object arg = null)
@@ -148,7 +148,7 @@ namespace Microsoft.PowerShell
         {
             var token = _singleton.FindToken(_singleton._current, FindTokenMode.CurrentOrNext);
             var end = (token.Kind == TokenKind.EndOfInput)
-                ? _singleton._buffer.Length 
+                ? _singleton._buffer.Length
                 : token.Extent.EndOffset;
             _singleton.Kill(_singleton._current, end - _singleton._current, false);
         }
@@ -186,7 +186,7 @@ namespace Microsoft.PowerShell
         public static void ShellBackwardKillWord(ConsoleKeyInfo? key = null, object arg = null)
         {
             var token = _singleton.FindToken(_singleton._current, FindTokenMode.Previous);
-            var start = token == null 
+            var start = token == null
                 ? 0
                 : token.Extent.StartOffset;
             _singleton.Kill(start, _singleton._current - start, true);
@@ -212,7 +212,7 @@ namespace Microsoft.PowerShell
             // remember where we started.
             _mark = _yankStartPoint = _current;
             Insert(_killRing[_killIndex]);
-            
+
             _yankCommandCount += 1;
         }
 
@@ -520,7 +520,7 @@ namespace Microsoft.PowerShell
             }
             else
             {
-                textToSet = _singleton._buffer.ToString(); 
+                textToSet = _singleton._buffer.ToString();
             }
             if (!string.IsNullOrEmpty(textToSet))
             {

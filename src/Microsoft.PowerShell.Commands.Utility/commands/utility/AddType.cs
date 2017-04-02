@@ -68,7 +68,7 @@ namespace Microsoft.PowerShell.Commands
         CSharpVersion3,
 
         /// <summary>
-        /// The C# programming language v2 
+        /// The C# programming language v2
         /// </summary>
         CSharpVersion2,
 
@@ -142,14 +142,14 @@ namespace Microsoft.PowerShell.Commands
         public string ErrorText { get; internal set; }
 
         /// <summary>
-        /// true if warning. false if error. 
+        /// true if warning. false if error.
         /// </summary>
         public bool IsWarning { get; internal set; }
     }
 
     /// <summary>
-    /// Base class that contains logic for Add-Type cmdlet based on 
-    /// - CodeDomProvider 
+    /// Base class that contains logic for Add-Type cmdlet based on
+    /// - CodeDomProvider
     /// - CodeAnalysis(Roslyn)
     /// </summary>
     public abstract class AddTypeCommandBase : PSCmdlet
@@ -267,7 +267,7 @@ namespace Microsoft.PowerShell.Commands
                     Collection<string> newPaths = SessionState.Path.GetResolvedProviderPathFromPSPath(path, out provider);
 
                     // If it didn't resolve, add the original back
-                    // for a better error mesage.
+                    // for a better error message.
                     if (newPaths.Count == 0)
                     {
                         resolvedPaths.Add(path);
@@ -633,7 +633,7 @@ namespace Microsoft.PowerShell.Commands
                 case Language.CSharpVersion4:
                 case Language.CSharpVersion5:
                 case Language.CSharpVersion6:
-#endif                
+#endif
                     return true;
                 default:
                     return false;
@@ -909,10 +909,10 @@ namespace Microsoft.PowerShell.Commands
 #if CORECLR
 
     /// <summary>
-    /// Adds a new type to the Application Domain. 
+    /// Adds a new type to the Application Domain.
     /// This version is based on CodeAnalysis (Roslyn).
     /// </summary>
-    [Cmdlet(VerbsCommon.Add, "Type", DefaultParameterSetName = "FromSource", HelpUri = "http://go.microsoft.com/fwlink/?LinkID=135195")]
+    [Cmdlet(VerbsCommon.Add, "Type", DefaultParameterSetName = "FromSource", HelpUri = "https://go.microsoft.com/fwlink/?LinkID=135195")]
     [OutputType(typeof(Type))]
     public sealed class AddTypeCommand : AddTypeCommandBase
     {
@@ -959,7 +959,7 @@ namespace Microsoft.PowerShell.Commands
         {
             foreach (string assemblyName in assemblies)
             {
-                // CoreCLR doesn't allow re-load TPA assemblis with different API (i.e. we load them by name and now want to load by path).
+                // CoreCLR doesn't allow re-load TPA assemblies with different API (i.e. we load them by name and now want to load by path).
                 // LoadAssemblyHelper helps us avoid re-loading them, if they already loaded.
                 Assembly assembly = LoadAssemblyHelper(assemblyName);
                 if (assembly == null)
@@ -1018,9 +1018,9 @@ namespace Microsoft.PowerShell.Commands
         private static string s_frameworkFolder = System.IO.Path.GetDirectoryName(typeof(object).GetTypeInfo().Assembly.Location);
 
         // there are two different assemblies: framework contract and framework implementation.
-        // Version 1.1.1 of Microsoft.CodeAnalysis doesn't provide a good way to handle contract separetely from implementation.
-        // To simplify user expirience we always add both of them to references.
-        // 1) It's a legitimate scenario, when user provides a custom referenced assembly that was built against the contract assembly 
+        // Version 1.1.1 of Microsoft.CodeAnalysis doesn't provide a good way to handle contract separately from implementation.
+        // To simplify user experience we always add both of them to references.
+        // 1) It's a legitimate scenario, when user provides a custom referenced assembly that was built against the contract assembly
         // (i.e. System.Management.Automation), so we need the contract one.
         // 2) We have to provide implementation assembly explicitly, Roslyn doesn't have a way to figure out implementation by itself.
         // So we are adding both.
@@ -1035,14 +1035,14 @@ namespace Microsoft.PowerShell.Commands
             MetadataReference.CreateFromFile(ClrFacade.GetAssemblies(typeof(object).FullName).First().Location);
 
         // SecureString is defined in a separate assembly.
-        // This fact is an implementation detail and should not require the user to specify one more assembly, 
+        // This fact is an implementation detail and should not require the user to specify one more assembly,
         // if they want to use SecureString in Add-Type -TypeDefinition.
         // So this assembly should be in the default assemblies list to provide the best experience.
         private static PortableExecutableReference s_secureStringAssemblyReference =
             MetadataReference.CreateFromFile(typeof(System.Security.SecureString).GetTypeInfo().Assembly.Location);
 
 
-        // These assemlbies are always automatically added to ReferencedAssemblies.
+        // These assemblies are always automatically added to ReferencedAssemblies.
         private static PortableExecutableReference[] s_autoReferencedAssemblies = new PortableExecutableReference[]
         {
             s_mscorlibAssemblyReference,
@@ -1051,7 +1051,7 @@ namespace Microsoft.PowerShell.Commands
             s_objectImplementationAssemblyReference
         };
 
-        // These assemlbies are used, when ReferencedAssemblies parameter is not specified.
+        // These assemblies are used, when ReferencedAssemblies parameter is not specified.
         private static PortableExecutableReference[] s_defaultAssemblies = new PortableExecutableReference[]
         {
             s_mscorlibAssemblyReference,
@@ -1279,10 +1279,10 @@ namespace Microsoft.PowerShell.Commands
 #else // end of CORECLR, if !CORECLR
 
     /// <summary>
-    /// Adds a new type to the Application Domain. 
+    /// Adds a new type to the Application Domain.
     /// This version is based on CodeDomProvider.
     /// </summary>
-    [Cmdlet(VerbsCommon.Add, "Type", DefaultParameterSetName = "FromSource", HelpUri = "http://go.microsoft.com/fwlink/?LinkID=135195")]
+    [Cmdlet(VerbsCommon.Add, "Type", DefaultParameterSetName = "FromSource", HelpUri = "https://go.microsoft.com/fwlink/?LinkID=135195")]
     [OutputType(typeof(Type))]
     public sealed class AddTypeCommand : AddTypeCommandBase
     {
@@ -1441,7 +1441,7 @@ namespace Microsoft.PowerShell.Commands
                 return;
             }
 
-            // Generate if user has specified CompilerParmeters and
+            // Generate if user has specified CompilerParameters and
             // (referencedAssemblies | ignoreWarnings | outputAssembly | outputType)
             if (null != CompilerParameters)
             {
@@ -1608,10 +1608,10 @@ namespace Microsoft.PowerShell.Commands
                 // compilation.
                 if (generatedTypes.Count == 0)
                 {
-                    // Obtains an ICodeCompiler from a CodeDomProvider class. 
+                    // Obtains an ICodeCompiler from a CodeDomProvider class.
                     CodeDomProvider provider = codeDomProvider;
 
-                    // Configure the compiler parameters 
+                    // Configure the compiler parameters
                     if (CompilerParameters == null)
                     {
                         CompilerParameters = new CompilerParameters();
@@ -2083,7 +2083,7 @@ namespace Microsoft.PowerShell.Commands
             // Doing this as a dictionary is 4x as fast as a huge string array.
             // 10,000 iterations of this method takes ~800 ms for a string array, and ~ 200ms for the dictionary
             //
-            // $dlls = ((dir c:\windows\Microsoft.NET\Framework\ -fi *.dll -rec) + (dir c:\windows\assembly -fi *.dll -rec)) + (dir C:\Windows\Microsoft.NET\assembly) | 
+            // $dlls = ((dir c:\windows\Microsoft.NET\Framework\ -fi *.dll -rec) + (dir c:\windows\assembly -fi *.dll -rec)) + (dir C:\Windows\Microsoft.NET\assembly) |
             //     % { [Reflection.Assembly]::LoadFrom($_.FullName) }
             // "var strongNames = new ConcurrentDictionary<string, string>(4, $($dlls.Count), StringComparer.OrdinalIgnoreCase);" > c:\temp\strongnames.txt
             // $dlls | Sort-Object -u { $_.GetName().Name} | % { 'strongNames["{0}"] = "{1}";' -f $_.FullName.Split(",", 2)[0], $_.FullName  >> c:\temp\strongnames.txt }

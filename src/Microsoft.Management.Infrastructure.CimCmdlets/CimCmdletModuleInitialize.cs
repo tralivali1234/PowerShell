@@ -1,5 +1,5 @@
 /*============================================================================
- * Copyright (C) Microsoft Corporation, All rights reserved. 
+ * Copyright (C) Microsoft Corporation, All rights reserved.
  *============================================================================
  */
 
@@ -82,13 +82,13 @@ namespace Microsoft.Management.Infrastructure.CimCmdlets
             private string _name;
 
             /// <summary>
-            /// The string defining realy cmdlet name
+            /// The string defining real cmdlet name
             /// </summary>
             internal string Value { get { return this._value; } }
             private string _value = String.Empty;
 
             /// <summary>
-            /// The string defining realy cmdlet name
+            /// The string defining real cmdlet name
             /// </summary>
             internal ScopedItemOptions Options { get { return this._options; } }
             private ScopedItemOptions _options = ScopedItemOptions.AllScope | ScopedItemOptions.ReadOnly;

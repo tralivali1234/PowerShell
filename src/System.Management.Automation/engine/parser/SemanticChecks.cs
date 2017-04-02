@@ -334,19 +334,19 @@ namespace System.Management.Automation.Language
 
         public override AstVisitAction VisitTypeDefinition(TypeDefinitionAst typeDefinitionAst)
         {
-            AttributeAst dscResourceAttibuteAst = null;
+            AttributeAst dscResourceAttributeAst = null;
             for (int i = 0; i < typeDefinitionAst.Attributes.Count; i++)
             {
                 var attr = typeDefinitionAst.Attributes[i];
                 if (attr.TypeName.GetReflectionAttributeType() == typeof(DscResourceAttribute))
                 {
-                    dscResourceAttibuteAst = attr;
+                    dscResourceAttributeAst = attr;
                     break;
                 }
             }
-            if (dscResourceAttibuteAst != null)
+            if (dscResourceAttributeAst != null)
             {
-                DscResourceChecker.CheckType(_parser, typeDefinitionAst, dscResourceAttibuteAst);
+                DscResourceChecker.CheckType(_parser, typeDefinitionAst, dscResourceAttributeAst);
             }
 
             return AstVisitAction.Continue;
@@ -469,7 +469,7 @@ namespace System.Management.Automation.Language
             if ((forEachStatementAst.ThrottleLimit != null) &&
                 ((forEachStatementAst.Flags & ForEachFlags.Parallel) != ForEachFlags.Parallel))
             {
-                _parser.ReportError(forEachStatementAst.Extent, () => ParserStrings.ThrottleLimitRequresParallelFlag);
+                _parser.ReportError(forEachStatementAst.Extent, () => ParserStrings.ThrottleLimitRequiresParallelFlag);
             }
 
             return AstVisitAction.Continue;
@@ -558,7 +558,7 @@ namespace System.Management.Automation.Language
         /// Check that flow doesn't leave finally.
         /// </summary>
         /// <param name="ast"></param>
-        /// <param name="label">If label is null, either it's a break/continue to an unknown label 
+        /// <param name="label">If label is null, either it's a break/continue to an unknown label
         /// (and unknown does not mean not specified, it means it's an expression we can't evaluate) or we have a return statement.
         /// </param>
         private void CheckForFlowOutOfFinally(Ast ast, string label)
@@ -1173,7 +1173,7 @@ namespace System.Management.Automation.Language
         public override AstVisitAction VisitConfigurationDefinition(ConfigurationDefinitionAst configurationDefinitionAst)
         {
             //
-            // Check if the ScirptBlockAst contains NamedBlockAst other than the End block
+            // Check if the ScriptBlockAst contains NamedBlockAst other than the End block
             //
             ScriptBlockAst configBody = configurationDefinitionAst.Body.ScriptBlock;
             if (configBody.BeginBlock != null || configBody.ProcessBlock != null || configBody.DynamicParamBlock != null)
@@ -1447,7 +1447,7 @@ namespace System.Management.Automation.Language
         /// </summary>
         /// <param name="parser"></param>
         /// <param name="functionMemberAst">The function member AST</param>
-        /// <param name="hasGet">True if it is a Get method with qualified return type and signaure; otherwise, false. </param>
+        /// <param name="hasGet">True if it is a Get method with qualified return type and signature; otherwise, false. </param>
         private static void CheckGet(Parser parser, FunctionMemberAst functionMemberAst, ref bool hasGet)
         {
             if (hasGet)
@@ -1484,7 +1484,7 @@ namespace System.Management.Automation.Language
         /// Check if it is a Test method with correct return type and signature
         /// </summary>
         /// <param name="functionMemberAst">The function member AST</param>
-        /// <param name="hasTest">True if it is a Test method with qualified return type and signaure; otherwise, false.</param>
+        /// <param name="hasTest">True if it is a Test method with qualified return type and signature; otherwise, false.</param>
         private static void CheckTest(FunctionMemberAst functionMemberAst, ref bool hasTest)
         {
             if (hasTest) return;
@@ -1497,7 +1497,7 @@ namespace System.Management.Automation.Language
         /// Check if it is a Set method with correct return type and signature
         /// </summary>
         /// <param name="functionMemberAst">The function member AST</param>
-        /// <param name="hasSet">True if it is a Set method with qualified return type and signaure; otherwise, false.</param>
+        /// <param name="hasSet">True if it is a Set method with qualified return type and signature; otherwise, false.</param>
         private static void CheckSet(FunctionMemberAst functionMemberAst, ref bool hasSet)
         {
             if (hasSet) return;
@@ -1578,7 +1578,7 @@ namespace System.Management.Automation.Language
 
             if (allowedVariables != null)
             {
-                // A single '*' allows any variable to be used. The use of a single '*' aligns with the 
+                // A single '*' allows any variable to be used. The use of a single '*' aligns with the
                 // way SessionState.Applications and SessionState.Scripts lists work.
                 var allowedVariablesList = allowedVariables as IList<string> ?? allowedVariables.ToList();
                 if (allowedVariablesList.Count == 1 && allowedVariablesList.Contains("*"))
@@ -1999,7 +1999,7 @@ namespace System.Management.Automation.Language
 
             if (_allowEnvironmentVariables)
             {
-                // Allow access to environment when processing module manifests            
+                // Allow access to environment when processing module manifests
                 if (varPath.IsDriveQualified && varPath.DriveName.Equals("env", StringComparison.OrdinalIgnoreCase))
                     return AstVisitAction.Continue;
             }

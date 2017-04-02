@@ -22,9 +22,9 @@ namespace Microsoft.PowerShell
     internal partial class ConsoleHostUserInterface : PSHostUserInterface, IHostUISupportsMultipleChoiceSelection
     {
         /// <summary>
-        /// 
+        ///
         /// See base class
-        /// 
+        ///
         /// </summary>
         /// <param name="caption"></param>
         /// <param name="message"></param>
@@ -32,25 +32,25 @@ namespace Microsoft.PowerShell
         /// <param name="defaultChoice"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException">
-        /// 
+        ///
         /// If <paramref name="choices"/> is null.
-        /// 
+        ///
         /// </exception>
         /// <exception cref="ArgumentException">
-        /// 
+        ///
         /// If <paramref name="choices"/>.Count is 0.
-        /// 
+        ///
         /// </exception>
         /// <exception cref="ArgumentOutOfRangeException">
-        /// 
+        ///
         /// If <paramref name="defaultChoice"/> is greater than
         ///     the length of <paramref name="choices"/>.
-        /// 
+        ///
         /// </exception>
         /// <exception cref="PromptingException">
-        /// 
+        ///
         ///  when prompt is canceled by, for example, Ctrl-c.
-        /// 
+        ///
         /// </exception>
 
         public override int PromptForChoice(string caption, string message, Collection<ChoiceDescription> choices, int defaultChoice)
@@ -122,7 +122,7 @@ namespace Microsoft.PowerShell
 
                     if (response.Length == 0)
                     {
-                        // they just hit enter.  
+                        // they just hit enter.
 
                         if (defaultChoice >= 0)
                         {
@@ -164,7 +164,7 @@ namespace Microsoft.PowerShell
         /// Presents a dialog allowing the user to choose options from a set of options.
         /// </summary>
         /// <param name="caption">
-        /// Caption to preceed or title the prompt.  E.g. "Parameters for get-foo (instance 1 of 2)"
+        /// Caption to precede or title the prompt.  E.g. "Parameters for get-foo (instance 1 of 2)"
         /// </param>
         /// <param name="message">
         /// A message that describes what the choice is for.
@@ -173,8 +173,8 @@ namespace Microsoft.PowerShell
         /// An Collection of ChoiceDescription objects that describe each choice.
         /// </param>
         /// <param name="defaultChoices">
-        /// The index of the labels in the choices collection element to be presented to the user as 
-        /// the default choice(s). 
+        /// The index of the labels in the choices collection element to be presented to the user as
+        /// the default choice(s).
         /// </param>
         /// <returns>
         /// The indices of the choice elements that corresponds to the options selected.
@@ -475,5 +475,5 @@ namespace Microsoft.PowerShell
             }
         }
     }
-}   // namespace 
+}   // namespace
 

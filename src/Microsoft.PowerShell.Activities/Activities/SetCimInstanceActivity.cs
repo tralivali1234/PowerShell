@@ -30,7 +30,7 @@ namespace cimcmdlets.Activities
         /// The .NET type implementing the cmdlet to invoke.
         /// </summary>
         public override System.Type TypeImplementingCmdlet { get { return typeof(Microsoft.Management.Infrastructure.CimCmdlets.SetCimInstanceCommand); } }
-       
+
         /// <summary>
         /// Provides access to the Namespace parameter.
         /// </summary>
@@ -87,13 +87,13 @@ namespace cimcmdlets.Activities
         protected override string PSDefiningModule { get { return "CimCmdlets"; } }
 
         // Additional custom code for this activity
-        
+
 
         /// <summary>
         /// Returns a configured instance of System.Management.Automation.PowerShell, pre-populated with the command to run.
         /// </summary>
         /// <param name="context">The NativeActivityContext for the currently running activity.</param>
-        /// <returns>A populated instance of Sytem.Management.Automation.PowerShell</returns>
+        /// <returns>A populated instance of System.Management.Automation.PowerShell</returns>
         /// <remarks>The infrastructure takes responsibility for closing and disposing the PowerShell instance returned.</remarks>
         protected override ActivityImplementationContext GetPowerShell(NativeActivityContext context)
         {

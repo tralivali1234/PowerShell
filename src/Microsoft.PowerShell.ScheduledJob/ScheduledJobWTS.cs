@@ -99,7 +99,7 @@ namespace Microsoft.PowerShell.ScheduledJob
         }
 
         /// <summary>
-        /// Retrives options for the provided task Id.
+        /// Retrieves options for the provided task Id.
         /// </summary>
         /// <param name="taskId">Task Id</param>
         /// <exception cref="ScheduledJobException">Task not found.</exception>
@@ -291,7 +291,7 @@ namespace Microsoft.PowerShell.ScheduledJob
         }
 
         /// <summary>
-        /// Updates an existing task in WTS with information from 
+        /// Updates an existing task in WTS with information from
         /// ScheduledJobDefinition.
         /// </summary>
         /// <param name="definition">ScheduledJobDefinition</param>
@@ -311,7 +311,7 @@ namespace Microsoft.PowerShell.ScheduledJob
 
             // Set enabled state.
             iTaskDefinition.Settings.Enabled = definition.Enabled;
-            
+
             // Replace triggers.
             iTaskDefinition.Triggers.Clear();
             foreach (ScheduledJobTrigger jobTrigger in definition.JobTriggers)
@@ -459,7 +459,7 @@ namespace Microsoft.PowerShell.ScheduledJob
         }
 
         /// <summary>
-        /// Creates a ScheuduledJobTrigger object based on a provided WTS ITrigger.
+        /// Creates a ScheduledJobTrigger object based on a provided WTS ITrigger.
         /// </summary>
         /// <param name="iTrigger">ITrigger</param>
         /// <returns>ScheduledJobTrigger</returns>
@@ -540,7 +540,7 @@ namespace Microsoft.PowerShell.ScheduledJob
             iTaskDefinition.Settings.RunOnlyIfNetworkAvailable = !jobOptions.RunWithoutNetwork;
             iTaskDefinition.Settings.AllowDemandStart = !jobOptions.DoNotAllowDemandStart;
             iTaskDefinition.Settings.MultipleInstances = ConvertFromMultiInstances(jobOptions.MultipleInstancePolicy);
-            iTaskDefinition.Principal.RunLevel = (jobOptions.RunElevated) ? 
+            iTaskDefinition.Principal.RunLevel = (jobOptions.RunElevated) ?
                                                     _TASK_RUNLEVEL.TASK_RUNLEVEL_HIGHEST : _TASK_RUNLEVEL.TASK_RUNLEVEL_LUA;
         }
 
@@ -678,7 +678,7 @@ namespace Microsoft.PowerShell.ScheduledJob
 
         /// <summary>
         /// Helper method to parse a WTS time string and return
-        /// a corresponding TimeSpan object.  Note that the 
+        /// a corresponding TimeSpan object.  Note that the
         /// year and month values are ignored.
         /// Format:
         /// "PnYnMnDTnHnMnS"
@@ -816,7 +816,7 @@ namespace Microsoft.PowerShell.ScheduledJob
         }
 
         /// <summary>
-        /// Returns a bitmask representing days of week as 
+        /// Returns a bitmask representing days of week as
         /// required by Windows Task Scheduler API.
         /// </summary>
         /// <param name="daysOfWeek">Array of DayOfWeek</param>

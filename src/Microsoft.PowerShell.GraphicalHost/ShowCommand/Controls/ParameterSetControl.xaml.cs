@@ -210,7 +210,7 @@ namespace Microsoft.PowerShell.Commands.ShowCommandInternal
         }
 
         /// <summary>
-        /// Called for a newly created multiline text box to increase its height and 
+        /// Called for a newly created multiline text box to increase its height and
         /// </summary>
         /// <param name="sender">event sender</param>
         /// <param name="e">event arguments</param>
@@ -339,7 +339,7 @@ namespace Microsoft.PowerShell.Commands.ShowCommandInternal
         }
 
         /// <summary>
-        /// Creates a Lable control and add it to MainGrid
+        /// Creates a Label control and add it to MainGrid
         /// </summary>
         /// <param name="parameterViewModel">DataContext object</param>
         /// <param name="rowNumber">Row number</param>

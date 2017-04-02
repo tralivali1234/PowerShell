@@ -55,7 +55,7 @@ namespace System.Management.Automation
         private bool _disposed;
 
         /// <summary>
-        /// Private object for thread-safe exection.
+        /// Private object for thread-safe execution.
         /// </summary>
         private readonly object _syncLock = new object();
 
@@ -98,7 +98,7 @@ namespace System.Management.Automation
         }
 
         /// <summary>
-        /// Disope implementation.
+        /// Dispose implementation.
         /// </summary>
         public void Dispose()
         {
@@ -226,7 +226,7 @@ namespace System.Management.Automation
         }
 
         /// <summary>
-        /// Marking all the streams as completed so that no further data can be added and 
+        /// Marking all the streams as completed so that no further data can be added and
         /// jobs will know that there is no more data coming in.
         /// </summary>
         public void CloseAll()

@@ -14,7 +14,7 @@ using System.Management.Automation.Runspaces;
 namespace Microsoft.PowerShell.Commands.Internal.Format
 {
     /// <summary>
-    /// Base class defining the formatting context and the 
+    /// Base class defining the formatting context and the
     /// formatting context manager (stack based)
     /// </summary>
     internal class InnerFormatShapeCommandBase : ImplementationCommandBase
@@ -132,7 +132,7 @@ namespace Microsoft.PowerShell.Commands.Internal.Format
                     break;
                 default:
                     {
-                        // do not eumerate at all (CoreOnly)
+                        // do not enumerate at all (CoreOnly)
                         ProcessObject(so);
                     }
                     break;
@@ -147,7 +147,7 @@ namespace Microsoft.PowerShell.Commands.Internal.Format
                 return _parameters.expansion.Value;
             }
 
-            // check if we have an expansion entry in format.mshxml 
+            // check if we have an expansion entry in format.mshxml
             var typeNames = so.InternalTypeNames;
             return DisplayDataQuery.GetEnumerableExpansionFromType(
                 _expressionFactory, _typeInfoDataBase, typeNames);
@@ -421,7 +421,7 @@ namespace Microsoft.PowerShell.Commands.Internal.Format
         /// <summary>
         /// compute the group transition, given an input object
         /// </summary>
-        /// <param name="so">object receoved from the input pipeline</param>
+        /// <param name="so">object received from the input pipeline</param>
         /// <returns>GroupTransition enumeration</returns>
         private GroupTransition ComputeGroupTransition(PSObject so)
         {
@@ -518,7 +518,7 @@ namespace Microsoft.PowerShell.Commands.Internal.Format
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class OuterFormatShapeCommandBase : FrontEndCommandBase
     {
@@ -640,7 +640,7 @@ namespace Microsoft.PowerShell.Commands.Internal.Format
         #endregion
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         protected override void BeginProcessing()
         {
@@ -682,7 +682,7 @@ namespace Microsoft.PowerShell.Commands.Internal.Format
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class OuterFormatTableAndListBase : OuterFormatShapeCommandBase
     {
@@ -691,7 +691,7 @@ namespace Microsoft.PowerShell.Commands.Internal.Format
         /// <summary>
         /// Positional parameter for properties, property sets and table sets
         /// specified on the command line.
-        /// The paramater is optional, since the defaults
+        /// The parameter is optional, since the defaults
         /// will be determined using property sets, etc.
         /// </summary>
         [Parameter(Position = 0)]
@@ -746,7 +746,7 @@ namespace Microsoft.PowerShell.Commands.Internal.Format
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class OuterFormatTableBase : OuterFormatTableAndListBase
     {

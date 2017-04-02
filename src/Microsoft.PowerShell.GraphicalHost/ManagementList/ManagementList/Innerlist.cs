@@ -276,7 +276,7 @@ namespace Microsoft.Management.UI.Internal
                 ListCollectionView lcv = (ListCollectionView)this.CollectionView;
                 lcv.CustomSort = null;
             }
-            
+
             // If columns are shown, update them to show none are sorted \\
             if (this.InnerGrid != null)
             {
@@ -292,7 +292,7 @@ namespace Microsoft.Management.UI.Internal
 
         #region protected methods
         /// <summary>
-        /// Called when the ItemsSource changes to set internal fields, subscribe to the view change 
+        /// Called when the ItemsSource changes to set internal fields, subscribe to the view change
         /// and possibly autopopulate columns.
         /// </summary>
         /// <param name="oldValue">Previous ItemsSource.</param>
@@ -303,7 +303,7 @@ namespace Microsoft.Management.UI.Internal
 
             this.itemsSourceIsEmpty = (null != this.ItemsSource && false == this.ItemsSource.GetEnumerator().MoveNext());
 
-            // A view can be created if there is data to auto-generate columns, or columns are added programatically \\
+            // A view can be created if there is data to auto-generate columns, or columns are added programmatically \\
             bool canCreateView = (null != this.ItemsSource) &&
                 (false == this.itemsSourceIsEmpty || false == this.AutoGenerateColumns);
 
@@ -334,7 +334,7 @@ namespace Microsoft.Management.UI.Internal
         protected override void OnItemsChanged(NotifyCollectionChangedEventArgs e)
         {
             base.OnItemsChanged(e);
-            
+
             if (e.NewItems != null)
             {
                 // If the items source now has items, select the first item \\
@@ -554,7 +554,7 @@ namespace Microsoft.Management.UI.Internal
                     header.PreviewKeyDown += new KeyEventHandler(this.Header_KeyDown);
                 }
 
-                // If it is a GridViewColumnHeader we will not have the same nice sorting and grouping 
+                // If it is a GridViewColumnHeader we will not have the same nice sorting and grouping
                 // capabilities
             }
         }

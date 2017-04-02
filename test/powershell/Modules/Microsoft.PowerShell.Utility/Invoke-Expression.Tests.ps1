@@ -13,22 +13,22 @@ Describe "Invoke-Expression" -Tags "CI" {
 	It "Should return the echoed text from a script" {
 	    $testfile = Join-Path -Path (Join-Path $PSScriptRoot -ChildPath assets) -ChildPath echoscript.ps1
 	    $testcommand = "echo pestertestscript"
-	    $testcommand | Add-Content -Path $testfile
-	    (Invoke-Expression $testfile) | Should Be "pestertestscript"
-	    Remove-Item $testfile
+	    $testcommand | Add-Content -Path "$testfile"
+	    (Invoke-Expression "& '$testfile'") | Should Be "pestertestscript"
+	    Remove-Item "$testfile"
 	}
 
 	It "Should return the echoed text from a script from the alias" {
 	    $testfile = Join-Path -Path (Join-Path $PSScriptRoot -ChildPath assets) -ChildPath echoscript.ps1
 	    $testcommand = "echo pestertestscript"
-	    $testcommand | Add-Content -Path $testfile
-	    (iex $testfile) | Should Be "pestertestscript"
-	    Remove-Item $testfile
+	    $testcommand | Add-Content -Path "$testfile"
+	    (iex "& '$testfile'") | Should Be "pestertestscript"
+	    Remove-Item "$testfile"
 	}
     }
 }
 Describe "Invoke-Expression DRT Unit Tests" -Tags "CI" {
-	It "Invoke-Expression should work"{	
+	It "Invoke-Expression should work"{
 		$result=invoke-expression -Command 2+2
 		$result|Should Be 4
 	}

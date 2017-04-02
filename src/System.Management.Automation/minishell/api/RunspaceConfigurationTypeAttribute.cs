@@ -5,11 +5,11 @@ Copyright (c) Microsoft Corporation.  All rights reserved.
 namespace System.Management.Automation.Runspaces
 {
     /// <summary>
-    /// Define the class for runspace configuration type attribute. 
+    /// Define the class for runspace configuration type attribute.
     /// </summary>
     /// <!--
-    /// This is an assembly attribute for the mini-shell assembly to tell 
-    /// the type name for MiniShellConguration derived class.
+    /// This is an assembly attribute for the mini-shell assembly to tell
+    /// the type name for MiniShellConfiguration derived class.
     /// -->
     [AttributeUsage(AttributeTargets.Assembly)]
 #if CORECLR

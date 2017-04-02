@@ -110,7 +110,7 @@ namespace System.Management.Automation.Remoting
         #endregion Properties
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="destination"></param>
         /// <param name="dataType"></param>
@@ -129,11 +129,11 @@ namespace System.Management.Automation.Remoting
 
 
         /// <summary>
-        /// Creates a RemoteDataObject by deserialzing <paramref name="data"/>.
+        /// Creates a RemoteDataObject by deserializing <paramref name="data"/>.
         /// </summary>
         /// <param name="serializedDataStream"></param>
         /// <param name="defragmentor">
-        /// Defragmetor used to deserialize an object.
+        /// Defragmentor used to deserialize an object.
         /// </param>
         /// <returns></returns>
         internal static RemoteDataObject<T> CreateFrom(Stream serializedDataStream, Fragmentor defragmentor)
@@ -170,7 +170,7 @@ namespace System.Management.Automation.Remoting
         #region Serialize / Deserialize
 
         /// <summary>
-        /// Seriliazes the object into the stream specified. The serialization mechanism uses
+        /// Serializes the object into the stream specified. The serialization mechanism uses
         /// UTF8 encoding to encode data.
         /// </summary>
         /// <param name="streamToWriteTo"></param>
@@ -193,7 +193,7 @@ namespace System.Management.Automation.Remoting
 
         /// <summary>
         /// Serializes only the header portion of the object. ie., runspaceId,
-        /// powerShellId, destinaion and dataType.
+        /// powerShellId, destination and dataType.
         /// </summary>
         /// <param name="streamToWriteTo">
         /// place where the serialized data is stored into.
@@ -274,7 +274,7 @@ namespace System.Management.Automation.Remoting
         #region Constructors / Factory
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="destination"></param>
         /// <param name="dataType"></param>
@@ -290,7 +290,7 @@ namespace System.Management.Automation.Remoting
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="destination"></param>
         /// <param name="dataType"></param>

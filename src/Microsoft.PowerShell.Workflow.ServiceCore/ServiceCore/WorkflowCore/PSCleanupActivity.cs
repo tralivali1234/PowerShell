@@ -32,11 +32,11 @@ namespace Microsoft.PowerShell.Activities
         }
 
         /// <summary>
-        /// Method that needs to be overrided to perform the actual
+        /// Method that needs to be overridden to perform the actual
         /// cleanup action
         /// </summary>
         /// <param name="args">RunCommandsArguments</param>
-        /// <param name="callback">callback to call when cleanup 
+        /// <param name="callback">callback to call when cleanup
         /// is done</param>
         /// <remarks>The signature forces this method to be internal</remarks>
         internal virtual void DoCleanup(RunCommandsArguments args, WaitCallback callback)
@@ -90,11 +90,11 @@ namespace Microsoft.PowerShell.Activities
         }
 
         /// <summary>
-        /// Method that needs to be overrided to perform the actual
+        /// Method that needs to be overridden to perform the actual
         /// cleanup action
         /// </summary>
         /// <param name="args">RunCommandsArguments</param>
-        /// <param name="callback">callback to call when cleanup 
+        /// <param name="callback">callback to call when cleanup
         /// is done</param>
         /// <remarks>The signature forces this method to be internal</remarks>
         internal override void DoCleanup(RunCommandsArguments args, WaitCallback callback)

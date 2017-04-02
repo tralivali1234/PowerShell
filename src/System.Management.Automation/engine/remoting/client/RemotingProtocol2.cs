@@ -61,7 +61,7 @@ namespace System.Management.Automation.Internal
         #region Data Structure Handler Methods
 
         /// <summary>
-        /// Create a runspace pool asynchronously (and opens) it 
+        /// Create a runspace pool asynchronously (and opens) it
         /// on the server
         /// </summary>
         internal void CreateRunspacePoolAndOpenAsync()
@@ -180,10 +180,10 @@ namespace System.Management.Automation.Internal
 
                 case RemotingDataType.RunspacePoolOperationResponse:
                     {
-                        Dbg.Assert(SetMaxMinRunspacesResponseRecieved != null,
+                        Dbg.Assert(SetMaxMinRunspacesResponseReceived != null,
                             "RemoteRunspacePoolInternal should subscribe to all data structure handler events");
 
-                        SetMaxMinRunspacesResponseRecieved.SafeInvoke(this, new RemoteDataEventArgs<PSObject>(receivedData.Data));
+                        SetMaxMinRunspacesResponseReceived.SafeInvoke(this, new RemoteDataEventArgs<PSObject>(receivedData.Data));
                     }
                     break;
 
@@ -209,16 +209,16 @@ namespace System.Management.Automation.Internal
         internal ClientPowerShellDataStructureHandler CreatePowerShellDataStructureHandler(
             ClientRemotePowerShell shell)
         {
-            BaseClientCommandTransportManager clientTrsptMgr =
+            BaseClientCommandTransportManager clientTransportMgr =
                 RemoteSession.SessionDataStructureHandler.
                     CreateClientCommandTransportManager(shell, shell.NoInput);
 
             return new ClientPowerShellDataStructureHandler(
-                clientTrsptMgr, _clientRunspacePoolId, shell.InstanceId);
+                clientTransportMgr, _clientRunspacePoolId, shell.InstanceId);
         }
 
         /// <summary>
-        /// Creates a PowerShell instances on the server, associates it 
+        /// Creates a PowerShell instances on the server, associates it
         /// with this runspace pool and invokes
         /// </summary>
         /// <param name="shell">the client remote powershell</param>
@@ -273,7 +273,7 @@ namespace System.Management.Automation.Internal
             ClientPowerShellDataStructureHandler dsHandler =
                 GetAssociatedPowerShellDataStructureHandler(rcvdData.PowerShellId);
 
-            // if a data structure handler does not exist it means 
+            // if a data structure handler does not exist it means
             // the association has been removed -
             // discard messages
             if (dsHandler != null)
@@ -321,7 +321,7 @@ namespace System.Management.Automation.Internal
         /// Send a message to modify the min runspaces of the runspace pool
         /// </summary>
         /// <param name="minRunspaces">new minrunspaces to set</param>
-        /// <param name="callId">call id on which the calling method will 
+        /// <param name="callId">call id on which the calling method will
         /// be blocked on</param>
         internal void SendSetMinRunspacesToServer(int minRunspaces, long callId)
         {
@@ -357,9 +357,9 @@ namespace System.Management.Automation.Internal
 
         /// <summary>
         /// Event raised when RunspacePoolInitInfo is received. This is the first runspace pool message expected
-        /// after connecting to an existing remote runspace pool. RemoteRunspacePoolInternal should use this 
+        /// after connecting to an existing remote runspace pool. RemoteRunspacePoolInternal should use this
         /// notification to set the state of a reconstructed runspace to "Opened State" and use the
-        /// minRusnpace and MaxRunspaces information to set its state
+        /// minRunspace and MaxRunspaces information to set its state
         /// </summary>
         internal event EventHandler<RemoteDataEventArgs<RunspacePoolInitInfo>> RSPoolInitInfoReceived;
 
@@ -379,12 +379,12 @@ namespace System.Management.Automation.Internal
         internal event EventHandler<RemoteDataEventArgs<Exception>> SessionClosed;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         internal event EventHandler<RemoteDataEventArgs<Exception>> SessionDisconnected;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         internal event EventHandler<RemoteDataEventArgs<Exception>> SessionReconnected;
 
@@ -397,10 +397,10 @@ namespace System.Management.Automation.Internal
         /// Event raised when a response to a SetMaxRunspaces or SetMinRunspaces call
         /// is received
         /// </summary>
-        internal event EventHandler<RemoteDataEventArgs<PSObject>> SetMaxMinRunspacesResponseRecieved;
+        internal event EventHandler<RemoteDataEventArgs<PSObject>> SetMaxMinRunspacesResponseReceived;
 
         /// <summary>
-        /// EventHandler used to report connecion URI redirections to the application
+        /// EventHandler used to report connection URI redirections to the application
         /// </summary>
         internal event EventHandler<RemoteDataEventArgs<Uri>> URIRedirectionReported;
 
@@ -431,7 +431,7 @@ namespace System.Management.Automation.Internal
         }
 
         /// <summary>
-        /// Send the data asynchronously to runspace pool driver on remote 
+        /// Send the data asynchronously to runspace pool driver on remote
         /// session with the specified priority
         /// </summary>
         /// <typeparam name="T"></typeparam>
@@ -443,7 +443,7 @@ namespace System.Management.Automation.Internal
         }
 
         /// <summary>
-        /// Send the data asynchronously to runspace pool driver on remote 
+        /// Send the data asynchronously to runspace pool driver on remote
         /// session with the specified priority
         /// </summary>
         /// <param name="data">data object to send</param>
@@ -490,7 +490,7 @@ namespace System.Management.Automation.Internal
 
                 lock (_syncObject)
                 {
-                    //We are doing this check because Establised event 
+                    //We are doing this check because Established event
                     //is raised more than once
                     if (_createRunspaceCalled)
                     {
@@ -565,7 +565,7 @@ namespace System.Management.Automation.Internal
             }
             else if (e.SessionStateInfo.State == RemoteSessionState.Connected)
             {
-                // write a transfer event here  
+                // write a transfer event here
                 PSEtwLog.ReplaceActivityIdForCurrentThread(_clientRunspacePoolId, PSEventId.OperationalTransferEventRunspacePool,
                     PSEventId.AnalyticTransferEventRunspacePool, PSKeyword.Runspace, PSTask.CreateRunspace);
             }
@@ -742,7 +742,7 @@ namespace System.Management.Automation.Internal
             }
             else
             {
-                // Start preparation for disconnect.  The HandleReadyForDisconnect callback will be 
+                // Start preparation for disconnect.  The HandleReadyForDisconnect callback will be
                 // called when a transportManager is ready for disconnect.
                 List<ClientPowerShellDataStructureHandler> dsHandlers;
                 lock (_associationSyncObject)
@@ -807,8 +807,8 @@ namespace System.Management.Automation.Internal
                     _preparingForDisconnectList = null;
 
                     // Start the asynchronous disconnect on a worker thread because we don't know
-                    // what thread this callback is made from.  If it was made from a transport 
-                    // callback event then a deadlock may occur when DisconnectAsync is called on 
+                    // what thread this callback is made from.  If it was made from a transport
+                    // callback event then a deadlock may occur when DisconnectAsync is called on
                     // that same thread.
                     ThreadPool.QueueUserWorkItem(new WaitCallback(StartDisconnectAsync), RemoteSession);
                 }
@@ -924,7 +924,7 @@ namespace System.Management.Automation.Internal
         }
 
         /// <summary>
-        /// Indicates whether the currently connected runspace endpoint supports 
+        /// Indicates whether the currently connected runspace endpoint supports
         /// disconnect/connect semantics.
         /// </summary>
         internal bool EndpointSupportsDisconnect
@@ -979,7 +979,7 @@ namespace System.Management.Automation.Internal
 
         /// <summary>
         /// this event is raised when the state of associated
-        /// powershell is terminal and the runspace pool has 
+        /// powershell is terminal and the runspace pool has
         /// to detach the association
         /// </summary>
         internal event EventHandler RemoveAssociation;
@@ -1004,7 +1004,7 @@ namespace System.Management.Automation.Internal
 
         /// <summary>
         /// This event is raised when an informational message -
-        /// debug, verbose, warning, progress is received from 
+        /// debug, verbose, warning, progress is received from
         /// the server
         /// </summary>
         internal event EventHandler<RemoteDataEventArgs<InformationalMessage>> InformationalMessageReceived;
@@ -1016,18 +1016,18 @@ namespace System.Management.Automation.Internal
         internal event EventHandler<RemoteDataEventArgs<RemoteHostCall>> HostCallReceived;
 
         /// <summary>
-        /// This event is raised when a runspace pool data structure handler notifies an 
+        /// This event is raised when a runspace pool data structure handler notifies an
         /// associated powershell data structure handler that its closed
-        /// </summary>        
+        /// </summary>
         internal event EventHandler<RemoteDataEventArgs<Exception>> ClosedNotificationFromRunspacePool;
 
         /// <summary>
         /// Event that is raised when a remote connection is successfully closed. The event is raised
         /// from a WSMan transport thread. Since this thread can hold on to a HTTP
-        /// connection, the event handler should compelete processing as fast as possible.
+        /// connection, the event handler should complete processing as fast as possible.
         /// Importantly the event handler should not generate any call that results in a
         /// user request like host.ReadLine().
-        /// 
+        ///
         /// Errors (occurred during connection attempt) are reported through WSManTransportErrorOccured
         /// event.
         /// </summary>
@@ -1118,7 +1118,7 @@ namespace System.Management.Automation.Internal
         }
 
         /// <summary>
-        /// Event that gets raised when stop signal is completed. 
+        /// Event that gets raised when stop signal is completed.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -1174,7 +1174,7 @@ namespace System.Management.Automation.Internal
             {
                 // its possible that in client input data is written in a thread
                 // other than the current thread. Since we want to write input
-                // to the server in the order in which it was recieved, this
+                // to the server in the order in which it was received, this
                 // operation of writing to the server need to be synced
                 // Also we need to ensure that all the data currently available
                 // for enumeration are written out before any newly added data
@@ -1195,7 +1195,7 @@ namespace System.Management.Automation.Internal
         /// <param name="receivedData">data received</param>
         internal void ProcessReceivedData(RemoteDataObject<PSObject> receivedData)
         {
-            // verify if this data structure handler is the intended recipient                
+            // verify if this data structure handler is the intended recipient
             if (receivedData.PowerShellId != clientPowerShellId)
             {
                 throw new PSRemotingDataStructureException(RemotingErrorIdStrings.PipelineIdsDoNotMatch,
@@ -1244,7 +1244,7 @@ namespace System.Management.Automation.Internal
 
                         // since it is possible that powershell can have
                         // strongly typed output, origin information will
-                        // not be added for output. Therefore, origin 
+                        // not be added for output. Therefore, origin
                         // information will not be added for error records
                         // as well. If a remoting cmdlet
                         // is using PowerShell, then it should take care
@@ -1324,10 +1324,10 @@ namespace System.Management.Automation.Internal
         /// <summary>
         /// Set the state of the associated powershell to stopped
         /// </summary>
-        /// <param name="reason">reason why this state change 
+        /// <param name="reason">reason why this state change
         /// should occur</param>
         /// <remarks>This method is called by the associated
-        /// runspace pool data structure handler when the server runspace pool 
+        /// runspace pool data structure handler when the server runspace pool
         /// goes into a closed or broken state</remarks>
         internal void SetStateToFailed(Exception reason)
         {
@@ -1351,7 +1351,7 @@ namespace System.Management.Automation.Internal
         }
 
         /// <summary>
-        /// Closes tranport manager.
+        /// Closes transport manager.
         /// </summary>
         internal void CloseConnectionAsync(Exception sessionCloseReason)
         {
@@ -1411,7 +1411,7 @@ namespace System.Management.Automation.Internal
         /// This does not ensure that the corresponding session/runspacepool is in connected stated
         /// Its the caller responsiblity to ensure that this is the case
         /// At the protocols layers, this logic is delegated to the transport layer.
-        /// WSMan tranport ensures that WinRS commands cannot be reconnected when the parent shell is not in connected state
+        /// WSMan transport ensures that WinRS commands cannot be reconnected when the parent shell is not in connected state
         /// </summary>
         internal void ReconnectAsync()
         {
@@ -1427,7 +1427,7 @@ namespace System.Management.Automation.Internal
             TransportManager.ReconnectAsync();
         }
 
-        //Called from session DSHandler. Connects to a remote powershell instance. 
+        //Called from session DSHandler. Connects to a remote powershell instance.
         internal void ConnectAsync()
         {
             Int32 currentState = Interlocked.CompareExchange(ref _connectionState, (Int32)connectionStates.Connecting, (Int32)connectionStates.Disconnected);
@@ -1485,7 +1485,7 @@ namespace System.Management.Automation.Internal
         #region Internal Methods
 
         /// <summary>
-        /// Client PowerShell Id of the powershell this 
+        /// Client PowerShell Id of the powershell this
         /// data structure handler is associated with
         /// </summary>
         internal Guid PowerShellId
@@ -1534,7 +1534,7 @@ namespace System.Management.Automation.Internal
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <remarks>This method doesn't lock and its the responsibility
         /// of the caller to actually do the locking</remarks>
@@ -1551,7 +1551,7 @@ namespace System.Management.Automation.Internal
 
             if (!inputstream.IsOpen)
             {
-                //Write any data written after the NonBlockingRead call above.                    
+                //Write any data written after the NonBlockingRead call above.
                 inputObjects = inputstream.ObjectReader.NonBlockingRead(Int32.MaxValue);
 
                 foreach (object inputObject in inputObjects)
@@ -1599,7 +1599,7 @@ namespace System.Management.Automation.Internal
 
         private Int32 _connectionState = (Int32)connectionStates.Connected;
 
-        // Contains the associated session closed reason exception if any, 
+        // Contains the associated session closed reason exception if any,
         // otherwise is null.
         private Exception _sessionClosedReason;
 

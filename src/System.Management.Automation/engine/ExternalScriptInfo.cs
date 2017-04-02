@@ -29,27 +29,27 @@ namespace System.Management.Automation
         /// <summary>
         /// Creates an instance of the ExternalScriptInfo class with the specified name, and path.
         /// </summary>
-        /// 
+        ///
         /// <param name="name">
         /// The name of the script.
         /// </param>
-        /// 
+        ///
         /// <param name="path">
         /// The path to the script
         /// </param>
-        /// 
+        ///
         /// <param name="context">
         /// The context of the currently running engine.
         /// </param>
-        /// 
+        ///
         /// <exception cref="ArgumentNullException">
         /// If <paramref name="context"/> is null.
         /// </exception>
-        /// 
+        ///
         /// <exception cref="ArgumentException">
         /// If <paramref name="path"/> is null or empty.
         /// </exception>
-        /// 
+        ///
         internal ExternalScriptInfo(string name, string path, ExecutionContext context)
             : base(name, CommandTypes.ExternalScript, context)
         {
@@ -60,7 +60,7 @@ namespace System.Management.Automation
 
             Diagnostics.Assert(IO.Path.IsPathRooted(path), "Caller makes sure that 'path' is already resolved.");
 
-            // Path might contian short-name syntax such as 'DOCUME~1'. Use Path.GetFullPath to expand the short name
+            // Path might contain short-name syntax such as 'DOCUME~1'. Use Path.GetFullPath to expand the short name
             _path = IO.Path.GetFullPath(path);
             CommonInitialization();
         }
@@ -72,15 +72,15 @@ namespace System.Management.Automation
         /// <param name="name">
         /// The name of the script.
         /// </param>
-        /// 
+        ///
         /// <param name="path">
         /// The path to the script
         /// </param>
-        /// 
+        ///
         /// <exception cref="ArgumentException">
         /// If <paramref name="path"/> is null or empty.
         /// </exception>
-        /// 
+        ///
         internal ExternalScriptInfo(string name, string path) : base(name, CommandTypes.ExternalScript)
         {
             if (String.IsNullOrEmpty(path))
@@ -90,7 +90,7 @@ namespace System.Management.Automation
 
             Diagnostics.Assert(IO.Path.IsPathRooted(path), "Caller makes sure that 'path' is already resolved.");
 
-            // Path might contian short-name syntax such as 'DOCUME~1'. Use Path.GetFullPath to expand the short name
+            // Path might contain short-name syntax such as 'DOCUME~1'. Use Path.GetFullPath to expand the short name
             _path = IO.Path.GetFullPath(path);
             CommonInitialization();
         }
@@ -110,7 +110,7 @@ namespace System.Management.Automation
         /// </summary>
         private void CommonInitialization()
         {
-            // Assume external scripts are untrusted by defult (for Get-Command, etc)
+            // Assume external scripts are untrusted by default (for Get-Command, etc)
             // until we've actually parsed their script block.
             if (SystemPolicy.GetSystemLockdownPolicy() != SystemEnforcementMode.None)
             {
@@ -211,7 +211,7 @@ namespace System.Management.Automation
         /// <summary>
         /// The script block that represents the external script
         /// </summary>
-        /// 
+        ///
         public ScriptBlock ScriptBlock
         {
             get
@@ -273,9 +273,9 @@ namespace System.Management.Automation
         /// <summary>
         /// Validates the external script info
         /// </summary>
-        /// 
+        ///
         /// <param name="host"></param>
-        /// 
+        ///
         public void ValidateScriptInfo(Host.PSHost host)
         {
             if (!_signatureChecked)
@@ -352,7 +352,7 @@ namespace System.Management.Automation
             }
         }
 
-        #endregion Internal 
+        #endregion Internal
 
         private ScriptRequirements GetRequiresData()
         {
@@ -519,7 +519,7 @@ namespace System.Management.Automation
                 catch (UnauthorizedAccessException e)
                 {
                     // this is unadvertised exception thrown by the StreamReader ctor when
-                    // no permission to read the script file 
+                    // no permission to read the script file
                     ThrowCommandNotFoundException(e);
                 }
             }

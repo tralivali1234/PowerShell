@@ -17,9 +17,9 @@ using Dbg = System.Management.Automation.Diagnostics;
 namespace Microsoft.PowerShell.Commands
 {
     /// <summary>
-    /// This class implements update-typeData command.  
+    /// This class implements update-typeData command.
     /// </summary>
-    [Cmdlet(VerbsData.Update, "TypeData", SupportsShouldProcess = true, DefaultParameterSetName = FileParameterSet, HelpUri = "http://go.microsoft.com/fwlink/?LinkID=113421")]
+    [Cmdlet(VerbsData.Update, "TypeData", SupportsShouldProcess = true, DefaultParameterSetName = FileParameterSet, HelpUri = "https://go.microsoft.com/fwlink/?LinkID=113421")]
     public class UpdateTypeDataCommand : UpdateData
     {
         #region dynamic type set
@@ -228,7 +228,7 @@ namespace Microsoft.PowerShell.Commands
             get { return _propertySerializationSet; }
         }
 
-        // These members are represeted as NoteProperty in types.ps1xml
+        // These members are represented as NoteProperty in types.ps1xml
         private string _serializationMethod;
         private Type _targetTypeForDeserialization;
         private int _serializationDepth = int.MinValue;
@@ -376,7 +376,7 @@ namespace Microsoft.PowerShell.Commands
                             }
                             else
                             {
-                                Dbg.Assert(false, "Either RunspaceConfiguration or InitiaSessionState must be non-null for Update-Typedata to work");
+                                Dbg.Assert(false, "Either RunspaceConfiguration or InitialSessionState must be non-null for Update-Typedata to work");
                             }
                         }
                     }
@@ -494,7 +494,7 @@ namespace Microsoft.PowerShell.Commands
                         }
                         else
                         {
-                            Dbg.Assert(false, "Either RunspaceConfiguration or InitiaSessionState must be non-null for Update-Typedata to work");
+                            Dbg.Assert(false, "Either RunspaceConfiguration or InitialSessionState must be non-null for Update-Typedata to work");
                         }
                     }
                 }
@@ -753,7 +753,7 @@ namespace Microsoft.PowerShell.Commands
             { return; }
 
             string action = UpdateDataStrings.UpdateTypeDataAction;
-            // Load the resource once and format it whenver a new target
+            // Load the resource once and format it whenever a new target
             // filename is available
             string target = UpdateDataStrings.UpdateTarget;
 
@@ -887,7 +887,7 @@ namespace Microsoft.PowerShell.Commands
             }
             else
             {
-                Dbg.Assert(false, "Either RunspaceConfiguration or InitiaSessionState must be non-null for Update-Typedata to work");
+                Dbg.Assert(false, "Either RunspaceConfiguration or InitialSessionState must be non-null for Update-Typedata to work");
             }
         }
 
@@ -895,14 +895,14 @@ namespace Microsoft.PowerShell.Commands
     }
 
     /// <summary>
-    /// This class implements update-typeData command.  
+    /// This class implements update-typeData command.
     /// </summary>
-    [Cmdlet(VerbsData.Update, "FormatData", SupportsShouldProcess = true, DefaultParameterSetName = FileParameterSet, HelpUri = "http://go.microsoft.com/fwlink/?LinkID=113420")]
+    [Cmdlet(VerbsData.Update, "FormatData", SupportsShouldProcess = true, DefaultParameterSetName = FileParameterSet, HelpUri = "https://go.microsoft.com/fwlink/?LinkID=113420")]
     public class UpdateFormatDataCommand : UpdateData
     {
         /// <summary>
         /// This method verify if the Format database manager is shared and cannot be updated
-        /// </summary>   
+        /// </summary>
         protected override void BeginProcessing()
         {
             if (Context.FormatDBManager.isShared)
@@ -927,7 +927,7 @@ namespace Microsoft.PowerShell.Commands
 
             string action = UpdateDataStrings.UpdateFormatDataAction;
 
-            // Load the resource once and format it whenver a new target
+            // Load the resource once and format it whenever a new target
             // filename is available
             string target = UpdateDataStrings.UpdateTarget;
 
@@ -1069,7 +1069,7 @@ namespace Microsoft.PowerShell.Commands
             }
             else
             {
-                Dbg.Assert(false, "Either RunspaceConfiguration or InitiaSessionState must be non-null for Update-FormatData to work");
+                Dbg.Assert(false, "Either RunspaceConfiguration or InitialSessionState must be non-null for Update-FormatData to work");
             }
         }
     }
@@ -1078,7 +1078,7 @@ namespace Microsoft.PowerShell.Commands
     /// Remove-TypeData cmdlet
     /// </summary>
     [Cmdlet(VerbsCommon.Remove, "TypeData", SupportsShouldProcess = true, DefaultParameterSetName = RemoveTypeDataSet,
-        HelpUri = "http://go.microsoft.com/fwlink/?LinkID=217038")]
+        HelpUri = "https://go.microsoft.com/fwlink/?LinkID=217038")]
     public class RemoveTypeDataCommand : PSCmdlet
     {
         private const string RemoveTypeSet = "RemoveTypeSet";
@@ -1149,7 +1149,7 @@ namespace Microsoft.PowerShell.Commands
                 Collection<string> typeFileTotal = UpdateData.Glob(_typeFiles, "TypePathException", this);
                 if (typeFileTotal.Count == 0) { return; }
 
-                // Key of the map is the name of the file that is in the cache. Value of the map is a index list. Duplicate files might 
+                // Key of the map is the name of the file that is in the cache. Value of the map is a index list. Duplicate files might
                 // exist in the cache because the user can add arbitrary files to the cache by $host.Runspace.InitialSessionState.Types.Add()
                 Dictionary<string, List<int>> fileToIndexMap = new Dictionary<string, List<int>>(StringComparer.OrdinalIgnoreCase);
                 List<int> indicesToRemove = new List<int>();
@@ -1171,7 +1171,7 @@ namespace Microsoft.PowerShell.Commands
                         string fileName = Context.InitialSessionState.Types[index].FileName;
                         if (fileName == null) { continue; }
 
-                        // Resolving the file path because the path to the types file in module manifest is now specified as 
+                        // Resolving the file path because the path to the types file in module manifest is now specified as
                         // ..\..\types.ps1xml which expands to C:\Windows\System32\WindowsPowerShell\v1.0\Modules\Microsoft.PowerShell.Core\..\..\types.ps1xml
                         fileName = ModuleCmdletBase.ResolveRootedFilePath(fileName, Context) ?? fileName;
                         ConstructFileToIndexMap(fileName, index, fileToIndexMap);
@@ -1289,7 +1289,7 @@ namespace Microsoft.PowerShell.Commands
                         }
                         else
                         {
-                            Dbg.Assert(false, "Either RunspaceConfiguration or InitiaSessionState must be non-null for Remove-Typedata to work");
+                            Dbg.Assert(false, "Either RunspaceConfiguration or InitialSessionState must be non-null for Remove-Typedata to work");
                         }
                     }
                 }
@@ -1323,7 +1323,7 @@ namespace Microsoft.PowerShell.Commands
     /// <summary>
     /// Get-TypeData cmdlet
     /// </summary>
-    [Cmdlet(VerbsCommon.Get, "TypeData", HelpUri = "http://go.microsoft.com/fwlink/?LinkID=217033")]
+    [Cmdlet(VerbsCommon.Get, "TypeData", HelpUri = "https://go.microsoft.com/fwlink/?LinkID=217033")]
     [OutputType(typeof(System.Management.Automation.PSObject))]
     public class GetTypeDataCommand : PSCmdlet
     {
@@ -1412,7 +1412,7 @@ namespace Microsoft.PowerShell.Commands
 
     /// <summary>
     /// To make it easier to specify a TypeName, we add an ArgumentTransformationAttribute here.
-    /// * string: retrun the string
+    /// * string: return the string
     /// * Type: return the Type.ToString()
     /// * instance: return instance.GetType().ToString()
     /// </summary>

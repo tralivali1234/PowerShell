@@ -38,13 +38,8 @@ which require manual dependency resolution.
 Installing the toolchain is as easy as running `Start-PSBootstrap` in PowerShell. 
 Of course, this requires a self-hosted copy of PowerShell on Linux.
 
-Fortunately, this is as easy as downloading and installing the package. 
-Unfortunately, while the repository is still private, the package cannot be downloaded as simply as with `wget`. 
-
+Fortunately, this is as easy as [downloading and installing the package](../installation/linux.md). 
 The `./tools/download.sh` script will also install the PowerShell package.
-
-> You can alternatively download by using a browser, upload it to your
-> box via some other method, and manually install it.
 
 In Bash:
 
@@ -69,11 +64,11 @@ The `Start-PSBootstrap` function does the following:
 - Adds the LLVM package feed
 - Installs our dependencies combined with the dependencies of the .NET CLI toolchain via `apt-get`
 - Uninstalls any prior versions of .NET CLI
-- Downloads and installs the latest .NET CLI 1.0.0-preview2 SDK to `~/.dotnet`
+- Downloads and installs the latest .NET Core SDK 1.0.1 to `~/.dotnet`
 
 If you want to use `dotnet` outside of `Start-PSBuild`, add `~/.dotnet` to your `PATH` environment variable.
 
-[dotnet-cli]: https://github.com/dotnet/cli#new-to-net-cli
+[dotnet-cli]: https://github.com/dotnet/cli
 [CMake]: https://cmake.org/cmake/help/v2.8.12/cmake.html
 
 .NET CLI
@@ -81,12 +76,12 @@ If you want to use `dotnet` outside of `Start-PSBuild`, add `~/.dotnet` to your 
 
 If you have any problems installing `dotnet`, please see their [documentation][cli-docs].
 
-The version of .NET CLI is very important; you need a recent build of 1.0.0 (**not** 1.0.1).
+The version of .NET CLI is very important; the version we are currently using is `1.0.1`.
 
 Previous installations of DNX, `dnvm`, or older installations of .NET CLI can cause odd failures when running. 
 Please check your version and uninstall prior any prior versions.
 
-[cli-docs]: https://dotnet.github.io/getting-started/
+[cli-docs]: https://www.microsoft.com/net/core
 
 Build using our module
 ======================
@@ -97,7 +92,7 @@ If you have followed the toolchain setup section above, you should have `powersh
 
 > If you cannot or do not want to self-host, `Start-PSBuild` is just a
 > convenience; you can execute each step of the build process yourself
-> in Bash; see [Build manually][#Build manually] below.
+> in Bash; see [Build manually](#build-manually) below.
 
 ```powershell
 Import-Module ./build.psm1
@@ -106,7 +101,7 @@ Start-PSBuild
 Congratulations! If everything went right, PowerShell is now built.
 The `Start-PSBuild` script will output the location of the executable:
 
-`./src/powershell-unix/bin/Linux/netcoreapp1.0/ubuntu.14.04-x64/powershell`.
+`./src/powershell-unix/bin/Linux/netcoreapp1.1/ubuntu.14.04-x64/powershell`.
 
 You should now be running the `powershell` that you just built, if your run the above executable.
 You can run our cross-platform Pester tests with `Start-PSPester`, and our xUnit tests with `Start-PSxUnit`.
@@ -115,6 +110,10 @@ Build manually
 ==============
 
 The following goes into detail about what `Start-PSBuild` does.
+
+There are two preliminary steps that apply to all operating systems,
+the [ResGen](internals.md#resgen) and [type catalog generation](internals.md#type-catalog),
+documented in [internals of build process](internals.md#preliminary-steps).
 
 Build the native library
 ------------------------
@@ -146,7 +145,7 @@ dotnet build --configuration Linux
 ```
 
 The executable will be in `./bin/[configuration]/[framework]/[rid]/[binary name]`, 
-where our configuration is `Linux`, framework is `netcoreapp1.0`, 
+where our configuration is `Linux`, framework is `netcoreapp1.1`, 
 runtime identifier is `ubuntu.14.04-x64`, and binary name is `powershell`. 
 The function `Get-PSOutput` will return the path to the executable; 
 thus you can execute the development copy via `& (Get-PSOutput)`.

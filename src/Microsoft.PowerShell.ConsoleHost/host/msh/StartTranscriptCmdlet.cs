@@ -14,21 +14,21 @@ using System.Management.Automation.Internal;
 namespace Microsoft.PowerShell.Commands
 {
     /// <summary>
-    /// 
+    ///
     /// Implements the start-transcript cmdlet
-    /// 
+    ///
     /// </summary>
 
-    [Cmdlet(VerbsLifecycle.Start, "Transcript", SupportsShouldProcess = true, DefaultParameterSetName = "ByPath", HelpUri = "http://go.microsoft.com/fwlink/?LinkID=113408")]
+    [Cmdlet(VerbsLifecycle.Start, "Transcript", SupportsShouldProcess = true, DefaultParameterSetName = "ByPath", HelpUri = "https://go.microsoft.com/fwlink/?LinkID=113408")]
     [OutputType(typeof(String))]
     public sealed class StartTranscriptCommand : PSCmdlet
     {
         /// <summary>
-        /// 
-        /// The name of the file in which to write the transcript. If not provided, the file indicated by the variable 
+        ///
+        /// The name of the file in which to write the transcript. If not provided, the file indicated by the variable
         /// $TRANSCRIPT is used.  If neither the filename is supplied or $TRANSCRIPT is not set, the filename shall be $HOME/My
         /// Documents/PowerShell_transcript.YYYYMMDDmmss.txt
-        /// 
+        ///
         /// </summary>
         /// <value></value>
 
@@ -79,9 +79,9 @@ namespace Microsoft.PowerShell.Commands
         }
 
         /// <summary>
-        /// 
+        ///
         /// Describes the current state of the activity.
-        /// 
+        ///
         /// </summary>
         /// <value></value>
 
@@ -149,7 +149,7 @@ namespace Microsoft.PowerShell.Commands
 
 
         /// <summary>
-        /// 
+        ///
         /// Starts the transcription
         /// </summary>
         protected override void BeginProcessing()
@@ -215,9 +215,11 @@ namespace Microsoft.PowerShell.Commands
                         }
                         else
                         {
-                            Exception innerException = PSTraceSource.NewArgumentException(effectiveFilePath,
+                            string errorMessage = String.Format(
+                                System.Globalization.CultureInfo.CurrentCulture,
                                 TranscriptStrings.TranscriptFileReadOnly,
                                 effectiveFilePath);
+                            Exception innerException = new ArgumentException(errorMessage);
                             ThrowTerminatingError(new ErrorRecord(innerException, "FileReadOnly", ErrorCategory.InvalidArgument, effectiveFilePath));
                         }
                     }
@@ -251,17 +253,20 @@ namespace Microsoft.PowerShell.Commands
                 }
                 catch
                 {
-                    CommandProcessorBase.CheckForSevereException(e);
                 }
 
+                string errorMessage = String.Format(
+                    System.Globalization.CultureInfo.CurrentCulture,
+                    TranscriptStrings.CannotStartTranscription,
+                    e.Message);
                 ErrorRecord er = new ErrorRecord(
-                    PSTraceSource.NewInvalidOperationException(e, TranscriptStrings.CannotStartTranscription),
+                    PSTraceSource.NewInvalidOperationException(e, errorMessage),
                     "CannotStartTranscription", ErrorCategory.InvalidOperation, null);
                 ThrowTerminatingError(er);
             }
         }
 
-        /// resolve a user provided file name or path (cluding globbing characters)
+        /// resolve a user provided file name or path (including globbing characters)
         /// to a fully qualified file path, using the file system provider
         private string ResolveFilePath(string filePath, bool isLiteralPath)
         {

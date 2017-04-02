@@ -29,7 +29,7 @@ namespace Microsoft.PowerShell.Commands
         #region URI
 
         /// <summary>
-        /// gets or sets the parameter UseBasicParsing 
+        /// gets or sets the parameter UseBasicParsing
         /// </summary>
         [Parameter]
         public virtual SwitchParameter UseBasicParsing { get; set; }
@@ -88,6 +88,12 @@ namespace Microsoft.PowerShell.Commands
         [ValidateNotNull]
         public virtual X509Certificate Certificate { get; set; }
 
+        /// <summary>
+        /// gets or sets the SkipCertificateCheck property
+        /// </summary>
+        [Parameter]
+        public virtual SwitchParameter SkipCertificateCheck { get; set; }
+
         #endregion
 
         #region Headers
@@ -141,13 +147,39 @@ namespace Microsoft.PowerShell.Commands
         /// <summary>
         /// gets or sets the Method property
         /// </summary>
-        [Parameter]
+        [Parameter(ParameterSetName = "StandardMethod")]
+        [Parameter(ParameterSetName = "StandardMethodNoProxy")]
         public virtual WebRequestMethod Method
         {
             get { return _method; }
             set { _method = value; }
         }
         private WebRequestMethod _method = WebRequestMethod.Default;
+
+        /// <summary>
+        /// gets or sets the CustomMethod property
+        /// </summary>
+        [Parameter(Mandatory=true,ParameterSetName = "CustomMethod")]
+        [Parameter(Mandatory=true,ParameterSetName = "CustomMethodNoProxy")]
+        [Alias("CM")]
+        [ValidateNotNullOrEmpty]
+        public virtual string CustomMethod
+        {
+            get { return _customMethod; }
+            set { _customMethod = value; }
+        }
+        private string _customMethod;
+
+        #endregion
+
+        #region NoProxy
+
+        /// <summary>
+        /// gets or sets the NoProxy property
+        /// </summary>
+        [Parameter(Mandatory=true,ParameterSetName = "CustomMethodNoProxy")]
+        [Parameter(Mandatory=true,ParameterSetName = "StandardMethodNoProxy")]
+        public virtual SwitchParameter NoProxy { get; set; }
 
         #endregion
 
@@ -156,20 +188,23 @@ namespace Microsoft.PowerShell.Commands
         /// <summary>
         /// gets or sets the Proxy property
         /// </summary>
-        [Parameter]
+        [Parameter(ParameterSetName = "StandardMethod")]
+        [Parameter(ParameterSetName = "CustomMethod")]
         public virtual Uri Proxy { get; set; }
 
         /// <summary>
         /// gets or sets the ProxyCredential property
         /// </summary>
-        [Parameter]
+        [Parameter(ParameterSetName = "StandardMethod")]
+        [Parameter(ParameterSetName = "CustomMethod")]
         [Credential]
         public virtual PSCredential ProxyCredential { get; set; }
 
         /// <summary>
         /// gets or sets the ProxyUseDefaultCredentials property
         /// </summary>
-        [Parameter]
+        [Parameter(ParameterSetName = "StandardMethod")]
+        [Parameter(ParameterSetName = "CustomMethod")]
         public virtual SwitchParameter ProxyUseDefaultCredentials { get; set; }
 
         #endregion
@@ -465,14 +500,14 @@ namespace Microsoft.PowerShell.Commands
         /// needed if an HtmlDocument will be created shortly.</param>
         protected bool VerifyInternetExplorerAvailable(bool checkComObject)
         {
-            // TODO: Remove this code once the dependecy on mshtml has been resolved.
+            // TODO: Remove this code once the dependency on mshtml has been resolved.
 #if CORECLR
             return false;
 #else
             bool isInternetExplorerConfigurationComplete = false;
             // Check for IE for both PS Full and PS Core on windows.
             // The registry key DisableFirstRunCustomize can exits at one of the following path.
-            // IE uses the same decending orider (as mentioned) to check for the presence of this key.
+            // IE uses the same descending order (as mentioned) to check for the presence of this key.
             // If the value of DisableFirstRunCustomize key is set to greater than zero then Run first
             // is disabled.
             string[] disableFirstRunCustomizePaths = new string[] {
@@ -541,7 +576,8 @@ namespace Microsoft.PowerShell.Commands
             IDictionary bodyAsDictionary;
             LanguagePrimitives.TryConvertTo<IDictionary>(Body, out bodyAsDictionary);
             if ((null != bodyAsDictionary)
-                && (Method == WebRequestMethod.Default || Method == WebRequestMethod.Get))
+                && ((IsStandardMethodSet() && (Method == WebRequestMethod.Default || Method == WebRequestMethod.Get))
+                     || (IsCustomMethodSet() && CustomMethod.ToUpperInvariant() == "GET")))
             {
                 UriBuilder uriBuilder = new UriBuilder(uri);
                 if (uriBuilder.Query != null && uriBuilder.Query.Length > 1)
@@ -620,6 +656,16 @@ namespace Microsoft.PowerShell.Commands
             return (error);
         }
 
-        #endregion Helper Methods     
+        private bool IsStandardMethodSet()
+        {
+            return (ParameterSetName == "StandardMethod");
+        }
+        
+        private bool IsCustomMethodSet()
+        {
+            return (ParameterSetName == "CustomMethod");
+        }
+
+        #endregion Helper Methods
     }
 }

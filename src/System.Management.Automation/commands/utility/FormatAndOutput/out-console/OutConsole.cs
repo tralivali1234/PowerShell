@@ -16,7 +16,7 @@ namespace Microsoft.PowerShell.Commands
     /// Null sink to absorb pipeline output
     /// </summary>
     [CmdletAttribute("Out", "Null", SupportsShouldProcess = false,
-        HelpUri = "http://go.microsoft.com/fwlink/?LinkID=113366", RemotingCapability = RemotingCapability.None)]
+        HelpUri = "https://go.microsoft.com/fwlink/?LinkID=113366", RemotingCapability = RemotingCapability.None)]
     public class OutNullCommand : PSCmdlet
     {
         /// <summary>
@@ -25,29 +25,29 @@ namespace Microsoft.PowerShell.Commands
         [Parameter(ValueFromPipeline = true)]
         public PSObject InputObject { set; get; } = AutomationNull.Value;
 
-        /// 
+        ///
         /// <summary>
         /// Do nothing
         /// </summary>
         protected override void ProcessRecord()
         {
-            // explicitely overriden:
+            // explicitely overridden:
             // do not do any processing
         }
     }
 
     /// <summary>
     /// implementation for the out-default command
-    /// this command it impicitely inject by the
+    /// this command it implicitly inject by the
     /// powershell.exe host at the end of the pipeline as the
     /// default sink (display to console screen)
     /// </summary>
-    [Cmdlet("Out", "Default", HelpUri = "http://go.microsoft.com/fwlink/?LinkID=113362", RemotingCapability = RemotingCapability.None)]
+    [Cmdlet(VerbsData.Out, "Default", HelpUri = "https://go.microsoft.com/fwlink/?LinkID=113362", RemotingCapability = RemotingCapability.None)]
     public class OutDefaultCommand : FrontEndCommandBase
     {
         /// <summary>
         /// Determines whether objects should be sent to API consumers.
-        /// This command is automatically added to the pipeline when PowerShell is transcripting and
+        /// This command is automatically added to the pipeline when PowerShell is transcribing and
         /// invoked via API. This ensures that the objects pass through the formatting and output
         /// system, but can still make it to the API consumer.
         /// </summary>
@@ -79,10 +79,9 @@ namespace Microsoft.PowerShell.Commands
                 mrt.MergeUnclaimedPreviousErrorResults = true;
             }
 
-            _savedTranscribeOnly = Host.UI.TranscribeOnly;
             if (Transcript)
             {
-                Host.UI.TranscribeOnly = true;
+                _transcribeOnlyCookie = Host.UI.SetTranscribeOnly();
             }
 
             // This needs to be done directly through the command runtime, as Out-Default
@@ -143,21 +142,35 @@ namespace Microsoft.PowerShell.Commands
             }
 
             base.EndProcessing();
+        }
 
-            if (Transcript)
+        /// <summary>
+        /// Revert transcription state on Dispose
+        /// </summary>
+        protected override void InternalDispose()
+        {
+            try
             {
-                Host.UI.TranscribeOnly = _savedTranscribeOnly;
+                base.InternalDispose();
+            }
+            finally
+            {
+                if (_transcribeOnlyCookie != null)
+                {
+                    _transcribeOnlyCookie.Dispose();
+                    _transcribeOnlyCookie = null;
+                }
             }
         }
 
         private ArrayList _outVarResults = null;
-        private bool _savedTranscribeOnly = false;
+        private IDisposable _transcribeOnlyCookie = null;
     }
 
     /// <summary>
     /// implementation for the out-host command
     /// </summary>
-    [Cmdlet("Out", "Host", HelpUri = "http://go.microsoft.com/fwlink/?LinkID=113365", RemotingCapability = RemotingCapability.None)]
+    [Cmdlet(VerbsData.Out, "Host", HelpUri = "https://go.microsoft.com/fwlink/?LinkID=113365", RemotingCapability = RemotingCapability.None)]
     public class OutHostCommand : FrontEndCommandBase
     {
         #region Command Line Parameters

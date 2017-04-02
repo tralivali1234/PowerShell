@@ -21,11 +21,11 @@ namespace Microsoft.PowerShell.Commands
 
     /// <summary>
     /// Represents module specification written in a module manifest (i.e. in RequiredModules member/field).
-    /// 
+    ///
     /// Module manifest allows 2 forms of module specification:
     /// 1. string - module name
     /// 2. hashtable - [string]ModuleName (required) + [Version]ModuleVersion/RequiredVersion (required) + [Guid]GUID (optional)
-    /// 
+    ///
     /// so we have a constructor that takes a string and a constructor that takes a hashtable
     /// (so that LanguagePrimitives.ConvertTo can cast a string or a hashtable to this type)
     /// </summary>
@@ -82,7 +82,7 @@ namespace Microsoft.PowerShell.Commands
         /// Initialize moduleSpecification from hashtable. Return exception object, if hashtable cannot be converted.
         /// Return null, in the success case.
         /// </summary>
-        /// <param name="moduleSpecification">object to initalize</param>
+        /// <param name="moduleSpecification">object to initialize</param>
         /// <param name="hashtable">contains info about object to initialize.</param>
         /// <returns></returns>
         internal static Exception ModuleSpecificationInitHelper(ModuleSpecification moduleSpecification, Hashtable hashtable)
@@ -124,7 +124,7 @@ namespace Microsoft.PowerShell.Commands
                 }
             }
             // catch all exceptions here, we are going to report them via return value.
-            // Example of catched exception: one of convertions to Version failed.
+            // Example of catched exception: one of conversions to Version failed.
             catch (Exception e)
             {
                 return e;
@@ -157,7 +157,7 @@ namespace Microsoft.PowerShell.Commands
 
             if (moduleSpecification.RequiredVersion != null && moduleSpecification.MaximumVersion != null)
             {
-                message = StringUtil.Format(SessionStateStrings.GetContent_TailAndHeadCannotCoexist, "MaxiumVersion", "RequiredVersion");
+                message = StringUtil.Format(SessionStateStrings.GetContent_TailAndHeadCannotCoexist, "MaximumVersion", "RequiredVersion");
                 return new ArgumentException(message);
             }
             return null;

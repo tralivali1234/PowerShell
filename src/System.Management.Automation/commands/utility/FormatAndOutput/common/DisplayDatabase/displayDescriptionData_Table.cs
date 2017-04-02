@@ -136,7 +136,7 @@ namespace Microsoft.PowerShell.Commands.Internal.Format
         internal AppliesTo appliesTo;
 
         /// <summary>
-        /// if true, the current table row should be allowed 
+        /// if true, the current table row should be allowed
         /// to wrap to multiple lines, else truncated
         /// </summary>
         internal bool multiLine;
@@ -173,7 +173,7 @@ namespace Microsoft.PowerShell.Commands.Internal.Format
     internal sealed class TableRowItemDefinition
     {
         /// <summary>
-        /// optional aligment to override the default one at the header level
+        /// optional alignment to override the default one at the header level
         /// </summary>
         internal int alignment = TextAlignment.Undefined;
 

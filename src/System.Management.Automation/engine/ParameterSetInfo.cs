@@ -24,31 +24,31 @@ namespace System.Management.Automation
         /// Constructs the parameter set information using the specified parameter name,
         /// and type metadata.
         /// </summary>
-        /// 
+        ///
         /// <param name="name">
         /// The formal name of the parameter.
         /// </param>
-        /// 
+        ///
         /// <param name="isDefaultParameterSet">
         /// True if the parameter set is the default parameter set, or false otherwise.
         /// </param>
-        /// 
+        ///
         /// <param name="parameterSetFlag">
         /// The bit that specifies the parameter set in the type metadata.
         /// </param>
-        /// 
+        ///
         /// <param name="parameterMetadata">
         /// The type metadata about the cmdlet.
         /// </param>
-        /// 
+        ///
         /// <exception cref="ArgumentException">
         /// If <paramref name="name"/> is null or empty.
         /// </exception>
-        /// 
+        ///
         /// <exception cref="ArgumentNullException">
         /// If <paramref name="parameterMetadata"/> is null.
         /// </exception>
-        /// 
+        ///
         internal CommandParameterSetInfo(
             string name,
             bool isDefaultParameterSet,
@@ -82,7 +82,7 @@ namespace System.Management.Automation
         public string Name { get; private set; }
 
         /// <summary>
-        /// Gets whether the parameer set is the default parameter set.
+        /// Gets whether the parameter set is the default parameter set.
         /// </summary>
         public bool IsDefault { get; private set; }
 
@@ -100,7 +100,7 @@ namespace System.Management.Automation
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="isCapabilityWorkflow">
         /// This boolean is used to suppress common workflow parameters (or) display
@@ -128,13 +128,13 @@ namespace System.Management.Automation
         }
 
         /// <summary>
-        /// GenerateParameters parameters in display order 
-        /// ie., Postional followed by
+        /// GenerateParameters parameters in display order
+        /// ie., Positional followed by
         ///      Named Mandatory (in alpha numeric) followed by
         ///      Named (in alpha numeric).
-        /// 
+        ///
         /// Callers use <paramref name="parameterAction"/> and
-        /// <paramref name="commonParameterAction"/> to handle 
+        /// <paramref name="commonParameterAction"/> to handle
         /// syntax generation etc.
         /// </summary>
         /// <param name="isCapabilityWorkflow">

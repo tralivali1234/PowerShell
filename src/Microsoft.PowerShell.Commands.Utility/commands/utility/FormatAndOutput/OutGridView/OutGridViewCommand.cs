@@ -25,7 +25,7 @@ namespace Microsoft.PowerShell.Commands
         /// </summary>
         None,
         /// <summary>
-        /// Allow selection of one sinlge item to be written to the pipeline.
+        /// Allow selection of one single item to be written to the pipeline.
         /// </summary>
         Single,
         /// <summary>
@@ -37,7 +37,7 @@ namespace Microsoft.PowerShell.Commands
     /// <summary>
     /// Implementation for the Out-GridView command
     /// </summary>
-    [Cmdlet("Out", "GridView", DefaultParameterSetName = "PassThru", HelpUri = "http://go.microsoft.com/fwlink/?LinkID=113364")]
+    [Cmdlet(VerbsData.Out, "GridView", DefaultParameterSetName = "PassThru", HelpUri = "https://go.microsoft.com/fwlink/?LinkID=113364")]
     public class OutGridViewCommand : PSCmdlet, IDisposable
     {
         #region Properties
@@ -60,12 +60,12 @@ namespace Microsoft.PowerShell.Commands
         {
         }
 
-        #endregion Contructors
+        #endregion Constructors
 
         #region Input Parameters
 
         /// <summary>
-        /// This parameter specifies the current pipeline object 
+        /// This parameter specifies the current pipeline object
         /// </summary>
         [Parameter(ValueFromPipeline = true)]
         public PSObject InputObject { get; set; } = AutomationNull.Value;
@@ -103,7 +103,7 @@ namespace Microsoft.PowerShell.Commands
 
         #endregion Input Parameters
 
-        #region Public Methods 
+        #region Public Methods
 
         /// <summary>
         /// Provides a one-time, pre-processing functionality for the cmdlet.
@@ -129,7 +129,7 @@ namespace Microsoft.PowerShell.Commands
         }
 
         /// <summary>
-        /// Blocks depending on the wait and selected 
+        /// Blocks depending on the wait and selected
         /// </summary>
         protected override void EndProcessing()
         {
@@ -182,7 +182,7 @@ namespace Microsoft.PowerShell.Commands
             IDictionary dictionary = InputObject.BaseObject as IDictionary;
             if (dictionary != null)
             {
-                // Dictionaries should be enumerated through because the pipeline does not enumerate through them. 
+                // Dictionaries should be enumerated through because the pipeline does not enumerate through them.
                 foreach (DictionaryEntry entry in dictionary)
                 {
                     ProcessObject(PSObjectHelper.AsPSObject(entry));
@@ -230,7 +230,7 @@ namespace Microsoft.PowerShell.Commands
             return smartToString;
         }
 
-        #endregion Public Methods 
+        #endregion Public Methods
 
         #region Private Methods
 
@@ -282,7 +282,7 @@ namespace Microsoft.PowerShell.Commands
                 _gridHeader.ProcessInputObject(input);
             }
 
-            // Some thread syncronization needed.
+            // Some thread synchronization needed.
             Exception exception = _windowProxy.GetLastException();
             if (exception != null)
             {
@@ -480,7 +480,7 @@ namespace Microsoft.PowerShell.Commands
         }
 
         /// <summary>
-        /// Dispose method in IDisposeable
+        /// Dispose method in IDisposable
         /// </summary>
         public void Dispose()
         {

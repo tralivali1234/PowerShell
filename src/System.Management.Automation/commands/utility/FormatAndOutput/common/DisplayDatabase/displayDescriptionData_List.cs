@@ -336,7 +336,7 @@ namespace System.Management.Automation
 
         /// <summary>
         /// Public constructor for ListControlEntryItem
-        /// Lable and Entry could be null
+        /// Label and Entry could be null
         /// </summary>
         /// <param name="label"></param>
         /// <param name="entry"></param>
@@ -349,7 +349,7 @@ namespace System.Management.Automation
         internal bool SafeForExport()
         {
             return DisplayEntry.SafeForExport() &&
-                   ItemSelectionCondition == null || ItemSelectionCondition.SafeForExport();
+                   (ItemSelectionCondition == null || ItemSelectionCondition.SafeForExport());
         }
 
         internal bool CompatibleWithOldPowerShell()

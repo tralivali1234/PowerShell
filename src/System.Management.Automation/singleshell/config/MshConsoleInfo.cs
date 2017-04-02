@@ -15,17 +15,17 @@ namespace System.Management.Automation.Runspaces
     /// <summary>
     /// Class that understands Monad Console File Format. The format for the console
     /// file is applied/read by this class only.
-    /// 
+    ///
     /// Functionality:
     /// 1. Schema version verification check.
     /// 2. Data values for the content represented by Console file. Later this data
     /// is used by other components ( MshConsoleInfo ) to construct Monad Types ( like
     /// PSSnapInInfo ).
-    /// 3. Owns responsibilty to read/write Files.
-    /// 
+    /// 3. Owns responsibility to read/write Files.
+    ///
     /// Risk:
     /// File Acces related security issues.
-    /// 
+    ///
     /// Requires:
     /// Might require Permissions to read/write into files.
     /// </summary>
@@ -43,7 +43,7 @@ namespace System.Management.Automation.Runspaces
     internal class PSConsoleFileElement
     {
         #region Console format (xml) tags
-        // Create constants for each of the xml tags 
+        // Create constants for each of the xml tags
         private const string MSHCONSOLEFILE = "PSConsoleFile";
         private const string CSCHEMAVERSION = "ConsoleSchemaVersion";
         private const string CSCHEMAVERSIONNUMBER = "1.0";
@@ -90,7 +90,7 @@ namespace System.Management.Automation.Runspaces
         /// <summary>
         /// Writes MshConsoleInfo object in Monad Console format into the file specified by the <paramref name="path"/>.
         /// </summary>
-        /// <param name="path">The absolute path of the file into which the content is saved.</param>        
+        /// <param name="path">The absolute path of the file into which the content is saved.</param>
         /// <param name="version">The version of PowerShell.</param>
         /// <param name="snapins">The external snapins that are loaded in the console</param>
         /// <exception cref="ArgumentNullException">
@@ -261,7 +261,7 @@ namespace System.Management.Automation.Runspaces
                     throw new XmlException(StringUtil.Format(ConsoleInfoErrorStrings.MultipleMshSnapinsElementNotSupported, SNAPINS));
                 }
 
-                // We are about to process mshsnapins element..so we should not 
+                // We are about to process mshsnapins element..so we should not
                 // process some more mshsnapins elements..this boolean keeps track
                 // of this.
                 isPSSnapInsProcessed = true;
@@ -299,15 +299,15 @@ namespace System.Management.Automation.Runspaces
     /// <summary>
     /// Class that manages(reads/writes) Monad Console files and constructs objects
     /// that represent data in the console files.
-    /// 
+    ///
     /// Functionality:
     /// 1. Access point to the console files for Runspace and cmdlets
     /// 2. Depends on PSConsoleFileElement for reading/writing files
     /// </summary>
     /// <!--
     /// This object references PSSnapInInfo and PSSnapInReader classes and constructs
-    /// PSSnapInfo objects that represent data in the console file. Runspace 
-    /// Configuration and Cmdlets (add-pssnapin,remove-pssnapin etc ) are expected 
+    /// PSSnapInfo objects that represent data in the console file. Runspace
+    /// Configuration and Cmdlets (add-pssnapin,remove-pssnapin etc ) are expected
     /// to use this object.
     /// -->
     internal class MshConsoleInfo
@@ -352,7 +352,7 @@ namespace System.Management.Automation.Runspaces
         }
 
         /// <summary>
-        /// List of mshsnapins that are available. This includes both the monad 
+        /// List of mshsnapins that are available. This includes both the monad
         /// default mshsnapins as well as external mshsnapins as represented by the
         /// console file.
         /// </summary>
@@ -400,7 +400,7 @@ namespace System.Management.Automation.Runspaces
         /// </summary>
         /// <remarks>
         /// Once a MshConsoleInfo object is constructed, a user may update the object by
-        /// adding,removing mshsnapins. These operations directly effect the state of the 
+        /// adding,removing mshsnapins. These operations directly effect the state of the
         /// MshConsoleInfo object but not update the console file.
         /// </remarks>
         internal string Filename { get; private set; }
@@ -419,7 +419,7 @@ namespace System.Management.Automation.Runspaces
             IsDirty = false;
             Filename = null;
 
-            // Intialize list of mshsnapins..
+            // Initialize list of mshsnapins..
             _defaultPSSnapIns = new Collection<PSSnapInInfo>();
             _externalPSSnapIns = new Collection<PSSnapInInfo>();
         }
@@ -451,7 +451,7 @@ namespace System.Management.Automation.Runspaces
             catch (PSArgumentException ae)
             {
                 string message = ConsoleInfoErrorStrings.CannotLoadDefaults;
-                // If we were unalbe to load default mshsnapins throw PSSnapInException
+                // If we were unable to load default mshsnapins throw PSSnapInException
 
                 s_mshsnapinTracer.TraceError(message);
 
@@ -460,7 +460,7 @@ namespace System.Management.Automation.Runspaces
             catch (System.Security.SecurityException se)
             {
                 string message = ConsoleInfoErrorStrings.CannotLoadDefaults;
-                // If we were unalbe to load default mshsnapins throw PSSnapInException
+                // If we were unable to load default mshsnapins throw PSSnapInException
 
                 s_mshsnapinTracer.TraceError(message);
 
@@ -502,7 +502,7 @@ namespace System.Management.Automation.Runspaces
         {
             s_mshsnapinTracer.WriteLine("Creating console info from file {0}", fileName);
 
-            // Construct default mshsnapins                
+            // Construct default mshsnapins
             MshConsoleInfo consoleInfo = CreateDefaultConfiguration();
 
             // Check whether the filename specified is an absolute path.
@@ -519,14 +519,14 @@ namespace System.Management.Automation.Runspaces
 
         #endregion
 
-        #region Internal Instance Methods       
+        #region Internal Instance Methods
 
         /// <summary>
         /// Saves the current <see cref="MshConsoleInfo"/> object to a file specified
         /// by <paramref name="path"/>. IsDirty is set to false once file is saved.
         /// </summary>
         /// <param name="path">
-        /// If path is not an absolute path, then an absolute path is constructed by 
+        /// If path is not an absolute path, then an absolute path is constructed by
         /// using Path.GetFullPath() API.
         /// </param>
         /// <exception cref="PSArgumentException">
@@ -803,7 +803,7 @@ namespace System.Management.Automation.Runspaces
         /// <exception cref="PSArgumentException">
         /// 1. Path does not specify proper file extension.
         /// 2. PSSnapInId doesnt contain valid characters.
-        /// 3. Path is not an Absolute Path. 
+        /// 3. Path is not an Absolute Path.
         ///    Example of valid paths:"\\MyDir\\MyFile.txt" and "C:\\MyDir".
         /// </exception>
         /// <exception cref="ArgumentException">
@@ -814,7 +814,7 @@ namespace System.Management.Automation.Runspaces
         /// </exception>
         private Collection<PSSnapInInfo> Load(string path, out PSConsoleLoadException cle)
         {
-            // Intialize the out parameter..
+            // Initialize the out parameter..
             cle = null;
 
             s_mshsnapinTracer.WriteLine("Load mshsnapins from console file {0}", path);
@@ -933,7 +933,7 @@ namespace System.Management.Automation.Runspaces
 
 
         /// <summary>
-        /// Constructs a new list of mshsnapins from defualt mshsnapins and external mshsnapins.
+        /// Constructs a new list of mshsnapins from default mshsnapins and external mshsnapins.
         /// </summary>
         /// <returns>A list of mshsnapins represented by the current console file</returns>
         private Collection<PSSnapInInfo> MergeDefaultExternalMshSnapins()

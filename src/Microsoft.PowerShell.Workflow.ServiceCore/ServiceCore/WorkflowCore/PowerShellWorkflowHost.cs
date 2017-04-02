@@ -40,7 +40,7 @@ namespace Microsoft.PowerShell.Workflow
         {
             _configuration = new PSWorkflowConfigurationProvider();
             _configuration.Runtime = this;
-            PSCounterSetRegistrar registrar = 
+            PSCounterSetRegistrar registrar =
                 new PSCounterSetRegistrar(
                     PSWorkflowPerformanceCounterSetInfo.ProviderId,
                     PSWorkflowPerformanceCounterSetInfo.CounterSetId,
@@ -73,7 +73,7 @@ namespace Microsoft.PowerShell.Workflow
         }
 
         /// <summary>
-        /// Disope implementation.
+        /// Dispose implementation.
         /// </summary>
         public void Dispose()
         {
@@ -82,7 +82,7 @@ namespace Microsoft.PowerShell.Workflow
         }
 
         /// <summary>
-        /// Disope implementation.
+        /// Dispose implementation.
         /// </summary>
         /// <param name="disposing"></param>
         private void Dispose(bool disposing)

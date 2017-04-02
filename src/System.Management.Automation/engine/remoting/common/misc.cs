@@ -110,7 +110,7 @@ namespace System.Management.Automation
         /// <summary>
         /// This is the state a connect start with. When a connection is closed,
         /// the connection will eventually come back to this Idle state.
-        /// 
+        ///
         /// </summary>
         Idle = 1,
 
@@ -145,7 +145,7 @@ namespace System.Management.Automation
         NegotiationReceived = 7,
 
         /// <summary>
-        /// Used by server to wait for negotation from client.
+        /// Used by server to wait for negotiation from client.
         /// </summary>
         NegotiationPending = 8,
 
@@ -179,41 +179,41 @@ namespace System.Management.Automation
         EstablishedAndKeyReceived = 13,
 
         /// <summary>
-        /// for Server - Have sent a request to the remote end to 
-        /// send a public key 
-        /// for Cleint - have received a PK request from server
+        /// for Server - Have sent a request to the remote end to
+        /// send a public key
+        /// for Client - have received a PK request from server
         /// </summary>
-        /// <remarks>Applicable to both cleint and server</remarks>
+        /// <remarks>Applicable to both client and server</remarks>
         EstablishedAndKeyRequested = 14,
 
         /// <summary>
         /// Key exchange complete. This can mean
-        ///      (a) Sent an encrypted session key to the 
-        ///          remote end in response to receiving 
+        ///      (a) Sent an encrypted session key to the
+        ///          remote end in response to receiving
         ///          a public key - this is for the server
-        ///      (b) Received an encrypted session key from 
+        ///      (b) Received an encrypted session key from
         ///          remote end after sending a public key -
         ///          this is for the client
         /// </summary>
         EstablishedAndKeyExchanged = 15,
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         Disconnecting = 16,
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         Disconnected = 17,
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         Reconnecting = 18,
 
         /// <summary>
-        /// A disconnect operation initiated by the WinRM robust connection 
+        /// A disconnect operation initiated by the WinRM robust connection
         /// layer and *not* by the user.
         /// </summary>
         RCDisconnecting = 19,
@@ -308,7 +308,7 @@ namespace System.Management.Automation
     }
 
     /// <summary>
-    /// 
+    ///
     /// This is the event arg that contains the state information.
     /// </summary>
     internal class RemoteSessionStateEventArgs : EventArgs
@@ -392,7 +392,7 @@ namespace System.Management.Automation
 
         /// <summary>
         /// In the presence of ambient remoting, the command assumes
-        /// all responsibility for targetting the remote computer;
+        /// all responsibility for targeting the remote computer;
         /// PowerShell Remoting is not supported.
         /// </summary>
         OwnedByCommand

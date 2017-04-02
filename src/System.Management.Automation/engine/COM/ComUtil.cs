@@ -9,7 +9,7 @@ using System.Collections.ObjectModel;
 using COM = System.Runtime.InteropServices.ComTypes;
 
 // Stops compiler from warning about unknown warnings. Prefast warning numbers are not recognized by C# compiler
-#pragma warning disable 1634, 1691 
+#pragma warning disable 1634, 1691
 
 namespace System.Management.Automation
 {
@@ -30,7 +30,7 @@ namespace System.Management.Automation
         /// </summary>
         /// <param name="typeinfo">ITypeInfo interface of the object</param>
         /// <param name="funcdesc">FuncDesc which defines the method</param>
-        /// <param name="isPropertyPut">True if this is a property put; these properties take their return type from their first paramenter</param>
+        /// <param name="isPropertyPut">True if this is a property put; these properties take their return type from their first parameter</param>
         /// <returns>signature of the method</returns>
         internal static string GetMethodSignatureFromFuncDesc(COM.ITypeInfo typeinfo, COM.FUNCDESC funcdesc, bool isPropertyPut)
         {
@@ -60,7 +60,7 @@ namespace System.Management.Automation
                 ElementDescription = new COM.ELEMDESC();
                 ElementDescriptionArrayByteOffset = i * ElementDescriptionSize;
 
-                //Disable PRefast warning for converting to int32 and converting back into intptr. 
+                //Disable PRefast warning for converting to int32 and converting back into intptr.
                 //Code below takes into account 32 bit vs 64 bit conversions
 #pragma warning disable 56515
                 if (IntPtr.Size == 4)
@@ -299,7 +299,7 @@ namespace System.Management.Automation
 
                 ElementDescription = new COM.ELEMDESC();
                 ElementDescriptionArrayByteOffset = i * ElementDescriptionSize;
-                //Disable PRefast warning for converting to int32 and converting back into intptr. 
+                //Disable PRefast warning for converting to int32 and converting back into intptr.
                 //Code below takes into account 32 bit vs 64 bit conversions
 #pragma warning disable 56515
 

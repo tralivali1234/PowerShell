@@ -210,15 +210,21 @@ namespace System.Management.Automation
             string moduleDir = null;
             string nestedModulePath = null;
 
+            // When InternalTestHooks.BypassOnlineHelpRetrieval is enable, we force get-help to generate a metadata
+            // driven object, which includes a helpUri that points to the fwlink defined in the cmdlet code.
+            // This means that we are not going to load the help content from the GetFromCommandCache and
+            // we are not going to read the help file.
+
             // Only gets help for Cmdlet or script command
             if (!isCmdlet && !isScriptCommand)
                 return null;
 
             // Check if the help of the command is already in the cache.
             // If not, try load the file specified by HelpFile property and retrieve help.
-            if (isCmdlet)
+            if (isCmdlet && !InternalTestHooks.BypassOnlineHelpRetrieval)
             {
                 result = GetFromCommandCache(cmdletInfo.ModuleName, cmdletInfo.Name, cmdletInfo.HelpCategory);
+
                 if (null == result)
                 {
                     // Try load the help file specified by CmdletInfo.HelpFile property
@@ -261,7 +267,7 @@ namespace System.Management.Automation
                 if (sb != null)
                 {
                     helpFile = null;
-                    // serachOnlyContent == true means get-help is looking into the content, in this case we dont
+                    // searchOnlyContent == true means get-help is looking into the content, in this case we dont
                     // want to download the content from the remote machine. Reason: In Exchange scenario there
                     // are ~700 proxy commands, downloading help for all the commands and searching in that
                     // content takes a lot of time (in the order of 30 minutes) for their scenarios.
@@ -291,7 +297,7 @@ namespace System.Management.Automation
                         }
                     }
 
-                    if (!String.IsNullOrEmpty(helpFile))
+                    if (!String.IsNullOrEmpty(helpFile) && !InternalTestHooks.BypassOnlineHelpRetrieval)
                     {
                         if (!_helpFiles.Contains(helpFile))
                         {
@@ -306,7 +312,7 @@ namespace System.Management.Automation
             // in the appropriate UI culture subfolder of ModuleBase, and retrieve help
             // If still not able to get help, try search for a file called <NestedModuleName>-Help.xml
             // under the ModuleBase and the NestedModule's directory, and retrieve help
-            if (null == result)
+            if (null == result && !InternalTestHooks.BypassOnlineHelpRetrieval)
             {
                 // Get the name and ModuleBase directory of the command's module
                 // and the nested module that implements the command
@@ -401,8 +407,8 @@ namespace System.Management.Automation
         /// </summary>
         /// 
         /// <remarks>
-        /// ExactMatchHelp is overrided instead of DoExactMatchHelp to make sure 
-        /// all help item retrival will go through command discovery. Because each 
+        /// ExactMatchHelp is overridden instead of DoExactMatchHelp to make sure 
+        /// all help item retrieval will go through command discovery. Because each 
         /// help file can contain multiple help items for different commands. Directly
         /// retrieve help cache can result in a invalid command to contain valid
         /// help item. Forcing each ExactMatchHelp to go through command discovery 
@@ -542,6 +548,13 @@ namespace System.Management.Automation
         /// <returns></returns>
         private string FindHelpFile(CmdletInfo cmdletInfo)
         {
+            if (InternalTestHooks.BypassOnlineHelpRetrieval)
+            {
+                // By returning null, we force get-help to generate a metadata driven help object,
+                // which includes a helpUri that points to the fwlink defined in the cmdlet code.
+                return null;
+            }
+
             if (cmdletInfo == null)
             {
                 throw PSTraceSource.NewArgumentNullException("cmdletInfo");
@@ -591,7 +604,7 @@ namespace System.Management.Automation
                     if (String.IsNullOrEmpty(location))
                     {
                         // If the help file could not be found, then it is possible that the actual assembly name is something like
-                        // <Name>.ni.dll, e.g., MyAsembly.ni.dll, so let’s try to find the original help file in the cmdlet metadata.
+                        // <Name>.ni.dll, e.g., MyAssembly.ni.dll, so let’s try to find the original help file in the cmdlet metadata.
                         location = GetHelpFile(helpFile, cmdletInfo);
                     }
                 }
@@ -717,7 +730,7 @@ namespace System.Management.Automation
                         {
                             UserDefinedHelpData userDefinedHelpData = UserDefinedHelpData.Load(node);
 
-                            ProcessUserDefineddHelpData(helpFileIdentifier, userDefinedHelpData);
+                            ProcessUserDefinedHelpData(helpFileIdentifier, userDefinedHelpData);
                         }
                     }
                 }
@@ -730,7 +743,7 @@ namespace System.Management.Automation
         /// </summary>
         /// <param name="mshSnapInId">PSSnapIn Name for the current help file.</param>
         /// <param name="userDefinedHelpData"></param>
-        private void ProcessUserDefineddHelpData(string mshSnapInId, UserDefinedHelpData userDefinedHelpData)
+        private void ProcessUserDefinedHelpData(string mshSnapInId, UserDefinedHelpData userDefinedHelpData)
         {
             if (userDefinedHelpData == null)
                 return;
@@ -794,14 +807,14 @@ namespace System.Management.Automation
             HelpInfo result = GetFromCommandCache(helpFileIdentifier, commandInfo.Name, commandInfo.HelpCategory);
             if (null == result)
             {
-                // check if the command is prefixed and try retreiving help by removing the prefix
+                // check if the command is prefixed and try retrieving help by removing the prefix
                 if ((commandInfo.Module != null) && (!string.IsNullOrEmpty(commandInfo.Prefix)))
                 {
                     MamlCommandHelpInfo newMamlHelpInfo = GetFromCommandCacheByRemovingPrefix(helpFileIdentifier, commandInfo);
                     if (null != newMamlHelpInfo)
                     {
                         // caching the changed help content under the prefixed name for faster
-                        // retreival later.
+                        // retrieval later.
                         AddToCommandCache(helpFileIdentifier, commandInfo.Name, newMamlHelpInfo);
                         return newMamlHelpInfo;
                     }
@@ -824,7 +837,7 @@ namespace System.Management.Automation
             HelpInfo result = GetFromCommandCache(cmdletInfo.ModuleName, cmdletInfo.Name, cmdletInfo.HelpCategory);
             if (result == null)
             {
-                // check if the command is prefixed and try retreiving help by removing the prefix
+                // check if the command is prefixed and try retrieving help by removing the prefix
                 if ((cmdletInfo.Module != null) && (!string.IsNullOrEmpty(cmdletInfo.Prefix)))
                 {
                     MamlCommandHelpInfo newMamlHelpInfo = GetFromCommandCacheByRemovingPrefix(cmdletInfo.ModuleName, cmdletInfo);
@@ -845,7 +858,7 @@ namespace System.Management.Automation
                         }
 
                         // caching the changed help content under the prefixed name for faster
-                        // retreival later.
+                        // retrieval later.
                         AddToCommandCache(cmdletInfo.ModuleName, cmdletInfo.Name, newMamlHelpInfo);
                         return newMamlHelpInfo;
                     }
@@ -862,7 +875,7 @@ namespace System.Management.Automation
         /// original command name (without prefix) as the key.
         /// 
         /// This method retrieves the help content by suppressing the prefix and then making a copy
-        /// of the help contnet + change the name and then returns the copied help content.
+        /// of the help content + change the name and then returns the copied help content.
         /// </summary>
         /// <param name="helpIdentifier"></param>
         /// <param name="cmdInfo"></param>
@@ -882,7 +895,7 @@ namespace System.Management.Automation
             if (null != originalHelpInfo)
             {
                 result = originalHelpInfo.Copy();
-                // command's name can be changed using -Prefix while importing module.To give better user expereience for
+                // command's name can be changed using -Prefix while importing module.To give better user experience for
                 // get-help (on par with get-command), it was decided to use the prefixed command name
                 // for the help content.
                 if (result.FullHelp.Properties["Name"] != null)
@@ -982,7 +995,7 @@ namespace System.Management.Automation
         /// <param name="helpRequest">help request object</param>
         /// <param name="searchOnlyContent">
         /// If true, searches for pattern in the help content of all cmdlets.
-        /// Otherwise, seraches for pattern in the cmdlet names.
+        /// Otherwise, searches for pattern in the cmdlet names.
         /// </param>
         /// <returns></returns>
         internal override IEnumerable<HelpInfo> SearchHelp(HelpRequest helpRequest, bool searchOnlyContent)

@@ -40,7 +40,7 @@ namespace Microsoft.PowerShell.Commands.ShowCommandInternal
         /// Initializes a new instance of the ParameterSetViewModel class.
         /// </summary>
         /// <param name="name">The name of the parameterSet</param>
-        /// <param name="parameters">The array parametes of the parameterSet</param>
+        /// <param name="parameters">The array parameters of the parameterSet</param>
         [SuppressMessage("Microsoft.Design", "CA1002:DoNotExposeGenericLists", Justification = "this type is internal, made public only for WPF Binding")]
         public ParameterSetViewModel(
             string name,
@@ -93,7 +93,7 @@ namespace Microsoft.PowerShell.Commands.ShowCommandInternal
         }
 
         /// <summary>
-        /// Gets the Parameters of this parameterset 
+        /// Gets the Parameters of this parameterset
         /// </summary>
         public List<ParameterViewModel> Parameters
         {
@@ -157,7 +157,7 @@ namespace Microsoft.PowerShell.Commands.ShowCommandInternal
                 {
                     continue;
                 }
-                
+
                 ShowCommandParameterType parameterType = parameter.Parameter.ParameterType;
 
                 if (parameterType.IsEnum || parameterType.IsString || (parameterType.IsArray && parameterType.ElementType.IsString))
@@ -168,7 +168,7 @@ namespace Microsoft.PowerShell.Commands.ShowCommandInternal
                 {
                     parameterValueString = ParameterSetViewModel.GetDelimitedParameter(parameterValueString, "{", "}");
                 }
-                else 
+                else
                 {
                     parameterValueString = ParameterSetViewModel.GetDelimitedParameter(parameterValueString, "(", ")");
                 }
@@ -231,14 +231,14 @@ namespace Microsoft.PowerShell.Commands.ShowCommandInternal
         }
 
         #endregion
-        
+
         /// <summary>
-        /// Gets the delimited poarameter if it needs delimitation and is not delimited
+        /// Gets the delimited parameter if it needs delimitation and is not delimited
         /// </summary>
         /// <param name="parameterValue">value needing delimitation</param>
         /// <param name="openDelimiter">open delimitation</param>
         /// <param name="closeDelimiter">close delimitation</param>
-        /// <returns>the delimited poarameter if it needs delimitation and is not delimited</returns>
+        /// <returns>the delimited parameter if it needs delimitation and is not delimited</returns>
         private static string GetDelimitedParameter(string parameterValue, string openDelimiter, string closeDelimiter)
         {
             string parameterValueTrimmed = parameterValue.Trim();

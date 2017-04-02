@@ -44,11 +44,11 @@ namespace Microsoft.PowerShell.Commands
         #region Job Matches
 
         /// <summary>
-        /// Find the jobs in repository which match matching the specified names 
+        /// Find the jobs in repository which match matching the specified names
         /// </summary>
-        /// 
+        ///
         /// <param name="writeobject">if true, method writes the object instead of returning it
-        /// in list (an empty list is retuened). </param>
+        /// in list (an empty list is returned). </param>
         /// <param name="writeErrorOnNoMatch">write error if no match is found</param>
         /// <param name="checkIfJobCanBeRemoved">check if this job can be removed</param>
         /// <param name="recurse">recurse and check in child jobs</param>
@@ -177,11 +177,11 @@ namespace Microsoft.PowerShell.Commands
         }
 
         /// <summary>
-        /// Find the jobs in repository which match  the specified instanceid 
+        /// Find the jobs in repository which match  the specified instanceid
         /// </summary>
-        /// 
+        ///
         /// <param name="writeobject">if true, method writes the object instead of returning it
-        /// in list (an empty list is retuened). </param>
+        /// in list (an empty list is returned). </param>
         /// <param name="writeErrorOnNoMatch">write error if no match is found</param>
         /// <param name="checkIfJobCanBeRemoved">check if this job can be removed</param>
         /// <param name="recurse">look in all child jobs</param>
@@ -234,7 +234,7 @@ namespace Microsoft.PowerShell.Commands
         {
             bool jobFound = false;
 
-            // Most likely users will ask for top level jobs. 
+            // Most likely users will ask for top level jobs.
             // So in order to be more efficient, first look
             // into the top level jobs and only if a match is
             // not found in the top level jobs, recurse. This
@@ -293,11 +293,11 @@ namespace Microsoft.PowerShell.Commands
         }
 
         /// <summary>
-        /// Find the jobs in repository which match the specified session ids 
+        /// Find the jobs in repository which match the specified session ids
         /// </summary>
-        /// 
+        ///
         /// <param name="writeobject">if true, method writes the object instead of returning it
-        /// in list (an empty list is retuened). </param>
+        /// in list (an empty list is returned). </param>
         /// <param name="writeErrorOnNoMatch">write error if no match is found</param>
         /// <param name="checkIfJobCanBeRemoved">check if this job can be removed</param>
         /// <param name="recurse">look in child jobs as well</param>
@@ -344,7 +344,7 @@ namespace Microsoft.PowerShell.Commands
         {
             bool jobFound = false;
 
-            // Most likely users will ask for top level jobs. 
+            // Most likely users will ask for top level jobs.
             // So in order to be more efficient, first look
             // into the top level jobs and only if a match is
             // not found in the top level jobs, recurse. This
@@ -368,7 +368,7 @@ namespace Microsoft.PowerShell.Commands
                             matches.Add(job);
                         }
 
-                        // session id will be unique for every session, so 
+                        // session id will be unique for every session, so
                         // can break after the first match
                         break;
                     }
@@ -399,9 +399,9 @@ namespace Microsoft.PowerShell.Commands
         /// <summary>
         /// Find the jobs in repository which match the specified command
         /// </summary>
-        /// 
+        ///
         /// <param name="writeobject">if true, method writes the object instead of returning it
-        /// in list (an empty list is retuened). </param>
+        /// in list (an empty list is returned). </param>
         /// <returns>list of matching jobs</returns>
         internal List<Job> FindJobsMatchingByCommand(
             bool writeobject)
@@ -431,7 +431,7 @@ namespace Microsoft.PowerShell.Commands
                     WildcardPattern commandPattern = WildcardPattern.Get(command, WildcardOptions.IgnoreCase);
                     string jobCommand = job.Command.Trim();
                     // Win8: 469830
-                    // Win7 code does not have commandPattern.IsMatch. We added wildcard support for Command parmaeterset
+                    // Win7 code does not have commandPattern.IsMatch. We added wildcard support for Command parameterset
                     // in Win8 which breaks scenarios where the actual command has wildcards.)
                     if (jobCommand.Equals(command.Trim(), StringComparison.OrdinalIgnoreCase) || commandPattern.IsMatch(jobCommand))
                     {
@@ -452,9 +452,9 @@ namespace Microsoft.PowerShell.Commands
         /// <summary>
         /// Find the jobs in repository which match the specified state
         /// </summary>
-        /// 
+        ///
         /// <param name="writeobject">if true, method writes the object instead of returning it
-        /// in list (an empty list is retuened). </param>
+        /// in list (an empty list is returned). </param>
         /// <returns>list of matching jobs</returns>
         internal List<Job> FindJobsMatchingByState(
             bool writeobject)
@@ -546,11 +546,11 @@ namespace Microsoft.PowerShell.Commands
         }
 
         /// <summary>
-        /// Copies the jobs to list. 
+        /// Copies the jobs to list.
         /// </summary>
         /// <param name="jobs"></param>
         /// <param name="writeobject">if true, method writes the object instead of returning it
-        /// in list (an empty list is retuened). </param>
+        /// in list (an empty list is returned). </param>
         /// <param name="checkIfJobCanBeRemoved">if true, only jobs which can be removed will be checked</param>
         /// <returns></returns>
         internal List<Job> CopyJobsToList(Job[] jobs, bool writeobject, bool checkIfJobCanBeRemoved)
@@ -618,7 +618,7 @@ namespace Microsoft.PowerShell.Commands
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         private String[] _names;
 
@@ -643,7 +643,7 @@ namespace Microsoft.PowerShell.Commands
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         private Guid[] _instanceIds;
 
@@ -669,7 +669,7 @@ namespace Microsoft.PowerShell.Commands
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         private int[] _sessionIds;
 
@@ -692,7 +692,7 @@ namespace Microsoft.PowerShell.Commands
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         private JobState _jobstate;
 
@@ -715,7 +715,7 @@ namespace Microsoft.PowerShell.Commands
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         private String[] _commands;
 
@@ -759,12 +759,12 @@ namespace Microsoft.PowerShell.Commands
     /// <summary>
     /// This cmdlet removes the Job object from the runspace
     /// wide Job repository.
-    /// 
+    ///
     /// Once the Job object is removed, it will not be available
     /// through get-psjob command.
     /// </summary>
     [Cmdlet(VerbsCommon.Remove, "Job", SupportsShouldProcess = true, DefaultParameterSetName = JobCmdletBase.SessionIdParameterSet,
-        HelpUri = "http://go.microsoft.com/fwlink/?LinkID=113377")]
+        HelpUri = "https://go.microsoft.com/fwlink/?LinkID=113377")]
     [OutputType(typeof(Job), ParameterSetName = new string[] { JobCmdletBase.JobParameterSet })]
     public class RemoveJobCommand : JobCmdletBase, IDisposable
     {
@@ -884,7 +884,7 @@ namespace Microsoft.PowerShell.Commands
                 if (!job.IsFinishedState(job.JobStateInfo.State))
                 {
                     // if it is a Job2, then async is supported
-                    // stop the job asynchornously
+                    // stop the job asynchronously
                     if (job2 != null)
                     {
                         _cleanUpActions.Add(job2, HandleStopJobCompleted);
@@ -1008,7 +1008,7 @@ namespace Microsoft.PowerShell.Commands
         #region Dispose
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public void Dispose()
         {
@@ -1017,7 +1017,7 @@ namespace Microsoft.PowerShell.Commands
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="disposing"></param>
         protected void Dispose(bool disposing)

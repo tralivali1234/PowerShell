@@ -1,5 +1,5 @@
 /*============================================================================
- * Copyright (C) Microsoft Corporation, All rights reserved. 
+ * Copyright (C) Microsoft Corporation, All rights reserved.
  *============================================================================
  */
 
@@ -59,7 +59,7 @@ namespace Microsoft.Management.Infrastructure.CimCmdlets
     #region AsyncResultEventArgsBase
     /// <summary>
     /// <para>
-    /// Base class of asyn result event argument
+    /// Base class of async result event argument
     /// </para>
     /// </summary>
     internal abstract class AsyncResultEventArgsBase : EventArgs

@@ -19,20 +19,20 @@ namespace Microsoft.PowerShell.Commands
     /// This cmdlet stops the runspace and frees the resources associated with
     /// that runspace. If any execution is in process in that runspace, it is
     /// stopped. Also, the runspace is removed from the global cache.
-    /// 
+    ///
     /// This cmdlet can be used in the following ways:
-    /// 
+    ///
     /// Remove the runspace specified
     ///     $runspace = New-PSSession
     ///     Remove-PSSession -remoterunspaceinfo $runspace
-    /// 
+    ///
     /// Remove the runspace specified (no need for a parameter name)
     ///     $runspace = New-PSSession
     ///     Remove-PSSession $runspace
     /// </summary>
     [Cmdlet(VerbsCommon.Remove, "PSSession", SupportsShouldProcess = true,
             DefaultParameterSetName = RemovePSSessionCommand.IdParameterSet,
-            HelpUri = "http://go.microsoft.com/fwlink/?LinkID=135250", RemotingCapability = RemotingCapability.OwnedByCommand)]
+            HelpUri = "https://go.microsoft.com/fwlink/?LinkID=135250", RemotingCapability = RemotingCapability.OwnedByCommand)]
     public class RemovePSSessionCommand : PSRunspaceCmdlet
     {
         #region Parameters
@@ -88,7 +88,7 @@ namespace Microsoft.PowerShell.Commands
         #region Overrides
 
         /// <summary>
-        /// Do the follwing actions:
+        /// Do the following actions:
         ///     1. If runspace is in opened state,
         ///             a. stop any execution in process in the runspace
         ///             b. close the runspace

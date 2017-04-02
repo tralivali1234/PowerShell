@@ -181,8 +181,8 @@ namespace System.Management.Automation
             return this.Name;
         }
 
-        /// <summary> 
-        /// Get/set whether to log Pipeline Execution Detail events. 
+        /// <summary>
+        /// Get/set whether to log Pipeline Execution Detail events.
         /// </summary>
         public bool LogPipelineExecutionDetails { get; set; } = false;
 
@@ -255,7 +255,7 @@ namespace System.Management.Automation
 
         /// <summary>
         /// Get the module base directory for this module. For modules loaded via a module
-        /// manifest, this will be the directory containting the manifest file rather than
+        /// manifest, this will be the directory containing the manifest file rather than
         /// the directory containing the actual module file. This is particularly useful
         /// when loading a GAC'ed assembly.
         /// </summary>
@@ -511,7 +511,7 @@ namespace System.Management.Automation
                 }
                 else if (SessionState != null)
                 {
-                    // If there is no session state object associated with this list, 
+                    // If there is no session state object associated with this list,
                     // just return a null list of exports...
                     if (SessionState.Internal.ExportedFunctions != null)
                     {
@@ -552,7 +552,7 @@ namespace System.Management.Automation
         /// </summary>
         public ReadOnlyDictionary<string, TypeDefinitionAst> GetExportedTypeDefinitions()
         {
-            // We cache exported types from this modules, but not from nestedModules, 
+            // We cache exported types from this modules, but not from nestedModules,
             // because we may not have NestedModules list populated on the first call.
             // TODO(sevoroby): it may harm perf a little bit. Can we sort it out?
 
@@ -583,7 +583,7 @@ namespace System.Management.Automation
                 {
                     if (nestedModule == this)
                     {
-                        // this is totally bizzare, but it happens for some reasons for 
+                        // this is totally bizzare, but it happens for some reasons for
                         // Microsoft.Powershell.Workflow.ServiceCore.dll, when there is a workflow defined in a nested module.
                         // TODO(sevoroby): we should handle possible circular dependencies
                         continue;
@@ -735,7 +735,7 @@ namespace System.Management.Automation
         /// <summary>
         /// Gets the aggregated list of visible commands exported from the module. If there are two
         /// commands of different types exported with the same name (e.g. alias 'foo' and cmdlet 'foo') the
-        /// combined dictionary will only contain the highest precidence cmdlet (e.g. the alias 'foo' since
+        /// combined dictionary will only contain the highest precedence cmdlet (e.g. the alias 'foo' since
         /// aliases shadow cmdlets.
         /// </summary>
         public Dictionary<string, CommandInfo> ExportedCommands
@@ -1058,8 +1058,7 @@ namespace System.Management.Automation
         }
 
         internal static string[] _builtinVariables = new string[] { "_", "this", "input", "args", "true", "false", "null",
-            "MaximumErrorCount", "MaximumVariableCount", "MaximumFunctionCount","MaximumAliasCount", "PSDefaultParameterValues",
-            "MaximumDriveCount", "Error", "PSScriptRoot", "PSCommandPath", "MyInvocation", "ExecutionContext", "StackTrace" };
+            "PSDefaultParameterValues", "Error", "PSScriptRoot", "PSCommandPath", "MyInvocation", "ExecutionContext", "StackTrace" };
 
         /// <summary>
         /// Lists the variables exported by this module.
@@ -1079,7 +1078,7 @@ namespace System.Management.Automation
                 }
                 else
                 {
-                    // If there is no session state object associated with this list, 
+                    // If there is no session state object associated with this list,
                     // just return a null list of exports. This will be true if the
                     // module is a compiled module.
                     if (SessionState == null || SessionState.Internal.ExportedVariables == null)
@@ -1198,7 +1197,7 @@ namespace System.Management.Automation
                 }
                 else
                 {
-                    // If there is no session state object associated with this list, 
+                    // If there is no session state object associated with this list,
                     // just return a null list of exports. This will be true if the
                     // module is a compiled module.
                     if (SessionState == null)
@@ -1226,7 +1225,7 @@ namespace System.Management.Automation
         internal Collection<string> DeclaredWorkflowExports = null;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public ReadOnlyCollection<string> ExportedDscResources
         {
@@ -1379,7 +1378,10 @@ namespace System.Management.Automation
                     // Only copy simple mutable variables...
                     if (v.Options == ScopedItemOptions.None && !(v is NullVariable))
                     {
-                        PSVariable newVar = new PSVariable(v.Name, v.Value, v.Options, v.Attributes, v.Description);
+                        PSVariable newVar = new PSVariable(v.Name, v.Value, v.Options, v.Description);
+                        // The variable is already defined/set in the scope, and that means the attributes
+                        // have already been checked if it was needed, so we don't do it again.
+                        newVar.AddParameterAttributesNoChecks(v.Attributes);
                         SessionState.Internal.NewVariable(newVar, false);
                     }
                 }
@@ -1490,7 +1492,7 @@ namespace System.Management.Automation
         }
 
         /// <summary>
-        /// Enables or disables the appdomain module path cache 
+        /// Enables or disables the appdomain module path cache
         /// </summary>
         public static bool UseAppDomainLevelModuleCache { get; set; }
 
@@ -1636,7 +1638,7 @@ namespace System.Management.Automation
 
         public int GetHashCode(PSModuleInfo obj)
         {
-            unchecked // Overflow is fine, just wrap     
+            unchecked // Overflow is fine, just wrap
             {
                 int result = 0;
 

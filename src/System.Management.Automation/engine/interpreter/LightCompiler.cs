@@ -1,11 +1,11 @@
 /* ****************************************************************************
  *
- * Copyright (c) Microsoft Corporation. 
+ * Copyright (c) Microsoft Corporation.
  *
- * This source code is subject to terms and conditions of the Apache License, Version 2.0. A 
- * copy of the license can be found in the License.html file at the root of this distribution. If 
- * you cannot locate the  Apache License, Version 2.0, please send an email to 
- * dlr@microsoft.com. By using this source code in any fashion, you are agreeing to be bound 
+ * This source code is subject to terms and conditions of the Apache License, Version 2.0. A
+ * copy of the license can be found in the License.html file at the root of this distribution. If
+ * you cannot locate the  Apache License, Version 2.0, please send an email to
+ * dlr@microsoft.com. By using this source code in any fashion, you are agreeing to be bound
  * by the terms of the Apache License, Version 2.0.
  *
  * You must not remove this notice, or any other, from this software.
@@ -177,7 +177,7 @@ namespace System.Management.Automation.Interpreter
     }
 
     /// <summary>
-    /// The re-throw instrcution will throw this exception
+    /// The re-throw instruction will throw this exception
     /// </summary>
     internal sealed class RethrowException : SystemException
     {
@@ -282,7 +282,7 @@ namespace System.Management.Automation.Interpreter
 
         private readonly Stack<ParameterExpression> _exceptionForRethrowStack = new Stack<ParameterExpression>();
 
-        // Set to true to force compiliation of this lambda.
+        // Set to true to force compilation of this lambda.
         // This disables the interpreter for this lambda. We still need to
         // walk it, however, to resolve variables closed over from the parent
         // lambdas (because they may be interpreted).
@@ -896,7 +896,7 @@ namespace System.Management.Automation.Interpreter
                 return;
             }
 
-            // TODO: Conversions to a super-class or implemented interfaces are no-op. 
+            // TODO: Conversions to a super-class or implemented interfaces are no-op.
             // A conversion to a non-implemented interface or an unrelated class, etc. should fail.
             return;
         }
@@ -1207,7 +1207,7 @@ namespace System.Management.Automation.Interpreter
             // Anything that is "statement-like" -- e.g. has no associated
             // stack state can be jumped into, with the exception of try-blocks
             // We indicate this by a "Block"
-            // 
+            //
             // Otherwise, we push an "Expression" to indicate that it can't be
             // jumped into
             switch (node.NodeType)
@@ -1249,7 +1249,7 @@ namespace System.Management.Automation.Interpreter
                     return true;
                 case ExpressionType.Switch:
                     PushLabelBlock(LabelScopeKind.Switch);
-                    // Define labels inside of the switch cases so theyare in
+                    // Define labels inside of the switch cases so they are in
                     // scope for the whole switch. This allows "goto case" and
                     // "goto default" to be considered as local jumps.
                     var @switch = (SwitchExpression)node;
@@ -1411,7 +1411,7 @@ namespace System.Management.Automation.Interpreter
             _instructions.MarkLabel(gotoEnd);
             _instructions.EmitGoto(end, hasValue, hasValue);
 
-            // keep the result on the stack:     
+            // keep the result on the stack:
             if (node.Handlers.Count > 0)
             {
                 exHandlers = new List<ExceptionHandler>();

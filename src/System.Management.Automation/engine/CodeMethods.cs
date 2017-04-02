@@ -14,7 +14,7 @@ using Dbg = System.Management.Automation.Diagnostics;
 namespace Microsoft.PowerShell
 {
     /// <summary>
-    /// Contains auxilliary ToString CodeMethod implementations for some types
+    /// Contains auxiliary ToString CodeMethod implementations for some types
     /// </summary>
     public static partial class ToStringCodeMethods
     {
@@ -46,7 +46,7 @@ namespace Microsoft.PowerShell
 
     /// <summary>
     /// Contains CodeMethod implementations for some adapted types like:
-    /// 
+    ///
     /// 1. DirectoryEntry Related Code Methods
     ///    (a) Convert from DE LargeInteger to Int64.
     ///    (b) Convert from DE Dn-With-Binary to string.

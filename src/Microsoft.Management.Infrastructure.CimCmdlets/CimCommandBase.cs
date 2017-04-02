@@ -1,5 +1,5 @@
 /*============================================================================
- * Copyright (C) Microsoft Corporation, All rights reserved. 
+ * Copyright (C) Microsoft Corporation, All rights reserved.
  *============================================================================
  */
 
@@ -218,7 +218,7 @@ namespace Microsoft.Management.Infrastructure.CimCmdlets
             this.CloneParameterEntries(parameters, sets);
         }
 
-        #region Two dictionaryies used to determine the bound parameter set
+        #region Two dictionaries used to determine the bound parameter set
 
         /// <summary>
         /// Define the parameter definition entries,
@@ -242,7 +242,7 @@ namespace Microsoft.Management.Infrastructure.CimCmdlets
         /// <summary>
         /// <para>
         /// Used to remember the set of parameterset were set
-        /// if any conflition occurred with current parameter,
+        /// if any conflict occurred with current parameter,
         /// throw exception
         /// </para>
         /// </summary>
@@ -256,14 +256,14 @@ namespace Microsoft.Management.Infrastructure.CimCmdlets
         /// <summary>
         /// <para>
         /// Used to remember the set of parameterset were set before begin process
-        /// if any conflition occurred with current parameter,
+        /// if any conflict occurred with current parameter,
         /// throw exception
         /// </para>
         /// </summary>
         private List<string> parametersetNamesListAtBeginProcess = new List<string>();
 
         /// <summary>
-        /// Parameter names list befre begin process
+        /// Parameter names list before begin process
         /// </summary>
         private List<string> parameterNamesListAtBeginProcess = new List<string>();
 
@@ -379,7 +379,7 @@ namespace Microsoft.Management.Infrastructure.CimCmdlets
                 }
                 if (nameset.Count == 0)
                 {
-                    throw new PSArgumentException(Strings.UnableToResolvePareameterSetName);
+                    throw new PSArgumentException(Strings.UnableToResolveParameterSetName);
                 }
                 else
                 {
@@ -433,7 +433,7 @@ namespace Microsoft.Management.Infrastructure.CimCmdlets
                 {
                     if (boundParameterSetName != null)
                     {
-                        throw new PSArgumentException(Strings.UnableToResolvePareameterSetName);
+                        throw new PSArgumentException(Strings.UnableToResolveParameterSetName);
                     }
                     boundParameterSetName = parameterSetName;
                 }
@@ -445,7 +445,7 @@ namespace Microsoft.Management.Infrastructure.CimCmdlets
                 // throw if there are > 1 parameter set
                 if (noMandatoryParameterSet.Count > 1)
                 {
-                    throw new PSArgumentException(Strings.UnableToResolvePareameterSetName);
+                    throw new PSArgumentException(Strings.UnableToResolveParameterSetName);
                 }
                 else if (noMandatoryParameterSet.Count == 1)
                 {
@@ -462,7 +462,7 @@ namespace Microsoft.Management.Infrastructure.CimCmdlets
             // throw if still can not find the parameter set name
             if (boundParameterSetName == null)
             {
-                throw new PSArgumentException(Strings.UnableToResolvePareameterSetName);
+                throw new PSArgumentException(Strings.UnableToResolveParameterSetName);
             }
             return boundParameterSetName;
         }
@@ -594,7 +594,7 @@ namespace Microsoft.Management.Infrastructure.CimCmdlets
         {
             Dispose(true);
             // This object will be cleaned up by the Dispose method.
-            // Therefore, you should call GC.SupressFinalize to
+            // Therefore, you should call GC.SuppressFinalize to
             // take this object off the finalization queue
             // and prevent finalization code for this object
             // from executing a second time.
@@ -697,7 +697,7 @@ namespace Microsoft.Management.Infrastructure.CimCmdlets
 
         /// <summary>
         /// <para>
-        /// Set <see cref="CimAsyncOperation"/> object, to which 
+        /// Set <see cref="CimAsyncOperation"/> object, to which
         /// current cmdlet will delegate all operations.
         /// </para>
         /// </summary>
@@ -787,7 +787,7 @@ namespace Microsoft.Management.Infrastructure.CimCmdlets
         /// <summary>
         /// resource Uri computer set name
         /// </summary>
-        internal const string ResourceUriComputerSet = "ResourceUriComputerSet";        
+        internal const string ResourceUriComputerSet = "ResourceUriComputerSet";
 
         /// <summary>
         /// <see cref="CimInstance"/> computer set name
@@ -808,7 +808,7 @@ namespace Microsoft.Management.Infrastructure.CimCmdlets
         /// <summary>
         /// resource Uri session set name
         /// </summary>
-        internal const string ResourceUriSessionSet = "ResourceUriSessionSet";        
+        internal const string ResourceUriSessionSet = "ResourceUriSessionSet";
 
         /// <summary>
         /// <see cref="CimInstance"/> session set name
@@ -855,7 +855,7 @@ namespace Microsoft.Management.Infrastructure.CimCmdlets
         /// <summary>
         /// certificate parameter set
         /// </summary>
-        internal const string CertificatePrameterSet = "CertificatePrameterSet";
+        internal const string CertificateParameterSet = "CertificateParameterSet";
 
         /// <summary>
         /// CimInstance parameter alias

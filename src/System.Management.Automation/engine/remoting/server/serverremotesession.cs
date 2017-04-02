@@ -13,18 +13,18 @@ using Dbg = System.Management.Automation.Diagnostics;
 namespace System.Management.Automation.Remoting
 {
     /// <summary>
-    /// 
-    /// By design, on the server side, each remote connection is represented by 
+    ///
+    /// By design, on the server side, each remote connection is represented by
     /// a ServerRemoteSession object, which contains one instance of this class.
-    /// 
+    ///
     /// This class holds 4 pieces of information.
     /// 1. Client capability: This is the capability received during the negotiation process.
-    /// 2. Server capability: This comes from default parameters. 
+    /// 2. Server capability: This comes from default parameters.
     /// 3. Client configuration: This holds the remote session related configuration parameters that
     ///    the client sent to the server. This parameters can be changed and resent after the connection
     ///    is established.
     /// 4. Server configuration: this holds the server sider configuration parameters.
-    /// 
+    ///
     /// All these together define the connection level parameters.
     /// </summary>
     internal class ServerRemoteSessionContext
@@ -53,7 +53,7 @@ namespace System.Management.Automation.Remoting
         internal RemoteSessionCapability ServerCapability { get; set; }
 
         /// <summary>
-        /// True if negotiation from client is succeeded...in which case ClienCapability
+        /// True if negotiation from client is succeeded...in which case ClientCapability
         /// is the capability that server agreed with.
         /// </summary>
         internal bool IsNegotiationSucceeded { get; set; }
@@ -61,14 +61,14 @@ namespace System.Management.Automation.Remoting
 
     /// <summary>
     /// This class is designed to be the server side controller of a remote connection.
-    /// 
+    ///
     /// It contains a static entry point that the PowerShell server process will get into
-    /// the server mode. At this entry point, a runspace configuration is passed in. This runspace 
+    /// the server mode. At this entry point, a runspace configuration is passed in. This runspace
     /// configuration is used to instantiate a server side runspace.
-    /// 
+    ///
     /// This class controls a remote connection by using a Session data structure handler, which
     /// in turn contains a Finite State Machine, and a transport mechanism.
-    /// 
+    ///
     /// </summary>
     internal class ServerRemoteSession : RemoteSession
     {
@@ -102,7 +102,7 @@ namespace System.Management.Automation.Remoting
         #region Constructors
 
         /// <summary>
-        /// This constructor inistantiates a ServerRemoteSession object and 
+        /// This constructor instantiates a ServerRemoteSession object and
         /// a ServerRemoteSessionDataStructureHandler object.
         /// </summary>
         /// <param name="senderInfo">
@@ -140,7 +140,7 @@ namespace System.Management.Automation.Remoting
 #endif
 
             Context = new ServerRemoteSessionContext();
-            SessionDataStructureHandler = new ServerRemoteSessionDSHandlerlImpl(this, transportManager);
+            SessionDataStructureHandler = new ServerRemoteSessionDSHandlerImpl(this, transportManager);
             BaseSessionDataStructureHandler = SessionDataStructureHandler;
             SessionDataStructureHandler.CreateRunspacePoolReceived += HandleCreateRunspacePool;
             SessionDataStructureHandler.NegotiationReceived += HandleNegotiationReceived;
@@ -150,11 +150,11 @@ namespace System.Management.Automation.Remoting
             transportManager.Closing += HandleResourceClosing;
 
             // update the quotas from sessionState..start with default size..and
-            // when Custom Session Configuration is loaded (during runsapce creation) update this.
+            // when Custom Session Configuration is loaded (during runspace creation) update this.
             transportManager.ReceivedDataCollection.MaximumReceivedObjectSize =
                 BaseTransportManager.MaximumReceivedObjectSize;
 
-            // session transport manager can recieve unlimited data..however each object is limited
+            // session transport manager can receive unlimited data..however each object is limited
             // by maxRecvdObjectSize. this is to allow clients to use a session for an unlimited time..
             // also the messages that can be sent to a session are limited and very controlled.
             // However a command transport manager can be restricted to receive only a fixed amount of data
@@ -168,7 +168,7 @@ namespace System.Management.Automation.Remoting
 #region Creation Factory
 
         /// <summary>
-        /// Creates a server remote session for the supplied <paramref name="configuratioinProviderId"/>
+        /// Creates a server remote session for the supplied <paramref name="configurationProviderId"/>
         /// and <paramref name="transportManager"/>.
         /// </summary>
         /// <param name="senderInfo"></param>
@@ -184,12 +184,12 @@ namespace System.Management.Automation.Remoting
         /// InitialSessionState provider with <paramref name="configurationProviderId"/> does
         /// not exist on the remote server.
         /// </exception>
-        /* 
+        /*
                   <InitializationParameters>
                     <Param Name="PSVersion" Value="2.0" />
                     <Param Name="ApplicationBase" Value="<folder path>" />
                     ...
-                  </InitializationParameters> 
+                  </InitializationParameters>
         */
         internal static ServerRemoteSession CreateServerRemoteSession(PSSenderInfo senderInfo,
             string configurationProviderId,
@@ -206,7 +206,9 @@ namespace System.Management.Automation.Remoting
             {
                 throw PSTraceSource.NewInvalidOperationException("RemotingErrorIdStrings.NonExistentInitialSessionStateProvider", configurationProviderId);
             }
-
+            string shellPrefix = System.Management.Automation.Remoting.Client.WSManNativeApi.ResourceURIPrefix;
+            int index = configurationProviderId.IndexOf(shellPrefix, StringComparison.OrdinalIgnoreCase);
+            senderInfo.ConfigurationName = (index == 0) ? configurationProviderId.Substring(shellPrefix.Length) : string.Empty;
             ServerRemoteSession result = new ServerRemoteSession(senderInfo,
                 configurationProviderId,
                 initializationParameters,
@@ -260,7 +262,7 @@ namespace System.Management.Automation.Remoting
         /// This is the data dispatcher for the whole remote connection.
         /// This dispatcher is registered with the server side input queue's InputDataReady event.
         /// When the input queue has received data from client, it calls the InputDataReady listeners.
-        /// 
+        ///
         /// This dispatcher distinguishes the negotiation packet as a special case. For all other data,
         /// it dispatches the data through Finite State Machines DoMessageReceived handler by raising the event
         /// MessageReceived. The FSM's DoMessageReceived handler further dispatches to the receiving
@@ -272,15 +274,15 @@ namespace System.Management.Automation.Remoting
         /// <param name="dataEventArg">
         /// This parameter contains the remote data received from client.
         /// </param>
-        /// 
+        ///
         /// <exception cref="ArgumentNullException">
         /// If the parameter <paramref name="dataEventArg" /> is null.
         /// </exception>
-        /// 
+        ///
         /// <exception cref="ArgumentException">
         /// If the parameter <paramref name="dataEventArg" /> does not contain remote data.
         /// </exception>
-        /// 
+        ///
         /// <exception cref="PSRemotingDataStructureException">
         /// If the destination of the data is not for server.
         /// </exception>
@@ -319,7 +321,7 @@ namespace System.Management.Automation.Remoting
                         {
                             // TODO: Directly calling an event handler in StateMachine bypassing the StateMachine's
                             // loop of ProcessEvents()..This is needed as connection is already established and the
-                            // following message does not change state. An ideal solution would be to process 
+                            // following message does not change state. An ideal solution would be to process
                             // non-session messages in this class rather than by StateMachine.
                             case RemotingDataType.CreateRunspacePool:
                                 messageReceivedArg = new RemoteSessionStateMachineEventArgs(RemoteSessionEvent.MessageReceived);
@@ -355,7 +357,7 @@ namespace System.Management.Automation.Remoting
 
                 // TODO: Directly calling an event handler in StateMachine bypassing the StateMachine's
                 // loop of ProcessEvents()..This is needed as connection is already established and the
-                // following message does not change state. An ideal solution would be to process 
+                // following message does not change state. An ideal solution would be to process
                 // non-session messages in this class rather than by StateMachine.
                 case RemotingTargetInterface.RunspacePool:
                 case RemotingTargetInterface.PowerShell:
@@ -379,7 +381,7 @@ namespace System.Management.Automation.Remoting
         /// Import or take other action based on the state
         /// </summary>
         /// <param name="sender">sender of this event, unused</param>
-        /// <param name="eventArgs">event arguments which contains the 
+        /// <param name="eventArgs">event arguments which contains the
         /// remote public key</param>
         private void HandlePublicKeyReceived(object sender, RemoteDataEventArgs<string> eventArgs)
         {
@@ -464,13 +466,13 @@ namespace System.Management.Automation.Remoting
 
         /// <summary>
         /// This property returns the ServerRemoteSessionContext object created inside
-        /// this object's contructor.
+        /// this object's constructor.
         /// </summary>
         internal ServerRemoteSessionContext Context { get; }
 
         /// <summary>
         /// This property returns the ServerRemoteSessionDataStructureHandler object created inside
-        /// this object's contructor.
+        /// this object's constructor.
         /// </summary>
         internal ServerRemoteSessionDataStructureHandler SessionDataStructureHandler { get; }
 
@@ -490,18 +492,18 @@ namespace System.Management.Automation.Remoting
         }
 
         /// <summary>
-        /// ExecutesConnect. expects client capability and connect_runspacepool PSRP 
-        /// messages in connectData. 
+        /// ExecutesConnect. expects client capability and connect_runspacepool PSRP
+        /// messages in connectData.
         /// If negotiation is successful and max and min runspaces in connect_runspacepool
-        /// match the assiciated runspace pool parameters, it builds up server capability
+        /// match the associated runspace pool parameters, it builds up server capability
         /// and runspace_initinfo in connectResponseData.
-        /// This is a version of Connect that executes the whole connect alogirithm in one single
-        /// hop. 
-        /// This algorithm is being executed synchronously without associating with state machine. 
+        /// This is a version of Connect that executes the whole connect algorithm in one single
+        /// hop.
+        /// This algorithm is being executed synchronously without associating with state machine.
         /// </summary>
         /// <param name="connectData"></param>
         /// <param name="connectResponseData"></param>
-        /// The operation is being outside the statemachine becuase of multiple reasons assiciated with design simplicity
+        /// The operation is being outside the statemachine because of multiple reasons associated with design simplicity
         /// - Support automatic disconnect and let wsman server stack take care of connection state
         /// - The response data should not travel in transports output stream but as part of connect response
         /// - We want this operation to be synchronous
@@ -519,8 +521,8 @@ namespace System.Management.Automation.Remoting
                 throw new PSRemotingDataStructureException(RemotingErrorIdStrings.ServerConnectFailedOnInputValidation);
             }
 
-            //TODO: Follow up on comment from Krishna regarding having the serialization/deserialization separate for this 
-            // operation. This could be integrated as helper functions in fragmenter/serializer components
+            //TODO: Follow up on comment from Krishna regarding having the serialization/deserialization separate for this
+            // operation. This could be integrated as helper functions in fragmentor/serializer components
             long fragmentId = FragmentedRemoteObject.GetFragmentId(connectData, 0);
             bool sFlag = FragmentedRemoteObject.GetIsStartFragment(connectData, 0);
             bool eFlag = FragmentedRemoteObject.GetIsEndFragment(connectData, 0);
@@ -630,7 +632,7 @@ namespace System.Management.Automation.Remoting
             int clientRequestedMinRunspaces = -1;
             int clientRequestedMaxRunspaces = -1;
             bool clientRequestedRunspaceCount = false;
-            if (connectRunspacePoolObject.Data.Properties[RemoteDataNameStrings.MinRunspaces] != null && connectRunspacePoolObject.Data.Properties[RemoteDataNameStrings.MinRunspaces] != null)
+            if (connectRunspacePoolObject.Data.Properties[RemoteDataNameStrings.MinRunspaces] != null && connectRunspacePoolObject.Data.Properties[RemoteDataNameStrings.MaxRunspaces] != null)
             {
                 try
                 {
@@ -664,7 +666,7 @@ namespace System.Management.Automation.Remoting
 
             //we currently dont support adjusting runspace count on a connect operation.
             //there is a potential race here where in the runspace pool driver is still yet to process a queued
-            //setMax or setMinrunspacees request. 
+            //setMax or setMinrunspaces request.
             //TODO: resolve this race.. probably by letting the runspace pool consume all messages before we execute this.
             if (clientRequestedRunspaceCount
                 && (_runspacePoolDriver.RunspacePool.GetMaxRunspaces() != clientRequestedMaxRunspaces)
@@ -674,7 +676,7 @@ namespace System.Management.Automation.Remoting
             }
 
             // all client messages are validated
-            // now build up the server capabilites and connect response messages to be piggybacked on connect response
+            // now build up the server capabilities and connect response messages to be piggybacked on connect response
             RemoteDataObject capability = RemotingEncoder.GenerateServerSessionCapability(Context.ServerCapability, _runspacePoolDriver.InstanceId);
             RemoteDataObject runspacepoolInitData = RemotingEncoder.GenerateRunspacePoolInitData(_runspacePoolDriver.InstanceId,
                                                                                                _runspacePoolDriver.RunspacePool.GetMaxRunspaces(),
@@ -682,7 +684,7 @@ namespace System.Management.Automation.Remoting
 
             //having this stream operating separately will result in out of sync fragment Ids. but this is still OK
             //as this is executed only when connecting from a new client that does not have any previous fragments context.
-            //no problem even if fragment Ids in this respose and the sessiontransport stream clash (interfere) and its guaranteed
+            //no problem even if fragment Ids in this response and the sessiontransport stream clash (interfere) and its guaranteed
             // that the fragments in connect response are always complete (enclose a complete object).
             SerializedDataStream stream = new SerializedDataStream(4 * 1024);//Each message with fragment headers cannot cross 4k
             stream.Enter();
@@ -692,13 +694,13 @@ namespace System.Management.Automation.Remoting
             runspacepoolInitData.Serialize(stream, fragmentor);
             stream.Exit();
             byte[] outbuffer = stream.Read();
-            Dbg.Assert(outbuffer != null, "connet response data should be serialized");
+            Dbg.Assert(outbuffer != null, "connect response data should be serialized");
             stream.Dispose();
             //we are done
             connectResponseData = outbuffer;
 
-            //enque a connect event in state machine to let session do any other post-connect operation
-            // Do this outside of the sychronous connect operation, as otherwise connect can easily get deadlocked
+            //enqueue a connect event in state machine to let session do any other post-connect operation
+            // Do this outside of the synchronous connect operation, as otherwise connect can easily get deadlocked
             ThreadPool.QueueUserWorkItem(new WaitCallback(
                 delegate (object state)
                 {
@@ -720,7 +722,7 @@ namespace System.Management.Automation.Remoting
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="createRunspaceEventArg"></param>
@@ -827,7 +829,7 @@ namespace System.Management.Automation.Remoting
                         var wsmanStackVersion = PSObject.Base(value["WSManStackVersion"]) as Version;
                         if (wsmanStackVersion != null && wsmanStackVersion.Major < 3)
                         {
-                            // The client side is PSv2. This is the Win7 to Win8 scenario. We need to add the PSv2 
+                            // The client side is PSv2. This is the Win7 to Win8 scenario. We need to add the PSv2
                             // TabExpansion function back in to keep the tab expansion functionable on the client side.
                             rsSessionStateToUse.Commands.Add(
                                 new SessionStateFunctionEntry(
@@ -905,7 +907,7 @@ namespace System.Management.Automation.Remoting
         /// <param name="negotiationEventArg">
         /// This parameter contains the client negotiation capability packet.
         /// </param>
-        /// 
+        ///
         /// <exception cref="ArgumentNullException">
         /// If the parameter <paramref name="negotiationEventArg"/> is null.
         /// </exception>
@@ -947,7 +949,7 @@ namespace System.Management.Automation.Remoting
         }
 
         /// <summary>
-        /// Handle session closing event to close runspace pool drivers this sesion is hosting.
+        /// Handle session closing event to close runspace pool drivers this session is hosting.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="eventArgs"></param>
@@ -994,9 +996,9 @@ namespace System.Management.Automation.Remoting
         /// Otherwise, it returns false.
         /// </returns>
         /// <exception cref="PSRemotingDataStructureException">
-        /// 1. PowerShell server does not support the PSVersion {1} negotiated by the client. 
+        /// 1. PowerShell server does not support the PSVersion {1} negotiated by the client.
         ///    Make sure the client is compatible with the build {2} of PowerShell.
-        /// 2. PowerShell server does not support the SerializationVersion {1} negotiated by the client. 
+        /// 2. PowerShell server does not support the SerializationVersion {1} negotiated by the client.
         ///    Make sure the client is compatible with the build {2} of PowerShell.
         /// </exception>
         private bool RunServerNegotiationAlgorithm(RemoteSessionCapability clientCapability, bool onConnect)
@@ -1130,7 +1132,7 @@ namespace System.Management.Automation.Remoting
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="clientRunspacePoolId"></param>
         /// <returns></returns>

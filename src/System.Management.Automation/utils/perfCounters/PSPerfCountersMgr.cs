@@ -14,7 +14,7 @@ namespace System.Management.Automation.PerformanceData
     /// <summary>
     /// Powershell Performance Counters Manager class shall provide a mechanism
     /// for components using SYstem.Management.Automation assembly to register
-    /// performance counters with Performance Counters susbsystem.
+    /// performance counters with Performance Counters subsystem.
     /// </summary>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly")]
     public class PSPerfCountersMgr
@@ -37,7 +37,7 @@ namespace System.Management.Automation.PerformanceData
 
         #endregion
 
-        #region Desctructor
+        #region Destructor
 
         /// <summary>
         /// Destructor which will trigger the cleanup of internal data structures and
@@ -156,7 +156,7 @@ namespace System.Management.Automation.PerformanceData
         /// <summary>
         /// If IsNumerator is true, then updates the numerator component
         /// of target counter 'counterId' in Counter Set 'counterSetId'
-        /// by 'stepAmount'. 
+        /// by 'stepAmount'.
         /// Otherwise, updates the denominator component by 'stepAmount'.
         /// </summary>
         [SuppressMessage("Microsoft.Design", "CA1026:DefaultParametersShouldNotBeUsed")]
@@ -187,7 +187,7 @@ namespace System.Management.Automation.PerformanceData
         /// <summary>
         /// If IsNumerator is true, then updates the numerator component
         /// of target counter 'counterName' in Counter Set 'counterSetId'
-        /// by 'stepAmount'. 
+        /// by 'stepAmount'.
         /// Otherwise, updates the denominator component by 'stepAmount'.
         /// </summary>
         [SuppressMessage("Microsoft.Design", "CA1026:DefaultParametersShouldNotBeUsed")]
@@ -218,7 +218,7 @@ namespace System.Management.Automation.PerformanceData
         /// <summary>
         /// If IsNumerator is true, then updates the numerator component
         /// of target counter 'counterId' in Counter Set 'counterSetName'
-        /// by 'stepAmount'. 
+        /// by 'stepAmount'.
         /// Otherwise, updates the denominator component by 'stepAmount'.
         /// </summary>
         [SuppressMessage("Microsoft.Design", "CA1026:DefaultParametersShouldNotBeUsed")]
@@ -258,7 +258,7 @@ namespace System.Management.Automation.PerformanceData
         /// <summary>
         /// If IsNumerator is true, then updates the numerator component
         /// of target counter 'counterName' in Counter Set 'counterSetName'
-        /// by 'stepAmount'. 
+        /// by 'stepAmount'.
         /// Otherwise, updates the denominator component by 'stepAmount'.
         /// </summary>
         [SuppressMessage("Microsoft.Design", "CA1026:DefaultParametersShouldNotBeUsed")]
@@ -298,8 +298,8 @@ namespace System.Management.Automation.PerformanceData
         /// <summary>
         /// If IsNumerator is true, then sets the numerator component
         /// of target counter 'counterId' in Counter Set 'counterSetId'
-        /// to 'counterValue'. 
-        /// Otherwise, updates the denominator component to 'counterValue'. 
+        /// to 'counterValue'.
+        /// Otherwise, updates the denominator component to 'counterValue'.
         /// </summary>
         [SuppressMessage("Microsoft.Design", "CA1026:DefaultParametersShouldNotBeUsed")]
         public bool SetCounterValue(
@@ -329,8 +329,8 @@ namespace System.Management.Automation.PerformanceData
         /// <summary>
         /// If IsNumerator is true, then sets the numerator component
         /// of target counter 'counterName' in Counter Set 'counterSetId'
-        /// to 'counterValue'. 
-        /// Otherwise, updates the denominator component to 'counterValue'. 
+        /// to 'counterValue'.
+        /// Otherwise, updates the denominator component to 'counterValue'.
         /// </summary>
         [SuppressMessage("Microsoft.Design", "CA1026:DefaultParametersShouldNotBeUsed")]
         public bool SetCounterValue(
@@ -360,8 +360,8 @@ namespace System.Management.Automation.PerformanceData
         /// <summary>
         /// If IsNumerator is true, then sets the numerator component
         /// of target counter 'counterId' in Counter Set 'counterSetName'
-        /// to 'counterValue'. 
-        /// Otherwise, updates the denominator component to 'counterValue'. 
+        /// to 'counterValue'.
+        /// Otherwise, updates the denominator component to 'counterValue'.
         /// </summary>
         [SuppressMessage("Microsoft.Design", "CA1026:DefaultParametersShouldNotBeUsed")]
         public bool SetCounterValue(
@@ -400,8 +400,8 @@ namespace System.Management.Automation.PerformanceData
         /// <summary>
         /// If IsNumerator is true, then sets the numerator component
         /// of target counter 'counterName' in Counter Set 'counterSetName'
-        /// to 'counterValue'. 
-        /// Otherwise, updates the denominator component to 'counterValue'. 
+        /// to 'counterValue'.
+        /// Otherwise, updates the denominator component to 'counterValue'.
         /// </summary>
         [SuppressMessage("Microsoft.Design", "CA1026:DefaultParametersShouldNotBeUsed")]
         public bool SetCounterValue(

@@ -1,5 +1,5 @@
 /*============================================================================
- * Copyright (C) Microsoft Corporation, All rights reserved. 
+ * Copyright (C) Microsoft Corporation, All rights reserved.
  *============================================================================
  */
 
@@ -75,7 +75,7 @@ namespace Microsoft.Management.Infrastructure.CimCmdlets
 
         /// <summary>
         /// <para>
-        /// Refactory to be reused by Get-CimInstance;Remove-CimInstance;Set-CimInstance
+        /// Refactor to be reused by Get-CimInstance;Remove-CimInstance;Set-CimInstance
         /// </para>
         /// </summary>
         /// <param name="cmdlet"></param>
@@ -182,7 +182,7 @@ namespace Microsoft.Management.Infrastructure.CimCmdlets
                     {
                         proxy.EnumerateInstancesAsync(GetNamespace(cmdlet), GetClassName(cmdlet));
                     }
-                    break;                                            
+                    break;
                 default:
                     break;
             }
@@ -375,7 +375,7 @@ namespace Microsoft.Management.Infrastructure.CimCmdlets
                 proxy.OperationTimeout = removeCimInstance.OperationTimeoutSec;
                 if(removeCimInstance.ResourceUri != null )
                 {
-                    proxy.ResourceUri = removeCimInstance.ResourceUri;                
+                    proxy.ResourceUri = removeCimInstance.ResourceUri;
                 }
                 CimRemoveCimInstanceContext context = new CimRemoveCimInstanceContext(
                     ConstValue.GetNamespace(removeCimInstance.Namespace),
@@ -388,7 +388,7 @@ namespace Microsoft.Management.Infrastructure.CimCmdlets
                 proxy.OperationTimeout = setCimInstance.OperationTimeoutSec;
                 if(setCimInstance.ResourceUri != null )
                 {
-                    proxy.ResourceUri = setCimInstance.ResourceUri;                
+                    proxy.ResourceUri = setCimInstance.ResourceUri;
                 }
                 CimSetCimInstanceContext context = new CimSetCimInstanceContext(
                     ConstValue.GetNamespace(setCimInstance.Namespace),

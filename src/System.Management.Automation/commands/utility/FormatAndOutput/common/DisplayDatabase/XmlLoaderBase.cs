@@ -17,12 +17,12 @@ using Microsoft.PowerShell.CoreClr.Stubs;
 #endif
 
 /*
- SUMMARY: this file contains a general purpose, reusable framework for 
-    loading XML files, and do data validation. 
+ SUMMARY: this file contains a general purpose, reusable framework for
+    loading XML files, and do data validation.
     It provides the capability of:
     * logging errors, warnings and traces to a file or in memory
     * managing the XML dom traversal using an add hoc stack frame management scheme
-    * validating common error condotions (e.g. missing node or unknown node)
+    * validating common error conditions (e.g. missing node or unknown node)
 */
 
 namespace Microsoft.PowerShell.Commands.Internal.Format
@@ -87,7 +87,7 @@ namespace Microsoft.PowerShell.Commands.Internal.Format
     internal class XmlLoaderLogger : IDisposable
     {
         #region tracer
-        //PSS/end-user tracer 
+        //PSS/end-user tracer
         [TraceSource("FormatFileLoading", "Loading format files")]
         private static PSTraceSource s_formatFileLoadingtracer = PSTraceSource.GetTracer("FormatFileLoading", "Loading format files", false);
 
@@ -247,7 +247,7 @@ namespace Microsoft.PowerShell.Commands.Internal.Format
         }
 
         /// <summary>
-        /// get the list of logg entries
+        /// get the list of log entries
         /// </summary>
         /// <value>list of entries logged during a load</value>
         internal List<XmlLoaderLoggerEntry> LogEntries
@@ -666,11 +666,6 @@ namespace Microsoft.PowerShell.Commands.Internal.Format
                 this.ReportTrace("XmlDocument discarded");
                 return null;
             }
-            catch (Exception e) // will rethrow
-            {
-                CommandProcessor.CheckForSevereException(e);
-                throw;
-            }
         }
 
         #endregion
@@ -678,7 +673,7 @@ namespace Microsoft.PowerShell.Commands.Internal.Format
         /// <summary>
         /// file system path for the file we are loading from
         /// </summary>
-        /// 
+        ///
         protected string FilePath
         {
             get

@@ -58,7 +58,7 @@ namespace Microsoft.PowerShell.Workflow
         internal WaitHandle Running { get { return this.JobRunning; } }
 
         /// <summary>
-        /// Signaled when job finishes suspending or aboring
+        /// Signaled when job finishes suspending or aborting
         /// </summary>
         internal WaitHandle SuspendedOrAborted { get { return this.JobSuspendedOrAborted; } }
 
@@ -148,7 +148,7 @@ namespace Microsoft.PowerShell.Workflow
         private Dictionary<string, object> _jobMetadata = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
         private Dictionary<string, object> _privateMetadata = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
 
-        // Holds the collection of input objects recieved from the pipeline
+        // Holds the collection of input objects received from the pipeline
         private PSDataCollection<PSObject> _inputCollection;
 
         private ManualResetEvent _jobRunning;
@@ -429,7 +429,7 @@ namespace Microsoft.PowerShell.Workflow
         /// </summary>
         /// <param name="state"></param>
         /// <param name="reason"></param>
-        /// <returns>returns false if state tranition is not possible. Return value is required to update SQM perf counters</returns>
+        /// <returns>returns false if state transition is not possible. Return value is required to update SQM perf counters</returns>
         private bool DoSetJobState(JobState state, Exception reason = null)
         {
             if (IsFinishedState(_previousState) || _isDisposed) return false;
@@ -438,10 +438,10 @@ namespace Microsoft.PowerShell.Workflow
             {
                 if (IsFinishedState(_previousState) || _isDisposed) return false;
 
-                // State should not be transitioned to suspended from stopping 
+                // State should not be transitioned to suspended from stopping
                 if (_previousState == JobState.Stopping && state == JobState.Suspended) return false;
 
-                // State should not be transitioned to suspended from suspended 
+                // State should not be transitioned to suspended from suspended
                 if (_previousState == JobState.Suspended && state == JobState.Suspended) return false;
 
                 if (state != _previousState && StructuredTracer.IsEnabled)
@@ -539,7 +539,7 @@ namespace Microsoft.PowerShell.Workflow
                             {
                                 // If we're self-remoting, location becomes the default computer
                                 // and the PSComputerNames is passed in as an argument instead
-                                // of going to the ubiquitious parameters
+                                // of going to the ubiquitous parameters
                                 _location = Constants.DefaultComputerName;
                                 string parameterName = dynamicActivity.Properties.First(x => x.Name.Equals(Constants.ComputerName, StringComparison.CurrentCultureIgnoreCase)).Name;
                                 _workflowParameters[parameterName] = LanguagePrimitives.ConvertTo<string[]>(parameter.Value);
@@ -603,7 +603,7 @@ namespace Microsoft.PowerShell.Workflow
                             break;
 
                         case Constants.PSParameterCollection:
-                            // Remove this one from the parameter collecton...
+                            // Remove this one from the parameter collection...
                             break;
                         case Constants.PSRunningTime:
                         case Constants.PSElapsedTime:
@@ -792,7 +792,7 @@ namespace Microsoft.PowerShell.Workflow
                     throw new InvalidJobStateException(JobStateInfo.State, Resources.ResumeNotValidState);
                 }
 
-                // this will avoid the race codition between two resume requests and both are trying to load instance and loadstreams.
+                // this will avoid the race condition between two resume requests and both are trying to load instance and loadstreams.
                 _resuming = true;
             }
 
@@ -1123,7 +1123,7 @@ namespace Microsoft.PowerShell.Workflow
             _tracer.WriteMessage(ClassNameTrace, "OnWorkflowSuspended", WorkflowGuidForTraces, this, "BEGIN");
 
             // CheckStopping() was not thread safe.
-            // Now DoSetJobState handles the invalid state transion from stopping to suspended
+            // Now DoSetJobState handles the invalid state transition from stopping to suspended
             if (DoSetJobState(JobState.Suspended))
             {
                 StructuredTracer.WorkflowUnloaded(_workflowInstance.Id);
@@ -1173,7 +1173,7 @@ namespace Microsoft.PowerShell.Workflow
         }
 
         /// <summary>
-        /// Unloads the streams of the job. 
+        /// Unloads the streams of the job.
         /// </summary>
         /// <remarks>
         /// To be called from this class only</remarks>
@@ -1327,7 +1327,7 @@ namespace Microsoft.PowerShell.Workflow
         internal void ConfigureWorkflowHandlers()
         {
             _workflowInstance.OnCompletedDelegate = OnWorkflowCompleted;
-            _workflowInstance.OnSuspenedDelegate = OnWorkflowSuspended;
+            _workflowInstance.OnSuspendedDelegate = OnWorkflowSuspended;
             _workflowInstance.OnStoppedDelegate = OnWorkflowStopped;
             _workflowInstance.OnAbortedDelegate = OnWorkflowAborted;
             _workflowInstance.OnFaultedDelegate = OnWorkflowFaulted;
@@ -1371,7 +1371,7 @@ namespace Microsoft.PowerShell.Workflow
             }
 
             Dbg.Assert(instance.JobStateRetrieved,
-                       "Cannot set job state when job state is not retrieved or when there is an error in retrival");
+                       "Cannot set job state when job state is not retrieved or when there is an error in retrieval");
             // igorse: set job state when job is fully restored as StateChanged event will fire
             DoSetJobState(instance.State, reason);
             _tracer.WriteMessage(ClassNameTrace, "RestoreFromWorkflowInstance", WorkflowGuidForTraces, this, "END");
@@ -1444,7 +1444,7 @@ namespace Microsoft.PowerShell.Workflow
 
             var container = new AsyncCompleteContainer { EventArgs = eventArgs, Action = action };
 
-            // End the task. The asyncOp object is responsible 
+            // End the task. The asyncOp object is responsible
             // for marshaling the call.
             asyncOp.PostOperationCompleted(JobActionAsyncCompleted, container);
         }
@@ -1536,7 +1536,7 @@ namespace Microsoft.PowerShell.Workflow
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="runtime"></param>
         /// <param name="command"></param>
@@ -1551,7 +1551,7 @@ namespace Microsoft.PowerShell.Workflow
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="runtime"></param>
         /// <param name="command"></param>
@@ -1567,7 +1567,7 @@ namespace Microsoft.PowerShell.Workflow
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="runtime"></param>
         /// <param name="command"></param>
@@ -1595,7 +1595,7 @@ namespace Microsoft.PowerShell.Workflow
         #region Overrides of Job
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public override void StopJob()
         {
@@ -1646,7 +1646,7 @@ namespace Microsoft.PowerShell.Workflow
         #region Overrides of Job2
 
         /// <summary>
-        /// Implementation of this method will allow the delayed loadig of streams.
+        /// Implementation of this method will allow the delayed loading of streams.
         /// </summary>
         protected override void DoLoadJobStreams()
         {
@@ -1686,7 +1686,7 @@ namespace Microsoft.PowerShell.Workflow
         /// start a job. The job will be started with the parameters
         /// specified in StartParameters
         /// </summary>
-        /// <remarks>It is redudant to have a method named StartJob
+        /// <remarks>It is redundant to have a method named StartJob
         /// on a job class. However, this is done so as to avoid
         /// an FxCop violation "CA1716:IdentifiersShouldNotMatchKeywords"
         /// Stop and Resume are reserved keyworks in C# and hence cannot
@@ -1716,7 +1716,7 @@ namespace Microsoft.PowerShell.Workflow
             catch (Exception e)
             {
                 // Catching all exceptions is valid here because
-                // Transfering exception with event arguments.
+                // Transferring exception with event arguments.
                 OnStartJobCompleted(new AsyncCompletedEventArgs(e, false, null));
             }
 #pragma warning restore 56500
@@ -2011,7 +2011,7 @@ namespace Microsoft.PowerShell.Workflow
                     // Labeled resumption is in progress so we cannot allow the suspension
                     return PSPersistableIdleAction.None;
                 }
-                
+
                 if (defaultValue == PSPersistableIdleAction.Suspend)
                     wfSuspendInProgress = true;
 
@@ -2037,7 +2037,7 @@ namespace Microsoft.PowerShell.Workflow
             catch (Exception e)
             {
                 // Catching all exceptions is valid here because
-                // Transfering exception with event arguments.
+                // Transferring exception with event arguments.
                 OnResumeJobCompleted(new AsyncCompletedEventArgs(e, false, null));
             }
 #pragma warning restore 56500
@@ -2075,7 +2075,7 @@ namespace Microsoft.PowerShell.Workflow
             catch (Exception e)
             {
                 // Catching all exceptions is valid here because
-                // Transfering exception with event arguments.
+                // Transferring exception with event arguments.
                 OnResumeJobCompleted(new AsyncCompletedEventArgs(e, false, null));
             }
 #pragma warning restore 56500
@@ -2102,7 +2102,7 @@ namespace Microsoft.PowerShell.Workflow
         #region IDisposable
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="disposing"></param>
         protected override void Dispose(bool disposing)
@@ -2159,9 +2159,9 @@ namespace Microsoft.PowerShell.Workflow
         {
             lock(SyncRoot)
             {
-                // Event Handler should be added 
+                // Event Handler should be added
                 // if JobState is not changed after job submitted to the Workflow job manager queue, OR
-                // if job is already running due to other labelled resume operation or other start job operation. 
+                // if job is already running due to other labelled resume operation or other start job operation.
                 //
                 if (JobStateInfo.State == expectedState || JobStateInfo.State == JobState.Running)
                 {

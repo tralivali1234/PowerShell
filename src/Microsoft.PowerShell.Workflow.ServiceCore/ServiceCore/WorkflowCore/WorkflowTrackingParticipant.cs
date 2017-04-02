@@ -17,7 +17,7 @@ namespace Microsoft.PowerShell.Workflow
     using System.Text;
 
     /// <summary>
-    /// Contains members that allow the addition of custom extension to 
+    /// Contains members that allow the addition of custom extension to
     /// the PowerShell workflow engine.
     /// </summary>
     public static class PSWorkflowExtensions
@@ -64,7 +64,7 @@ namespace Microsoft.PowerShell.Workflow
         }
 
         /// <summary>
-        /// Retreive each type of tracking record and perform the corresponding fucntionality.
+        /// Retrieve each type of tracking record and perform the corresponding functionality.
         /// </summary>
         /// <param name="record">Represents the tracking record.</param>
         /// <param name="timeout">Time out for the tracking to be completed.</param>

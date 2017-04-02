@@ -32,7 +32,7 @@ namespace System.Management.Automation.Internal
             _stream = stream;
 #if (false)
             stream.WriteReady += new EventHandler (this.OnWriteReady);
-#endif                
+#endif
         }
 
         #region Properties
@@ -156,7 +156,7 @@ namespace System.Management.Automation.Internal
         /// If enumerateCollection is true, and <paramref name="obj"/>
         /// is an enumeration according to LanguagePrimitives.GetEnumerable,
         /// the objects in the enumeration will be unrolled and
-        /// written seperately.  Otherwise, <paramref name="obj"/>
+        /// written separately.  Otherwise, <paramref name="obj"/>
         /// will be written as a single object.
         /// </param>
         /// <returns>The number of objects written</returns>
@@ -184,13 +184,13 @@ namespace System.Management.Automation.Internal
         {
             if (WriteReady != null)
             {
-                // call any event handlers on this, replacing the 
+                // call any event handlers on this, replacing the
                 // ObjectStream sender with 'this' since receivers
                 // are expecting an PipelineWriter
                 WriteReady (this, args);
             }
         }
-#endif        
+#endif
 
         #endregion Methods
 
@@ -211,7 +211,7 @@ namespace System.Management.Automation.Internal
     /// <remarks>
     /// PSDataCollection is introduced after 1.0. PSDataCollection
     /// is used to store data from the last command in
-    /// the pipeline and hence the writer will not 
+    /// the pipeline and hence the writer will not
     /// support certain features like Flush().
     /// </remarks>
     internal class PSDataCollectionWriter<T> : ObjectWriter

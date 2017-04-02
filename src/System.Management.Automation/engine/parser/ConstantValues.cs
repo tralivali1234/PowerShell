@@ -41,12 +41,11 @@ namespace System.Management.Automation.Language
                     }
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 // If we get an exception, ignore it and assume the expression isn't constant.
                 // This can happen, e.g. if a cast is invalid:
                 //     [int]"zed"
-                CommandProcessorBase.CheckForSevereException(e);
             }
 
             constantValue = null;
@@ -252,7 +251,7 @@ namespace System.Management.Automation.Language
         {
             // A script block expression is a constant when we're generating metadata, but when
             // we're generating code, we need to create new script blocks so we can't use a constant.
-            // Also - we have no way to desribe a script block when generating .Net metadata, so
+            // Also - we have no way to describe a script block when generating .Net metadata, so
             // we must disallow script blocks as attribute arguments on/inside a class.
             return CheckingAttributeArgument && !CheckingClassAttributeArguments;
         }

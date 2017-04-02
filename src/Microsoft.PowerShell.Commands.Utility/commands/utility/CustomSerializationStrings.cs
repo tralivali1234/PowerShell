@@ -6,10 +6,10 @@ namespace System.Management.Automation
 {
     /// <summary>
     /// This class contains strings required for serialization for Convertto-XML
-    /// </summary> 
+    /// </summary>
     internal static class CustomSerializationStrings
     {
-        #region element tags        
+        #region element tags
 
 
         /// <summary>
@@ -45,12 +45,12 @@ namespace System.Management.Automation
         #region known container tags
 
         /// <summary>
-        /// Value of name attribute for dictionary key part in dictnary entry
+        /// Value of name attribute for dictionary key part in dictionary entry
         /// </summary>
         internal const string DictionaryKey = "Key";
 
         /// <summary>
-        /// Value of name attribute for dictionary value part in dictnary entry
+        /// Value of name attribute for dictionary value part in dictionary entry
         /// </summary>
         internal const string DictionaryValue = "Value";
 

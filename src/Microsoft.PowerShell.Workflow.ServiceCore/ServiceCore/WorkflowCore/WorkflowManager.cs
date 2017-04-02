@@ -98,7 +98,7 @@ namespace Microsoft.PowerShell.Workflow
         /// <param name="throttleLimit"></param>
         public PSWorkflowJobManager(PSWorkflowRuntime runtime, int throttleLimit)
         {
-            if (runtime == null) 
+            if (runtime == null)
             {
                 throw new ArgumentNullException("runtime");
             }
@@ -107,7 +107,7 @@ namespace Microsoft.PowerShell.Workflow
             {
                 System.Threading.Interlocked.Increment(ref ObjectCounter);
             }
-            
+
             _runtime = runtime;
             _throttleLimit = throttleLimit;
 
@@ -123,7 +123,7 @@ namespace Microsoft.PowerShell.Workflow
 
 
         /// <summary>
-        /// Disope implementation.
+        /// Dispose implementation.
         /// </summary>
         public void Dispose()
         {
@@ -132,7 +132,7 @@ namespace Microsoft.PowerShell.Workflow
         }
 
         /// <summary>
-        /// Disope implementation.
+        /// Dispose implementation.
         /// </summary>
         /// <param name="disposing"></param>
         private void Dispose(bool disposing)
@@ -171,7 +171,7 @@ namespace Microsoft.PowerShell.Workflow
                 _isDisposed = true;
             }
         }
-        
+
         private void AssertNotDisposed()
         {
             if (_isDisposed)
@@ -297,10 +297,10 @@ namespace Microsoft.PowerShell.Workflow
         }
 
         private readonly Lazy<AutoResetEvent> _waitForJobs = new Lazy<AutoResetEvent>(() => new AutoResetEvent(false));
-        
+
         private void CheckAndStartServicingThread()
         {
-            // check to see if waking the servicing thread at 
+            // check to see if waking the servicing thread at
             // this point will actually lead to servicing. If
             // so wake it up
             if (_inProgressCount < _throttleLimit && _pendingQueue.Count > 0)
@@ -310,7 +310,7 @@ namespace Microsoft.PowerShell.Workflow
             {
                 lock (_syncObject)
                 {
-                    // Start the shudown timer when there is no inprogess job, no pending job requests and no active sessions
+                    // Start the shutdown timer when there is no inprogress job, no pending job requests and no active sessions
                     // Otherwise disable it
                     if (_activeSessionsCount == 0 && _inProgressCount == 0 && _pendingQueue.Count == 0)
                     {
@@ -395,7 +395,7 @@ namespace Microsoft.PowerShell.Workflow
 
                     if (_shutdownTimer != null)
                     {
-                        // Start the shudown timer when there is no inprogess job, no pending job requests and no active sessions
+                        // Start the shutdown timer when there is no inprogress job, no pending job requests and no active sessions
                         // Otherwise disable it
                         if (_activeSessionsCount == 0 && _inProgressCount == 0 && _pendingQueue.Count == 0)
                         {
@@ -479,7 +479,7 @@ namespace Microsoft.PowerShell.Workflow
 
                 // there are no more requests to service however there
                 // can be running jobs. When everything is complete and
-                // _inProgressCount is 0 and there no further requests, 
+                // _inProgressCount is 0 and there no further requests,
                 // this method will still be called. At that point fire
                 // the wait timer
                 if (_inProgressCount == 0 && _pendingQueue.Count == 0)
@@ -722,7 +722,7 @@ namespace Microsoft.PowerShell.Workflow
                                       {Constants.JobMetadataParentInstanceId, Guid.NewGuid()},
                                       {Constants.JobMetadataParentSessionId, 0}, // no need to worry about '0' because it will be re assigned when loaded into the session.
                                       {Constants.JobMetadataParentName, job.Name},
-                                      {Constants.JobMetadataParentCommand, job.Command} 
+                                      {Constants.JobMetadataParentCommand, job.Command}
                                   };
 
             return jobMetadata;
@@ -755,7 +755,7 @@ namespace Microsoft.PowerShell.Workflow
             // Create parent job. All PSWorkflowJob objects will be a child of some ContainerParentJob
             // This job will be disposed of when RemoveJob is called.
             ContainerParentJob newJob = new ContainerParentJob(
-                jobInvocationInfo.Command, 
+                jobInvocationInfo.Command,
                 jobInvocationInfo.Name,
                 WorkflowJobSourceAdapter.AdapterTypeName);
 
@@ -987,7 +987,7 @@ namespace Microsoft.PowerShell.Workflow
         /// <returns>Returns the collection of workflow instances.</returns>
         internal IEnumerable<Job2> GetJobs(WorkflowFilterTypes type, Dictionary<string, object> filters)
         {
-            Tracer.WriteMessage(Facility + "Geting workflow instances based on filters");
+            Tracer.WriteMessage(Facility + "Getting workflow instances based on filters");
             return GetJobs(_wfJobTable.Values, type, filters);
         }
 
@@ -1009,9 +1009,9 @@ namespace Microsoft.PowerShell.Workflow
             // we have already searched based on Id, InstanceId, Name and Command
             // these can now be removed from the list of items to search
             string[] toRemove = {
-                                 Constants.JobMetadataSessionId, 
+                                 Constants.JobMetadataSessionId,
                                  Constants.JobMetadataInstanceId,
-                                 Constants.JobMetadataName, 
+                                 Constants.JobMetadataName,
                                  Constants.JobMetadataCommand
                                 };
 
@@ -1024,7 +1024,7 @@ namespace Microsoft.PowerShell.Workflow
                 return narrowedList;
 
             foreach (var job in narrowedList)
-            {                
+            {
                 // we intend to find jobs that match ALL criteria in filters
                 // NOT ANY criteria
                 bool computerNameMatch = true;
@@ -1041,7 +1041,7 @@ namespace Microsoft.PowerShell.Workflow
                         break;
                     }
 
-                    // if guid is passed as a string try to convert and use the same                    
+                    // if guid is passed as a string try to convert and use the same
                     if (value is Guid)
                     {
                         Guid filterValueAsGuid;
@@ -1087,7 +1087,7 @@ namespace Microsoft.PowerShell.Workflow
 
                                 if (!filterPattern.IsMatch(instanceComputer)) continue;
                                 computerNameMatch = true;
-                                break;                                
+                                break;
                             }
                             if (!computerNameMatch) break;
                         }
@@ -1118,7 +1118,7 @@ namespace Microsoft.PowerShell.Workflow
 
                     if ((filter.Value is string || filter.Value is WildcardPattern) && value is string)
                     {
-                        // at this point we are guaranteed that the key exists somewehere                    
+                        // at this point we are guaranteed that the key exists somewhere
                         WildcardPattern pattern;
                         string stringValue = filter.Value as string;
                         if (stringValue != null)
@@ -1148,7 +1148,7 @@ namespace Microsoft.PowerShell.Workflow
                 {
                     selectedJobs.Add(job);
                 }
-            } //end of outer foreach    
+            } //end of outer foreach
 
             return selectedJobs;
         }
@@ -1315,7 +1315,7 @@ namespace Microsoft.PowerShell.Workflow
                         }
                         catch (ObjectDisposedException)
                         {
-                            Tracer.WriteMessage(Facility, "RemoveJob", job.PSWorkflowInstance.Id, "Worklfow Job is already disposed. so removing it.");
+                            Tracer.WriteMessage(Facility, "RemoveJob", job.PSWorkflowInstance.Id, "Workflow Job is already disposed. so removing it.");
                         }
                     }
                 }
@@ -1344,7 +1344,7 @@ namespace Microsoft.PowerShell.Workflow
 
             lock (lockObjects.GetLockObject(instanceId))
             {
-                Tracer.WriteMessage(Facility + "Forgeting job instance with id: " + instanceId);
+                Tracer.WriteMessage(Facility + "Forgetting job instance with id: " + instanceId);
 
                 PSWorkflowJob job = GetJob(instanceId);
 
@@ -1392,8 +1392,8 @@ namespace Microsoft.PowerShell.Workflow
             {
                 if (Thread.CurrentThread.GetApartmentState() == ApartmentState.STA)
                 {
-                    foreach (WaitHandle hanlde in waitHandles)
-                        hanlde.WaitOne();
+                    foreach (WaitHandle handle in waitHandles)
+                        handle.WaitOne();
                 }
                 else
                 {
@@ -1469,7 +1469,7 @@ namespace Microsoft.PowerShell.Workflow
         {
             if (lockObjects.ContainsKey(id) == false)
                 return;
-                
+
             lock (syncLock)
             {
                 if (lockObjects.ContainsKey(id) == false)

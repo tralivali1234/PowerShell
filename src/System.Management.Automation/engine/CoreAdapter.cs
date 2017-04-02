@@ -33,7 +33,7 @@ namespace System.Management.Automation
     /// This is the place to look every time you create a new Adapter. Consider if you 
     /// should implement each of the virtual methods here.
     /// The base class deals with errors and performs additional operations before and after
-    /// calling the drived virtual methods.
+    /// calling the derived virtual methods.
     /// </summary>
     internal abstract class Adapter
     {
@@ -119,7 +119,7 @@ namespace System.Management.Automation
         /// </summary>
         /// <param name="property">PSProperty coming from a previous call to GetMember</param>
         /// <param name="setValue">value to set the property with</param>
-        /// <param name="convertIfPossible">instructs the adapter to convert before setting, if the adapter suports conversion</param>
+        /// <param name="convertIfPossible">instructs the adapter to convert before setting, if the adapter supports conversion</param>
         protected abstract void PropertySet(PSProperty property, object setValue, bool convertIfPossible);
 
         /// <summary>
@@ -363,7 +363,6 @@ namespace System.Management.Automation
             catch (ExtendedTypeSystemException) { throw; }
             catch (Exception e)
             {
-                CommandProcessorBase.CheckForSevereException(e);
                 throw NewException(e, "CatchFromBaseGetTypeNameHierarchy", "CatchFromBaseGetTypeNameHierarchyTI",
                                    ExtendedTypeSystem.ExceptionRetrievingTypeNameHierarchy);
             }
@@ -378,7 +377,6 @@ namespace System.Management.Automation
             catch (ExtendedTypeSystemException) { throw; }
             catch (Exception e)
             {
-                CommandProcessorBase.CheckForSevereException(e);
                 throw NewException(e, "CatchFromBaseGetMember", "CatchFromBaseGetMemberTI",
                     ExtendedTypeSystem.ExceptionGettingMember, memberName);
             }
@@ -393,7 +391,6 @@ namespace System.Management.Automation
             catch (ExtendedTypeSystemException) { throw; }
             catch (Exception e)
             {
-                CommandProcessorBase.CheckForSevereException(e);
                 throw NewException(e, "CatchFromBaseGetMembers", "CatchFromBaseGetMembersTI",
                     ExtendedTypeSystem.ExceptionGettingMembers);
             }
@@ -420,7 +417,6 @@ namespace System.Management.Automation
             catch (GetValueException) { throw; }
             catch (Exception e)
             {
-                CommandProcessorBase.CheckForSevereException(e);
                 throw new GetValueInvocationException("CatchFromBaseAdapterGetValue",
                     e,
                     ExtendedTypeSystem.ExceptionWhenGetting,
@@ -445,7 +441,6 @@ namespace System.Management.Automation
             catch (SetValueException) { throw; }
             catch (Exception e)
             {
-                CommandProcessorBase.CheckForSevereException(e);
                 throw new SetValueInvocationException("CatchFromBaseAdapterSetValue",
                     e,
                     ExtendedTypeSystem.ExceptionWhenSetting,
@@ -462,7 +457,6 @@ namespace System.Management.Automation
             catch (ExtendedTypeSystemException) { throw; }
             catch (Exception e)
             {
-                CommandProcessorBase.CheckForSevereException(e);
                 throw NewException(e, "CatchFromBasePropertyIsSettable", "CatchFromBasePropertyIsSettableTI",
                     ExtendedTypeSystem.ExceptionRetrievingPropertyWriteState, property.Name);
             }
@@ -477,7 +471,6 @@ namespace System.Management.Automation
             catch (ExtendedTypeSystemException) { throw; }
             catch (Exception e)
             {
-                CommandProcessorBase.CheckForSevereException(e);
                 throw NewException(e, "CatchFromBasePropertyIsGettable", "CatchFromBasePropertyIsGettableTI",
                     ExtendedTypeSystem.ExceptionRetrievingPropertyReadState, property.Name);
             }
@@ -492,7 +485,6 @@ namespace System.Management.Automation
             catch (ExtendedTypeSystemException) { throw; }
             catch (Exception e)
             {
-                CommandProcessorBase.CheckForSevereException(e);
                 throw NewException(e, "CatchFromBasePropertyType", "CatchFromBasePropertyTypeTI",
                     ExtendedTypeSystem.ExceptionRetrievingPropertyType, property.Name);
             }
@@ -507,7 +499,6 @@ namespace System.Management.Automation
             catch (ExtendedTypeSystemException) { throw; }
             catch (Exception e)
             {
-                CommandProcessorBase.CheckForSevereException(e);
                 throw NewException(e, "CatchFromBasePropertyToString", "CatchFromBasePropertyToStringTI",
                     ExtendedTypeSystem.ExceptionRetrievingPropertyString, property.Name);
             }
@@ -522,7 +513,6 @@ namespace System.Management.Automation
             catch (ExtendedTypeSystemException) { throw; }
             catch (Exception e)
             {
-                CommandProcessorBase.CheckForSevereException(e);
                 throw NewException(e, "CatchFromBasePropertyAttributes", "CatchFromBasePropertyAttributesTI",
                     ExtendedTypeSystem.ExceptionRetrievingPropertyAttributes, property.Name);
             }
@@ -551,8 +541,6 @@ namespace System.Management.Automation
             catch (MethodException) { throw; }
             catch (Exception e)
             {
-                CommandProcessorBase.CheckForSevereException(e);
-
                 if (method.baseObject is SteppablePipeline
                     && (method.Name.Equals("Begin", StringComparison.OrdinalIgnoreCase) ||
                         method.Name.Equals("Process", StringComparison.OrdinalIgnoreCase) ||
@@ -577,7 +565,6 @@ namespace System.Management.Automation
             catch (ExtendedTypeSystemException) { throw; }
             catch (Exception e)
             {
-                CommandProcessorBase.CheckForSevereException(e);
                 throw NewException(e, "CatchFromBaseMethodDefinitions", "CatchFromBaseMethodDefinitionsTI",
                     ExtendedTypeSystem.ExceptionRetrievingMethodDefinitions, method.Name);
             }
@@ -592,7 +579,6 @@ namespace System.Management.Automation
             catch (ExtendedTypeSystemException) { throw; }
             catch (Exception e)
             {
-                CommandProcessorBase.CheckForSevereException(e);
                 throw NewException(e, "CatchFromBaseMethodToString", "CatchFromBaseMethodToStringTI",
                     ExtendedTypeSystem.ExceptionRetrievingMethodString, method.Name);
             }
@@ -610,7 +596,6 @@ namespace System.Management.Automation
             catch (ExtendedTypeSystemException) { throw; }
             catch (Exception e)
             {
-                CommandProcessorBase.CheckForSevereException(e);
                 throw NewException(e, "CatchFromBaseParameterizedPropertyType", "CatchFromBaseParameterizedPropertyTypeTI",
                     ExtendedTypeSystem.ExceptionRetrievingParameterizedPropertytype, property.Name);
             }
@@ -625,7 +610,6 @@ namespace System.Management.Automation
             catch (ExtendedTypeSystemException) { throw; }
             catch (Exception e)
             {
-                CommandProcessorBase.CheckForSevereException(e);
                 throw NewException(e, "CatchFromBaseParameterizedPropertyIsSettable", "CatchFromBaseParameterizedPropertyIsSettableTI",
                     ExtendedTypeSystem.ExceptionRetrievingParameterizedPropertyWriteState, property.Name);
             }
@@ -640,7 +624,6 @@ namespace System.Management.Automation
             catch (ExtendedTypeSystemException) { throw; }
             catch (Exception e)
             {
-                CommandProcessorBase.CheckForSevereException(e);
                 throw NewException(e, "CatchFromBaseParameterizedPropertyIsGettable", "CatchFromBaseParameterizedPropertyIsGettableTI",
                     ExtendedTypeSystem.ExceptionRetrievingParameterizedPropertyReadState, property.Name);
             }
@@ -655,7 +638,6 @@ namespace System.Management.Automation
             catch (ExtendedTypeSystemException) { throw; }
             catch (Exception e)
             {
-                CommandProcessorBase.CheckForSevereException(e);
                 throw NewException(e, "CatchFromBaseParameterizedPropertyDefinitions", "CatchFromBaseParameterizedPropertyDefinitionsTI",
                     ExtendedTypeSystem.ExceptionRetrievingParameterizedPropertyDefinitions, property.Name);
             }
@@ -678,7 +660,6 @@ namespace System.Management.Automation
             catch (GetValueException) { throw; }
             catch (Exception e)
             {
-                CommandProcessorBase.CheckForSevereException(e);
                 throw new GetValueInvocationException("CatchFromBaseParameterizedPropertyAdapterGetValue",
                     e,
                     ExtendedTypeSystem.ExceptionWhenGetting,
@@ -703,7 +684,6 @@ namespace System.Management.Automation
             catch (SetValueException) { throw; }
             catch (Exception e)
             {
-                CommandProcessorBase.CheckForSevereException(e);
                 throw new SetValueInvocationException("CatchFromBaseAdapterParameterizedPropertySetValue",
                     e,
                     ExtendedTypeSystem.ExceptionWhenSetting,
@@ -723,7 +703,6 @@ namespace System.Management.Automation
             catch (ExtendedTypeSystemException) { throw; }
             catch (Exception e)
             {
-                CommandProcessorBase.CheckForSevereException(e);
                 throw NewException(e, "CatchFromBaseParameterizedPropertyToString", "CatchFromBaseParameterizedPropertyToStringTI",
                     ExtendedTypeSystem.ExceptionRetrievingParameterizedPropertyString, property.Name);
             }
@@ -1214,7 +1193,7 @@ namespace System.Management.Automation
         }
 
         /// <summary>
-        /// Return the best method out of overlaoded methods.
+        /// Return the best method out of overloaded methods.
         /// The best has the smallest type distance between the method's parameters and the given arguments.
         /// </summary>
         /// <param name="methods">different overloads for a method</param>
@@ -1670,7 +1649,7 @@ namespace System.Management.Automation
         }
 
         /// <summary>
-        /// Auxilliary method in MethodInvoke to set newArguments[index] with the propper value
+        /// Auxiliary method in MethodInvoke to set newArguments[index] with the propper value
         /// </summary>
         /// <param name="methodName">used for the MethodException that might be thrown</param>
         /// <param name="arguments">the complete array of arguments</param>
@@ -2317,7 +2296,7 @@ namespace System.Management.Automation
     /// </summary>
     internal class DotNetAdapter : Adapter
     {
-        #region auxilliary methods and classes
+        #region auxiliary methods and classes
 
         private const BindingFlags instanceBindingFlags = (BindingFlags.FlattenHierarchy | BindingFlags.Public |
                                                               BindingFlags.IgnoreCase | BindingFlags.Instance);
@@ -2422,7 +2401,7 @@ namespace System.Management.Automation
                 {
                     PropertyInfo property = properties[i];
                     // Properties can have different return types. If they do
-                    // we pretent it is System.Object
+                    // we pretend it is System.Object
                     if (property.PropertyType != this.propertyType)
                     {
                         this.propertyType = typeof(object);
@@ -2969,7 +2948,7 @@ namespace System.Management.Automation
         }
 
         /// <summary>
-        /// This method is necessary becausean overridden property in a specific class derived from a generic one will
+        /// This method is necessary because an overridden property in a specific class derived from a generic one will
         /// appear twice. The second time, it should be ignored.
         /// </summary>
         private static bool PropertyAlreadyPresent(List<PropertyInfo> previousProperties, PropertyInfo property)
@@ -3541,7 +3520,7 @@ namespace System.Management.Automation
             return entry.isStatic;
         }
 
-        #endregion auxilliary methods and classes
+        #endregion auxiliary methods and classes
 
         #region virtual
 
@@ -3688,7 +3667,7 @@ namespace System.Management.Automation
         /// </summary>
         /// <param name="property">PSProperty coming from a previous call to GetMember</param>
         /// <param name="setValue">value to set the property with</param>
-        /// <param name="convertIfPossible">instructs the adapter to convert before setting, if the adapter suports conversion</param>
+        /// <param name="convertIfPossible">instructs the adapter to convert before setting, if the adapter supports conversion</param>
         protected override void PropertySet(PSProperty property, object setValue, bool convertIfPossible)
         {
             PropertyCacheEntry adapterData = (PropertyCacheEntry)property.adapterData;
@@ -3770,7 +3749,7 @@ namespace System.Management.Automation
 
         #region method
 
-        #region auxilliary to method calling
+        #region auxiliary to method calling
 
         /// <summary>
         /// Calls constructor using the arguments and catching the appropriate exception
@@ -3801,7 +3780,6 @@ namespace System.Management.Automation
             }
             catch (Exception e)
             {
-                CommandProcessorBase.CheckForSevereException(e);
                 throw new MethodInvocationException(
                     "DotNetconstructorException",
                     e,
@@ -3862,8 +3840,6 @@ namespace System.Management.Automation
             catch (PipelineStoppedException) { throw; }
             catch (Exception e)
             {
-                CommandProcessorBase.CheckForSevereException(e);
-
                 if (methodInformation.method.DeclaringType == typeof(SteppablePipeline) &&
                     (methodInformation.method.Name.Equals("Begin") ||
                      methodInformation.method.Name.Equals("Process") ||
@@ -3912,7 +3888,7 @@ namespace System.Management.Automation
         /// <param name="target">object to call the method on</param>
         /// <param name="methodInformation">method information corresponding to methods</param>
         /// <param name="invocationConstraints">invocation constraints</param>
-        /// <param name="arguments">arguiments of the call </param>
+        /// <param name="arguments">arguments of the call </param>
         /// <returns>the return of the method</returns>
         /// <exception cref="MethodInvocationException">if the method throws an exception</exception>
         /// <exception cref="MethodException">if we could not find a method for the given arguments</exception>
@@ -4088,7 +4064,7 @@ namespace System.Management.Automation
             return builder.ToString();
         }
 
-        #endregion auxilliary to method calling
+        #endregion auxiliary to method calling
 
         /// <summary>
         /// Called after a non null return from GetMember to try to call
@@ -4277,7 +4253,7 @@ namespace System.Management.Automation
                 return property as T;
             }
 
-            // In order to not break v1..base dotnet adpater should not return methods
+            // In order to not break v1..base dotnet adapter should not return methods
             // when accessed with T as PSMethod.. accessing method with PSMemberInfo
             // is ok as property always gets precedence over methods and duplicates
             // are ignored.
@@ -4372,7 +4348,7 @@ namespace System.Management.Automation
         /// </summary>
         /// <param name="property">PSProperty coming from a previous call to GetMember</param>
         /// <param name="setValue">value to set the property with</param>
-        /// <param name="convertIfPossible">instructs the adapter to convert before setting, if the adapter suports conversion</param>
+        /// <param name="convertIfPossible">instructs the adapter to convert before setting, if the adapter supports conversion</param>
         protected override void PropertySet(PSProperty property, object setValue, bool convertIfPossible)
         {
             Diagnostics.Assert(false, "redirection adapter is not called for properties");
@@ -4908,17 +4884,11 @@ namespace System.Management.Automation
         /// </summary>
         /// <param name="property">PSProperty coming from a previous call to DoGetProperty</param>
         /// <param name="setValue">value to set the property with</param>
-        /// <param name="convertIfPossible">instructs the adapter to convert before setting, if the adapter suports conversion</param>
+        /// <param name="convertIfPossible">instructs the adapter to convert before setting, if the adapter supports conversion</param>
         protected override void PropertySet(PSProperty property, object setValue, bool convertIfPossible)
         {
-            string valueString = setValue as string;
-            if (valueString == null)
-            {
-                throw new SetValueException("XmlNodeSetShouldBeAString",
-                    null,
-                    ExtendedTypeSystem.XmlNodeSetShouldBeAString,
-                    property.Name);
-            }
+            // XML is always a string so implicitly convert to string
+            string valueString = LanguagePrimitives.ConvertTo<string>(setValue);
             XmlNode[] nodes = (XmlNode[])property.adapterData;
             Diagnostics.Assert(nodes.Length != 0, "DoGetProperty would not return an empty array, it would return null instead");
             if (nodes.Length > 1)
@@ -4996,7 +4966,7 @@ namespace System.Management.Automation
 
 
         /// <summary>
-        /// Auxilliary in GetProperty to perform case sensitive and case insensitve searches
+        /// Auxiliary in GetProperty to perform case sensitive and case insensitive searches
         /// in the child nodes
         /// </summary>
         /// <param name="obj">XmlNode to extract property from</param>
@@ -5187,7 +5157,7 @@ namespace System.Management.Automation
             Dbg.Assert(typeParameter != null, "Caller should verify typeParameter != null");
             Dbg.Assert(
                 _typeParametersOfTheMethod.Contains(typeParameter),
-                "Caller should verify that typeParameter is actuall a generic type parameter of the method");
+                "Caller should verify that typeParameter is actually a generic type parameter of the method");
 #endif
 
             ICollection<Type> inferenceCandidates =
@@ -5284,7 +5254,7 @@ namespace System.Management.Automation
 #if DEBUG
                 Dbg.Assert(
                     _typeParametersOfTheMethod.Contains(parameterType),
-                    "Only uninstantinated generic type parameters encountered in real life, should be the ones coming from the method");
+                    "Only uninstantiated generic type parameters encountered in real life, should be the ones coming from the method");
 #endif
 
                 HashSet<Type> inferenceCandidates = _typeParameterIndexToSetOfInferenceCandidates[parameterType.GenericParameterPosition];

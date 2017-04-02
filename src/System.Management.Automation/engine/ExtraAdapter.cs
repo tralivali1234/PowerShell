@@ -114,7 +114,7 @@ namespace System.Management.Automation
         /// </summary>
         /// <param name="property">PSProperty coming from a previous call to DoGetProperty</param>
         /// <param name="setValue">value to set the property with</param>
-        /// <param name="convertIfPossible">instructs the adapter to convert before setting, if the adapter suports conversion</param>
+        /// <param name="convertIfPossible">instructs the adapter to convert before setting, if the adapter supports conversion</param>
         protected override void PropertySet(PSProperty property, object setValue, bool convertIfPossible)
         {
             DataRow dataRow = (DataRow)property.baseObject;
@@ -220,7 +220,7 @@ namespace System.Management.Automation
         /// </summary>
         /// <param name="property">PSProperty coming from a previous call to DoGetProperty</param>
         /// <param name="setValue">value to set the property with</param>
-        /// <param name="convertIfPossible">instructs the adapter to convert before setting, if the adapter suports conversion</param>
+        /// <param name="convertIfPossible">instructs the adapter to convert before setting, if the adapter supports conversion</param>
         protected override void PropertySet(PSProperty property, object setValue, bool convertIfPossible)
         {
             DataRowView dataRowView = (DataRowView)property.baseObject;
@@ -237,7 +237,7 @@ namespace System.Management.Automation
         #region private data
         // DirectoryEntry(DE) adapter needs dotnet adapter as DE adapter
         // don't know the underlying native adsi object's method metadata.
-        // In the MethodInvoke() call, this adapter first calls 
+        // In the MethodInvoke() call, this adapter first calls
         // native adsi object's method, if there is a failure it calls
         // dotnet method (if one available).
         // This ensures dotnet methods are available on the adapted object.
@@ -271,7 +271,7 @@ namespace System.Management.Automation
             // and catch an eventual exception.
             // Specifically for "LDAP://RootDse" there are some cases where calling
             // InvokeGet will throw COMException for existing properties like defaultNamingContext.
-            // Having a call to entry.Properties[propertyName] fixes the RootDse problem. 
+            // Having a call to entry.Properties[propertyName] fixes the RootDse problem.
             // Calling entry.RefreshCache() also fixes the RootDse problem.
             try
             {
@@ -285,9 +285,8 @@ namespace System.Management.Automation
 
                 property = new PSProperty(collection.PropertyName, this, obj, valueToTake);
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                CommandProcessorBase.CheckForSevereException(e);
                 property = null;
             }
 #pragma warning restore 56500
@@ -314,14 +313,14 @@ namespace System.Management.Automation
                     // Adapter engine resolve's members in the following steps:
                     //  1. Extended members -> 2. Adapted members -> 3. Dotnet members
                     // We cannot say from DirectoryEntryAdapter if a method with name "memberName"
-                    // is available. So check if a DotNet proeperty with the same name is available
+                    // is available. So check if a DotNet property with the same name is available
                     // If yes, return null from the adapted view and let adapter engine
                     // take care of DotNet member resolution. If not, assume memberName method
                     // is available on native adsi object.
                     // In case of collisions between Dotnet Property and adsi native object methods,
                     // Dotnet wins. Looking through IADs com interfaces there doesn't appear
                     // to be a collision like this.
-                    // Powershell Parser will call only GetMember<PSMemberInfo>, so here 
+                    // Powershell Parser will call only GetMember<PSMemberInfo>, so here
                     // we cannot distinguish if the caller is looking for a property or a
                     // method.
                     #endregion
@@ -341,7 +340,7 @@ namespace System.Management.Automation
         /// in the first call to GetMember and GetMembers so that subsequent
         /// calls can use the cache.
         /// In the case of the .NET adapter that would be a cache from the .NET type to
-        /// the public properties and fields available in that type. 
+        /// the public properties and fields available in that type.
         /// In the case of the DirectoryEntry adapter, this could be a cache of the objectClass
         /// to the properties available in it.
         /// </summary>
@@ -365,9 +364,8 @@ namespace System.Management.Automation
             {
                 countOfProperties = entry.Properties.PropertyNames.Count;
             }
-            catch (Exception e) // swallow all non-severe exceptions
+            catch (Exception) // swallow all non-severe exceptions
             {
-                CommandProcessorBase.CheckForSevereException(e);
             }
 #pragma warning restore 56500
 
@@ -400,7 +398,7 @@ namespace System.Management.Automation
         /// </summary>
         /// <param name="property">PSProperty coming from a previous call to GetMember</param>
         /// <param name="setValue">value to set the property with</param>
-        /// <param name="convertIfPossible">instructs the adapter to convert before setting, if the adapter suports conversion</param>
+        /// <param name="convertIfPossible">instructs the adapter to convert before setting, if the adapter supports conversion</param>
         protected override void PropertySet(PSProperty property, object setValue, bool convertIfPossible)
         {
             PropertyValueCollection values = property.adapterData as PropertyValueCollection;
@@ -416,9 +414,9 @@ namespace System.Management.Automation
                 {
                     if (e.ErrorCode != unchecked((int)0x80004005) || (setValue == null))
                         // When clear is called, DirectoryEntry calls PutEx on AD object with Clear option and Null Value
-                        // WinNT provider throws E_FAIL when null value is specified though actually ADS_PROPERTY_CLEAR option is used, 
-                        // we need to catch  this exception here. 
-                        // But at the same time we don't want to catch the exception if user explicitly sets the value to null.                                                                                                                  
+                        // WinNT provider throws E_FAIL when null value is specified though actually ADS_PROPERTY_CLEAR option is used,
+                        // we need to catch  this exception here.
+                        // But at the same time we don't want to catch the exception if user explicitly sets the value to null.
                         throw;
                 }
 
@@ -539,7 +537,7 @@ namespace System.Management.Automation
             // First try to invoke method on the native adsi object. If the method
             // call fails, try to invoke dotnet method with same name, if one available.
             // This will ensure dotnet methods are exposed for DE objects.
-            // The problem is in GetMemeber<T>(), DE adapter cannot check if a requested
+            // The problem is in GetMember<T>(), DE adapter cannot check if a requested
             // method is available as it doesn't have access to native adsi object's
             // method metadata. So GetMember<T> returns PSMethod assuming a method
             // is available. This behavior will never give a chance to dotnet adapter

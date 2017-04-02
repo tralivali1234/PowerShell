@@ -148,7 +148,7 @@ namespace System.Management.Automation.Runspaces
         /// Access the value indicating if LocalScope is to be used for running
         /// this script command.
         /// </summary>
-        /// <value>True if this command is a script and localScope is 
+        /// <value>True if this command is a script and localScope is
         /// used for executing the script</value>
         /// <remarks>This value is always false for non-script commands</remarks>
         public bool UseLocalScope
@@ -206,12 +206,12 @@ namespace System.Management.Automation.Runspaces
         private PipelineResultTypes _mergeUnclaimedPreviousCommandResults =
             PipelineResultTypes.None;
         /// <summary>
-        /// Sets this command as the mergepoint for previous unclaimed 
+        /// Sets this command as the mergepoint for previous unclaimed
         /// commands' results
         /// </summary>
         /// <value></value>
         /// <remarks>
-        /// Currently only supported operation is to merge 
+        /// Currently only supported operation is to merge
         /// Output and Error.
         /// </remarks>
         /// <exception cref="NotSupportedException">
@@ -272,17 +272,17 @@ namespace System.Management.Automation.Runspaces
         internal PipelineResultTypes[] MergeInstructions { get; set; } = new PipelineResultTypes[MaxMergeType];
 
         /// <summary>
-        /// Merges this commands resutls
+        /// Merges this commands results
         /// </summary>
-        /// 
+        ///
         /// <param name="myResult">
         /// Pipeline stream to be redirected.
         /// </param>
-        /// 
+        ///
         /// <param name="toResult">
         /// Pipeline stream in to which myResult is merged
         /// </param>
-        /// 
+        ///
         /// <exception cref="ArgumentException">
         /// myResult parameter is not PipelineResultTypes.Error or
         /// toResult parameter is not PipelineResultTypes.Output
@@ -358,13 +358,13 @@ namespace System.Management.Automation.Runspaces
         void
         SetMergeSettingsOnCommandProcessor(CommandProcessorBase commandProcessor)
         {
-            Dbg.Assert(commandProcessor != null, "caller should valiadate the parameter");
+            Dbg.Assert(commandProcessor != null, "caller should validate the parameter");
 
             MshCommandRuntime mcr = commandProcessor.Command.commandRuntime as MshCommandRuntime;
 
             if (_mergeUnclaimedPreviousCommandResults != PipelineResultTypes.None)
             {
-                //Currently only merging previous unclaimed error and output is supported. 
+                //Currently only merging previous unclaimed error and output is supported.
                 if (mcr != null)
                 {
                     mcr.MergeUnclaimedPreviousErrorResults = true;
@@ -477,8 +477,8 @@ namespace System.Management.Automation.Runspaces
                         break;
                     default:
                         // This should never happen...
-                        Diagnostics.Assert(false, "Invalid langage mode was set when building a ScriptCommandProcessor");
-                        throw new InvalidOperationException("Invalid langage mode was set when building a ScriptCommandProcessor");
+                        Diagnostics.Assert(false, "Invalid language mode was set when building a ScriptCommandProcessor");
+                        throw new InvalidOperationException("Invalid language mode was set when building a ScriptCommandProcessor");
                 }
 
                 if (scriptBlock.UsesCmdletBinding)
@@ -550,7 +550,7 @@ namespace System.Management.Automation.Runspaces
         #region Private fields
 
         /// <summary>
-        /// This is used for script commands (i.e. _isScript is true). If 
+        /// This is used for script commands (i.e. _isScript is true). If
         /// _useLocalScope is true, script is run in LocalScope.  If
         /// null, it was unspecified and a suitable default is used (true
         /// for non-script, false for script).  Note that the public
@@ -565,13 +565,13 @@ namespace System.Management.Automation.Runspaces
 
 
         /// <summary>
-        /// Creates a Command object from a PSObject property bag. 
+        /// Creates a Command object from a PSObject property bag.
         /// PSObject has to be in the format returned by ToPSObjectForRemoting method.
         /// </summary>
         /// <param name="commandAsPSObject">PSObject to rehydrate</param>
         /// <returns>
         /// Command rehydrated from a PSObject property bag
-        /// </returns>       
+        /// </returns>
         /// <exception cref="ArgumentNullException">
         /// Thrown if the PSObject is null.
         /// </exception>
@@ -772,12 +772,12 @@ namespace System.Management.Automation.Runspaces
         None,
 
         /// <summary>
-        /// Success output 
+        /// Success output
         /// </summary>
         Output,
 
         /// <summary>
-        /// Error output 
+        /// Error output
         /// </summary>
         Error,
 
@@ -874,7 +874,7 @@ namespace System.Management.Automation.Runspaces
         }
 
         /// <summary>
-        /// Gets the string represenation of the command collection to be used for history.
+        /// Gets the string representation of the command collection to be used for history.
         /// </summary>
         /// <returns>
         /// string representing the command(s)

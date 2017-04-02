@@ -62,7 +62,7 @@ namespace System.Management.Automation.SecurityAccountsManager
         }
 
         /// <summary>
-        /// Defines a set of flags, each coresponding to a member of LocalUser,
+        /// Defines a set of flags, each corresponding to a member of LocalUser,
         /// which indicate fields to be updated.
         /// </summary>
         /// <remarks>
@@ -1271,6 +1271,14 @@ namespace System.Management.Automation.SecurityAccountsManager
                                             },
                                             userHandle);
             }
+            catch (Exception)
+            {
+                if (IntPtr.Zero != userHandle)
+                {
+                    SamApi.SamDeleteUser(userHandle);
+                }
+                throw;
+            }
             finally
             {
                 if (buffer != IntPtr.Zero)
@@ -1416,7 +1424,7 @@ namespace System.Management.Automation.SecurityAccountsManager
                                                 type = context.type
                                             }
                                             );
-                    
+
             }
             finally
             {
@@ -1513,7 +1521,7 @@ namespace System.Management.Automation.SecurityAccountsManager
             var rv = new List<Exception>();
             Exception ex = null;
             try
-            {                
+            {
                 var sid = member.SID;
                 var binarySid = new byte[sid.BinaryLength];
 
@@ -2397,7 +2405,7 @@ namespace System.Management.Automation.SecurityAccountsManager
                     present = true;
                 }
 
-                // set the DACL into our new sescurity descriptor
+                // set the DACL into our new security descriptor
                 var ok = Win32.SetSecurityDescriptorDacl(ipsd, present, ipDacl, false);
                 if (!ok)
                 {
@@ -2660,7 +2668,7 @@ namespace System.Management.Automation.SecurityAccountsManager
         /// to look up.
         /// </param>
         /// <returns>
-        /// A <see cref="AccountInfo"/> object containg information about the
+        /// A <see cref="AccountInfo"/> object contains information about the
         /// account, or null if no matching account was found.
         /// </returns>
         private AccountInfo LookupAccountInfo(SecurityIdentifier sid)
@@ -2718,7 +2726,7 @@ namespace System.Management.Automation.SecurityAccountsManager
         /// A string containing the name of the account to look up.
         /// </param>
         /// <returns>
-        /// A <see cref="AccountInfo"/> object containg information about the
+        /// A <see cref="AccountInfo"/> object contains information about the
         /// account, or null if no matching account was found.
         /// </returns>
         private AccountInfo LookupAccountInfo(string accountName)
@@ -2760,9 +2768,9 @@ namespace System.Management.Automation.SecurityAccountsManager
             if (error == Win32.ERROR_SUCCESS)
             {
                 // Bug: 7407413 :
-                // If accountname is in the format domain1\user1, 
+                // If accountname is in the format domain1\user1,
                 //then AccountName.ToString() will return domain1\domain1\user1
-                // Ideally , accountname should be processed to hold only accout name (without domain)
+                // Ideally , accountname should be processed to hold only account name (without domain)
                 // as we are keeping the domain in 'DomainName' variable.
 
                 int index = accountName.IndexOf("\\", StringComparison.CurrentCultureIgnoreCase);
@@ -2931,7 +2939,7 @@ namespace System.Management.Automation.SecurityAccountsManager
 
                 case NtStatus.STATUS_SPECIAL_GROUP:     // The group specified is a special group and cannot be operated on in the requested fashion.
                 //case NtStatus.STATUS_SPECIAL_ALIAS: // referred to in source for SAM api, but not in ntstatus.h!!!
-                                                    
+
                     return new InvalidOperationException(StringUtil.Format(Strings.InvalidForGroup, context.ObjectName));
 
                 case NtStatus.STATUS_SPECIAL_USER:  // The user specified is a special user and cannot be operated on in the requested fashion.
@@ -3015,7 +3023,7 @@ namespace System.Management.Automation.SecurityAccountsManager
 
             // Use LsaLookupUserAccountType for Windows 10 and later.
             // Earlier versions of the OS will leave the property NULL because
-            // it is too error prone to attempt to replicate the decisions of 
+            // it is too error prone to attempt to replicate the decisions of
             // LsaLookupUserAccountType.
             var os = GetOperatingSystem();
             if (os.Version.Major >= 10)
@@ -3113,7 +3121,7 @@ namespace System.Management.Automation.SecurityAccountsManager
 
         [DllImport(PInvokeDllNames.GetVersionExDllName, CharSet = CharSet.Unicode, SetLastError = true)]
         internal static extern bool GetVersionEx(ref OSVERSIONINFOEX osVerEx);
-        
+
         private static volatile OperatingSystem localOs;
 
         /// <summary>

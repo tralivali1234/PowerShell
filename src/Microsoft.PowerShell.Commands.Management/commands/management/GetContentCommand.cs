@@ -16,7 +16,7 @@ namespace Microsoft.PowerShell.Commands
     /// <summary>
     /// A command to get the content of an item at a specified path
     /// </summary>
-    [Cmdlet(VerbsCommon.Get, "Content", DefaultParameterSetName = "Path", SupportsTransactions = true, HelpUri = "http://go.microsoft.com/fwlink/?LinkID=113310")]
+    [Cmdlet(VerbsCommon.Get, "Content", DefaultParameterSetName = "Path", SupportsTransactions = true, HelpUri = "https://go.microsoft.com/fwlink/?LinkID=113310")]
     public class GetContentCommand : ContentCommandBase
     {
         #region Parameters
@@ -75,16 +75,16 @@ namespace Microsoft.PowerShell.Commands
         /// that require dynamic parameters should override this method and return the
         /// dynamic parameter object.
         /// </summary>
-        /// 
+        ///
         /// <param name="context">
         /// The context under which the command is running.
         /// </param>
-        /// 
+        ///
         /// <returns>
         /// An object representing the dynamic parameters for the cmdlet or null if there
         /// are none.
         /// </returns>
-        /// 
+        ///
         internal override object GetDynamicParameters(CmdletProviderContext context)
         {
             if (Path != null && Path.Length > 0)
@@ -151,9 +151,9 @@ namespace Microsoft.PowerShell.Commands
                         continue;
                     }
 
-                    // If Tail is negative, we are supposed to read all content out. This is same 
+                    // If Tail is negative, we are supposed to read all content out. This is same
                     // as reading forwards. So we read forwards in this case.
-                    // If Tail is positive, we seek the right position. Or, if the seek failed 
+                    // If Tail is positive, we seek the right position. Or, if the seek failed
                     // because of an unsupported encoding, we scan forward to get the tail content.
                     if (Tail >= 0)
                     {
@@ -165,7 +165,6 @@ namespace Microsoft.PowerShell.Commands
                         }
                         catch (Exception e)
                         {
-                            CommandsCommon.CheckForSevereException(this, e);
                             ProviderInvocationException providerException =
                                 new ProviderInvocationException(
                                     "ProviderContentReadError",
@@ -219,7 +218,6 @@ namespace Microsoft.PowerShell.Commands
                             }
                             catch (Exception e) // Catch-all OK. 3rd party callout
                             {
-                                CommandsCommon.CheckForSevereException(this, e);
                                 ProviderInvocationException providerException =
                                     new ProviderInvocationException(
                                         "ProviderContentReadError",
@@ -296,7 +294,6 @@ namespace Microsoft.PowerShell.Commands
                 }
                 catch (Exception e)
                 {
-                    CommandsCommon.CheckForSevereException(this, e);
                     ProviderInvocationException providerException =
                         new ProviderInvocationException(
                             "ProviderContentReadError",
@@ -315,7 +312,7 @@ namespace Microsoft.PowerShell.Commands
                     // Create and save the error record. The error record
                     // will be written outside the while loop.
                     // This is to make sure the accumulated results get written
-                    // out before the error recrod when the 'scanForwardForTail' is true.
+                    // out before the error record when the 'scanForwardForTail' is true.
                     error = new ErrorRecord(
                         providerException.ErrorRecord,
                         providerException);
@@ -352,7 +349,7 @@ namespace Microsoft.PowerShell.Commands
                 }
                 else if (ReadCount == 1)
                 {
-                    // Write out the contnet as single object
+                    // Write out the content as single object
                     while (tailResultQueue.Count > 0)
                         WriteContentObject(tailResultQueue.Dequeue(), count++, holder.PathInfo, currentContext);
                 }

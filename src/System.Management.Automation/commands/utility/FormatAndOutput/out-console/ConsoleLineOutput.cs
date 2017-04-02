@@ -37,13 +37,13 @@ namespace Microsoft.PowerShell.Commands.Internal.Format
             return len;
         }
 
-        internal override int Length(char character) 
+        internal override int Length(char character)
         {
             if (character >= 'A' && character <= 'Z')
                 return 2;
             return 1;
         }
-        
+
         internal override int GetHeadSplitLength(string str, int offset, int displayCells)
         {
             return GetSplitLengthInternalHelper(str, offset, displayCells, true);
@@ -151,7 +151,7 @@ namespace Microsoft.PowerShell.Commands.Internal.Format
 
         #region LineOutput implementation
         /// <summary>
-        /// the # of columns is just the width of the screen buffer (not the 
+        /// the # of columns is just the width of the screen buffer (not the
         /// width of the window)
         /// </summary>
         /// <value></value>
@@ -288,7 +288,7 @@ namespace Microsoft.PowerShell.Commands.Internal.Format
         }
 
         /// <summary>
-        /// callback to be called when ILineOutput.WriteLine() is called by WriteLineHelper 
+        /// callback to be called when ILineOutput.WriteLine() is called by WriteLineHelper
         /// </summary>
         /// <param name="s">string to write</param>
         private void OnWriteLine(string s)
@@ -374,12 +374,12 @@ namespace Microsoft.PowerShell.Commands.Internal.Format
         /// </summary>
         private void LineWrittenEvent()
         {
-            // check to avoid reeentrancy from the prompt handler
-            // writing during the PropmtUser() call
+            // check to avoid reentrancy from the prompt handler
+            // writing during the PromptUser() call
             if (_disableLineWrittenEvent)
                 return;
 
-            // if there is no promting, we are done
+            // if there is no prompting, we are done
             if (_prompt == null)
                 return;
 
@@ -420,7 +420,7 @@ namespace Microsoft.PowerShell.Commands.Internal.Format
         /// <summary>
         /// check if we need to put out a prompt
         /// </summary>
-        /// <value>true if we need to promp</value>
+        /// <value>true if we need to prompt</value>
         private bool NeedToPrompt
         {
             get
@@ -471,10 +471,10 @@ namespace Microsoft.PowerShell.Commands.Internal.Format
             }
 
             /// <summary>
-            /// detemine how many rows the prompt should take.
+            /// determine how many rows the prompt should take.
             /// </summary>
-            /// <param name="cols">current number of colums on the screen</param>
-            /// <param name="displayCells">string manipupation helper</param>
+            /// <param name="cols">current number of columns on the screen</param>
+            /// <param name="displayCells">string manipulation helper</param>
             /// <returns></returns>
             internal int ComputePromptLines(DisplayCells displayCells, int cols)
             {
@@ -574,7 +574,7 @@ namespace Microsoft.PowerShell.Commands.Internal.Format
 
         /// <summary>
         /// handler to prompt the user for page breaks
-        /// if this handler is not null, we have promting
+        /// if this handler is not null, we have prompting
         /// </summary>
         private PromptHandler _prompt = null;
 
@@ -584,7 +584,7 @@ namespace Microsoft.PowerShell.Commands.Internal.Format
         private long _linesWritten = 0;
 
         /// <summary>
-        /// flag to avoid renetrancy on promting
+        /// flag to avoid reentrancy on prompting
         /// </summary>
         private bool _disableLineWrittenEvent = false;
 

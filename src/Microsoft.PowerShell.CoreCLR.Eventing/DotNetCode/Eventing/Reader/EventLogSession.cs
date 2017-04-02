@@ -2,9 +2,9 @@
 /*============================================================
 **
 **
-** Purpose: 
-** Defines a session for Event Log operations.  The session can 
-** be configured for a remote machine and can use specfic
+** Purpose:
+** Defines a session for Event Log operations.  The session can
+** be configured for a remote machine and can use specific
 ** user credentials.
 ============================================================*/
 
@@ -39,13 +39,13 @@ namespace System.Diagnostics.Eventing.Reader
         //
         //the two context handles for rendering (for EventLogRecord).
         //the system and user context handles. They are both common for all the event instances and can be created only once.
-        //access to the data member references is safe, while 
+        //access to the data member references is safe, while
         //invoking methods on it is marked SecurityCritical as appropriate.
         //
         internal EventLogHandle renderContextHandleSystem = EventLogHandle.Zero;
         internal EventLogHandle renderContextHandleUser = EventLogHandle.Zero;
 
-        //the dummy sync object for the two contextes.
+        //the dummy sync object for the two contexts.
         private object _syncObject = null;
 
         private string _server;
@@ -55,7 +55,7 @@ namespace System.Diagnostics.Eventing.Reader
         //we do not maintain the password here.
 
         //
-        //access to the data member references is safe, while 
+        //access to the data member references is safe, while
         //invoking methods on it is marked SecurityCritical as appropriate.
         //
         private EventLogHandle _handle = EventLogHandle.Zero;

@@ -73,7 +73,7 @@ namespace Microsoft.PowerShell.Activities
         public Dictionary<string, object> Variables
         {
             get { return _variables; }
-        }        
+        }
     }
 
     #region PSActivityHostController
@@ -88,7 +88,7 @@ namespace Microsoft.PowerShell.Activities
         private readonly ConcurrentDictionary<string, bool> _inProcActivityLookup = new ConcurrentDictionary<string, bool>();
 
         /// <summary>
-        /// Runtime should be provided for excessing the runtime activity mode
+        /// Runtime should be provided for accessing the runtime activity mode
         /// </summary>
         protected PSActivityHostController(PSWorkflowRuntime runtime)
         {
@@ -124,7 +124,7 @@ namespace Microsoft.PowerShell.Activities
     }
 
     /// <summary>
-    /// This class will be used for disconnected execution where the 
+    /// This class will be used for disconnected execution where the
     /// Job Id and bookmark will be used resume the execution of workflow
     /// after the completion of activity controller work.
     /// </summary>
@@ -172,9 +172,9 @@ namespace Microsoft.PowerShell.Activities
         }
 
         /// <summary>
-        /// This property indentifies if the Activity controller is running in disconnected mode 
+        /// This property identifies if the Activity controller is running in disconnected mode
         /// or not. If it is running in disconnected mode then all the output and data streams will be
-        /// provied as new objects.
+        /// proxied as new objects.
         /// </summary>
         public virtual bool SupportDisconnectedPSStreams
         {

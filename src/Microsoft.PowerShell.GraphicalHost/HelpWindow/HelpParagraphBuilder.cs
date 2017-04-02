@@ -27,7 +27,7 @@ namespace Microsoft.Management.UI.Internal
         internal const int IndentSize = 4;
 
         /// <summary>
-        /// new line separators 
+        /// new line separators
         /// </summary>
         private static readonly string[] Separators = new string[] { "\r\n", "\n" };
 
@@ -106,17 +106,17 @@ namespace Microsoft.Management.UI.Internal
             switch (category)
             {
                 case HelpCategory.Class:
-                    this.AddDescription(HelpWindowSettings.Default.HelpSynopsysDisplayed, HelpWindowResources.SynopsisTitle, "Introduction");
+                    this.AddDescription(HelpWindowSettings.Default.HelpSynopsisDisplayed, HelpWindowResources.SynopsisTitle, "Introduction");
                     this.AddMembers(HelpWindowSettings.Default.HelpParametersDisplayed, HelpWindowResources.PropertiesTitle);
                     this.AddMembers(HelpWindowSettings.Default.HelpParametersDisplayed, HelpWindowResources.MethodsTitle);
                     break;
                 case HelpCategory.DscResource:
-                    this.AddStringSection(HelpWindowSettings.Default.HelpSynopsysDisplayed, "Synopsis", HelpWindowResources.SynopsisTitle);
+                    this.AddStringSection(HelpWindowSettings.Default.HelpSynopsisDisplayed, "Synopsis", HelpWindowResources.SynopsisTitle);
                     this.AddDescription(HelpWindowSettings.Default.HelpDescriptionDisplayed, HelpWindowResources.DescriptionTitle, "Description");
                     this.AddParameters(HelpWindowSettings.Default.HelpParametersDisplayed, HelpWindowResources.PropertiesTitle, "Properties", HelpCategory.DscResource);
                     break;
                 default:
-                    this.AddStringSection(HelpWindowSettings.Default.HelpSynopsysDisplayed, "Synopsis", HelpWindowResources.SynopsisTitle);
+                    this.AddStringSection(HelpWindowSettings.Default.HelpSynopsisDisplayed, "Synopsis", HelpWindowResources.SynopsisTitle);
                     this.AddDescription(HelpWindowSettings.Default.HelpDescriptionDisplayed, HelpWindowResources.DescriptionTitle, "Description");
                     this.AddParameters(HelpWindowSettings.Default.HelpParametersDisplayed, HelpWindowResources.ParametersTitle, "Parameters", HelpCategory.Default);
                     this.AddSyntax(HelpWindowSettings.Default.HelpSyntaxDisplayed, HelpWindowResources.SyntaxTitle);
@@ -148,7 +148,7 @@ namespace Microsoft.Management.UI.Internal
         /// </summary>
         /// <param name="psObj">PSObject that contains another PSObject as a property</param>
         /// <param name="psObjectName">property name that contains the PSObject</param>
-        /// <param name="propertyName">property name in thye inner PSObject</param>
+        /// <param name="propertyName">property name in the inner PSObject</param>
         /// <returns>the string from the inner psObject property or null if it could not be retrieved</returns>
         private static string GetInnerPSObjectPropertyString(PSObject psObj, string psObjectName, string propertyName)
         {
@@ -200,7 +200,7 @@ namespace Microsoft.Management.UI.Internal
         /// <summary>
         /// Gets the text from a property of type PSObject[] where the first object has a text property
         /// </summary>
-        /// <param name="psObj">objhect to get text from</param>
+        /// <param name="psObj">object to get text from</param>
         /// <param name="propertyText">property with PSObject[] containing text</param>
         /// <returns>the text from a property of type PSObject[] where the first object has a text property</returns>
         private static string GetTextFromArray(PSObject psObj, string propertyText)
@@ -248,12 +248,12 @@ namespace Microsoft.Management.UI.Internal
         /// Splits the string adding indentation before each line
         /// </summary>
         /// <param name="str">string to add indentation to</param>
-        /// <param name="numberOfIdents">number of indentations</param>
+        /// <param name="numberOfIndents">number of indentations</param>
         /// <returns>the string indented</returns>
-        private static string AddIndent(string str, int numberOfIdents)
+        private static string AddIndent(string str, int numberOfIndents)
         {
             StringBuilder indent = new StringBuilder();
-            indent.Append(' ', numberOfIdents * HelpParagraphBuilder.IndentSize);
+            indent.Append(' ', numberOfIndents * HelpParagraphBuilder.IndentSize);
             return HelpParagraphBuilder.AddIndent(str, indent.ToString());
         }
 
@@ -421,27 +421,27 @@ namespace Microsoft.Management.UI.Internal
                         parameterNameOptionalCloseBrace = "]";
                     }
 
-                    string paramterPrefix = String.Format(
+                    string parameterPrefix = String.Format(
                         CultureInfo.CurrentCulture,
                         "{0}{1}-",
                         parameterOptionalOpenBrace,
                         parameterNameOptionalOpenBrace);
 
-                    this.AddText(paramterPrefix, false);
+                    this.AddText(parameterPrefix, false);
                     this.AddText(parameterName, true);
 
-                    string paramterSuffix = String.Format(
+                    string parameterSuffix = String.Format(
                         CultureInfo.CurrentCulture,
                         "{0} {1}{2} ",
                         parameterNameOptionalCloseBrace,
                         parameterType,
                         parameterOptionalCloseBrace);
-                    this.AddText(paramterSuffix, false);
+                    this.AddText(parameterSuffix, false);
                 }
 
                 string commonParametersText = String.Format(
-                    CultureInfo.CurrentCulture, 
-                    "[<{0}>]\r\n\r\n", 
+                    CultureInfo.CurrentCulture,
+                    "[<{0}>]\r\n\r\n",
                     HelpWindowResources.CommonParameters);
 
                 this.AddText(commonParametersText, false);
@@ -532,9 +532,9 @@ namespace Microsoft.Management.UI.Internal
                 }
 
                 string codeLine = String.Format(
-                    CultureInfo.CurrentCulture, 
-                    "{0}{1}\r\n\r\n", 
-                    introductionText, 
+                    CultureInfo.CurrentCulture,
+                    "{0}{1}\r\n\r\n",
+                    introductionText,
                     codeText);
 
                 this.AddText(HelpParagraphBuilder.AddIndent(codeLine), false);
@@ -565,7 +565,7 @@ namespace Microsoft.Management.UI.Internal
         {
             if(!setting || String.IsNullOrEmpty(sectionTitle))
                 return;
-            
+
             PSObject memberRootObject = HelpParagraphBuilder.GetPropertyObject(this.psObj, "Members") as PSObject;
             if (memberRootObject == null)
                 return;
@@ -608,7 +608,7 @@ namespace Microsoft.Management.UI.Internal
                     }
                 }
                 else if (String.Compare("method", type, StringComparison.OrdinalIgnoreCase) == 0)
-                {   
+                {
                     FormatMethodData(member, name, out memberText, out description);
                 }
 
@@ -634,10 +634,10 @@ namespace Microsoft.Management.UI.Internal
             description = null;
 
             if (member == null || String.IsNullOrEmpty(name))
-            {   
+            {
                 return;
             }
-            
+
             string returnType = null;
             StringBuilder parameterText = new StringBuilder();
 
@@ -658,7 +658,7 @@ namespace Microsoft.Management.UI.Internal
                 {
                     description = GetPropertyString(methodDescription, "Text");
 
-                    //If we get an text we do not need to iterate more. 
+                    //If we get an text we do not need to iterate more.
                     if (!String.IsNullOrEmpty(description))
                         break;
                 }
@@ -683,7 +683,7 @@ namespace Microsoft.Management.UI.Internal
                         {
                             parameterType = GetPropertyString(parameterTypeData, "name");
 
-                            //If there is no type for the paramter, we expect it is System.Object
+                            //If there is no type for the parameter, we expect it is System.Object
                             if (String.IsNullOrEmpty(parameterType))
                                 parameterType = "object";
                         }
@@ -717,7 +717,7 @@ namespace Microsoft.Management.UI.Internal
                 return;
             }
 
-            PSObject parameterRootObject = HelpParagraphBuilder.GetPropertyObject(this.psObj, paramPropertyName) as PSObject;            
+            PSObject parameterRootObject = HelpParagraphBuilder.GetPropertyObject(this.psObj, paramPropertyName) as PSObject;
             if (parameterRootObject == null)
             {
                 return;
@@ -881,11 +881,11 @@ namespace Microsoft.Management.UI.Internal
             {
                 string text = GetPropertyString(linkObject, "linkText");
                 string uri = GetPropertyString(linkObject, "uri");
-                
+
                 string linkLine = String.IsNullOrEmpty(uri) ? text : String.Format(
                     CultureInfo.CurrentCulture,
-                    HelpWindowResources.LinkTextFormat, 
-                    text, 
+                    HelpWindowResources.LinkTextFormat,
+                    text,
                     uri);
 
                 this.AddText(HelpParagraphBuilder.AddIndent(linkLine), false);
@@ -900,7 +900,7 @@ namespace Microsoft.Management.UI.Internal
         /// </summary>
         /// <param name="setting">true if it should add the segment</param>
         /// <param name="sectionTitle">title of the section</param>
-        /// <param name="inputOrOutputProperty">property with the outter object</param>
+        /// <param name="inputOrOutputProperty">property with the outer object</param>
         /// <param name="inputOrOutputInnerProperty">property with the inner object</param>
         private void AddInputOrOutputEntries(bool setting, string sectionTitle, string inputOrOutputProperty, string inputOrOutputInnerProperty)
         {

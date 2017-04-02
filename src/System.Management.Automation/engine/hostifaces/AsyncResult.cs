@@ -32,7 +32,7 @@ namespace System.Management.Automation.Runspaces
         /// Constructor
         /// </summary>
         /// <param name="ownerId">
-        /// Instace Id of the object creating this instance
+        /// Instance Id of the object creating this instance
         /// </param>
         /// <param name="callback">
         /// A AsyncCallback to call once the async operation completes.
@@ -70,7 +70,7 @@ namespace System.Management.Automation.Runspaces
         public bool IsCompleted { get; private set; }
 
         /// <summary>
-        /// This is not supported and returns null. 
+        /// This is not supported and returns null.
         /// </summary>
         public object AsyncState { get; }
 
@@ -214,9 +214,8 @@ namespace System.Management.Automation.Runspaces
                     {
                         _invokeCallback(_invokeCallbackState);
                     }
-                    catch (Exception e)
+                    catch (Exception)
                     {
-                        CommandProcessorBase.CheckForSevereException(e);
                     }
                 }
             }

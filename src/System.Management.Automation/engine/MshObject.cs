@@ -39,8 +39,8 @@ using Microsoft.PowerShell.CoreClr.Stubs;
 namespace System.Management.Automation
 {
     /// <summary>
-    /// Wraps an object providing alternate views of the available members 
-    /// and ways to extend them. Members can be methods, properties, 
+    /// Wraps an object providing alternate views of the available members
+    /// and ways to extend them. Members can be methods, properties,
     /// parameterized properties, etc.
     /// </summary>
     /// <remarks>
@@ -206,7 +206,7 @@ namespace System.Management.Automation
         private static Collection<CollectionEntry<PSPropertyInfo>> s_propertyCollection = GetPropertyCollection(PSMemberViewTypes.All);
 
         /// <summary>
-        /// A collection of delegates to get Extended/Adapated/Dotnet members based on the 
+        /// A collection of delegates to get Extended/Adapted/Dotnet members based on the
         /// <paramref name="viewType"/>
         /// </summary>
         /// <param name="viewType">
@@ -219,7 +219,7 @@ namespace System.Management.Automation
         }
 
         /// <summary>
-        /// A collection of delegates to get Extended/Adapated/Dotnet members based on the 
+        /// A collection of delegates to get Extended/Adapted/Dotnet members based on the
         /// <paramref name="viewType"/>
         /// </summary>
         /// <param name="viewType">
@@ -293,7 +293,7 @@ namespace System.Management.Automation
         }
 
         /// <summary>
-        /// A collection of delegates to get Extended/Adapated/Dotnet properties based on the 
+        /// A collection of delegates to get Extended/Adapted/Dotnet properties based on the
         /// <paramref name="viewType"/>
         /// </summary>
         /// <param name="viewType">
@@ -307,7 +307,7 @@ namespace System.Management.Automation
         }
 
         /// <summary>
-        /// A collection of delegates to get Extended/Adapated/Dotnet properties based on the 
+        /// A collection of delegates to get Extended/Adapted/Dotnet properties based on the
         /// <paramref name="viewType"/>
         /// </summary>
         /// <param name="viewType">
@@ -618,7 +618,7 @@ namespace System.Management.Automation
         /// <remarks>
         /// If an object is not adapted, InternalAdapter will use the dotnet adapter.
         /// So there is no point falling back to the same dotnet adapter.
-        /// 
+        ///
         /// If an object is adapted, this adapter will be used to resolve the dotnet
         /// members.
         /// </remarks>
@@ -631,8 +631,8 @@ namespace System.Management.Automation
         }
 
         /// <summary>
-        /// This is the adapter set that will contain the adapter of the baseObject 
-        /// and the ultimate .net member lookup adater.
+        /// This is the adapter set that will contain the adapter of the baseObject
+        /// and the ultimate .net member lookup adapter.
         /// See <see cref="PSObject.AdapterSet"/> for explanation.
         /// </summary>
         private AdapterSet InternalAdapterSet
@@ -819,7 +819,7 @@ namespace System.Management.Automation
         /// <summary>
         /// Gets the object we are directly wrapping.
         /// </summary>
-        /// <remarks>If the ImmediateBaseObject is another PSObject, 
+        /// <remarks>If the ImmediateBaseObject is another PSObject,
         /// that PSObject will be returned.</remarks>
         public object ImmediateBaseObject
         {
@@ -942,7 +942,7 @@ namespace System.Management.Automation
         #region static methods
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="valueToConvert"></param>
         /// <returns></returns>
@@ -951,7 +951,7 @@ namespace System.Management.Automation
             return PSObject.AsPSObject(valueToConvert);
         }
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="valueToConvert"></param>
         /// <returns></returns>
@@ -960,7 +960,7 @@ namespace System.Management.Automation
             return PSObject.AsPSObject(valueToConvert);
         }
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="valueToConvert"></param>
         /// <returns></returns>
@@ -969,7 +969,7 @@ namespace System.Management.Automation
             return PSObject.AsPSObject(valueToConvert);
         }
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="valueToConvert"></param>
         /// <returns></returns>
@@ -978,7 +978,7 @@ namespace System.Management.Automation
             return PSObject.AsPSObject(valueToConvert);
         }
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="valueToConvert"></param>
         /// <returns></returns>
@@ -988,7 +988,7 @@ namespace System.Management.Automation
         }
 
         /// <summary>
-        /// If obj is not an PSObject, it is returned. Otherwise, retrieves 
+        /// If obj is not an PSObject, it is returned. Otherwise, retrieves
         /// the first non PSObject or PSObject with CustomBaseObject
         /// in the PSObject - BaseObject chain.
         /// </summary>
@@ -1205,9 +1205,9 @@ namespace System.Management.Automation
         /// <param name="obj">
         /// object we are trying to call ToString on. If this is not an PSObject we try
         /// enumerating and if that fails we call obj.ToString.
-        /// If this is an PSObject, we look for a brokered ToString. 
+        /// If this is an PSObject, we look for a brokered ToString.
         /// If it is not present, and the BaseObject is null we try listing the properties.
-        /// If the BaseObject is not null we try enumerationg. If that fails we try the BaseObject's ToString.
+        /// If the BaseObject is not null we try enumerating. If that fails we try the BaseObject's ToString.
         /// </param>
         /// <returns>A string representation of the object</returns>
         /// <exception cref="ExtendedTypeSystemException">
@@ -1230,16 +1230,16 @@ namespace System.Management.Automation
         /// Called from an PSObject instance ToString to provide a string representation for an object
         /// </summary>
         /// <param name="context">
-        /// ExecutionContext used to fetch the separator. 
+        /// ExecutionContext used to fetch the separator.
         /// Typically either this or separator will be null.
         /// If both are null, " " is used.
         /// </param>
         /// <param name="obj">
         /// object we are trying to call ToString on. If this is not an PSObject we try
         /// enumerating and if that fails we call obj.ToString.
-        /// If this is an PSObject, we look for a brokered ToString. 
+        /// If this is an PSObject, we look for a brokered ToString.
         /// If it is not present, and the BaseObject is null we try listing the properties.
-        /// If the BaseObject is not null we try enumerationg. If that fails we try the BaseObject's ToString.
+        /// If the BaseObject is not null we try enumerating. If that fails we try the BaseObject's ToString.
         /// </param>
         /// <param name="separator">The separator between elements, if this is an enumeration</param>
         /// <param name="format">the format to be passed to ToString</param>
@@ -1306,9 +1306,8 @@ namespace System.Management.Automation
                         {
                             return ToStringEnumerable(context, enumerable, separator, format, formatProvider);
                         }
-                        catch (Exception e)
+                        catch (Exception)
                         {
-                            CommandProcessorBase.CheckForSevereException(e);
                             // We do want to ignore exceptions here to try the regular ToString below.
                         }
                     }
@@ -1321,9 +1320,8 @@ namespace System.Management.Automation
                             {
                                 return ToStringEnumerator(context, enumerator, separator, format, formatProvider);
                             }
-                            catch (Exception e)
+                            catch (Exception)
                             {
-                                CommandProcessorBase.CheckForSevereException(e);
                                 // We do want to ignore exceptions here to try the regular ToString below.
                             }
                         }
@@ -1349,7 +1347,6 @@ namespace System.Management.Automation
                 }
                 catch (Exception e)
                 {
-                    CommandProcessorBase.CheckForSevereException(e);
                     throw new ExtendedTypeSystemException("ToStringObjectBasicException", e,
                         ExtendedTypeSystem.ToStringException, e.Message);
                 }
@@ -1420,9 +1417,8 @@ namespace System.Management.Automation
                     {
                         return PSObject.ToStringEmptyBaseObject(context, mshObj, separator, format, formatProvider);
                     }
-                    catch (Exception e)
+                    catch (Exception)
                     {
-                        CommandProcessorBase.CheckForSevereException(e);
                         // We do want to ignore exceptions here to try the regular ToString below.
                     }
                 }
@@ -1434,9 +1430,8 @@ namespace System.Management.Automation
                     {
                         return ToStringEnumerable(context, enumerable, separator, format, formatProvider);
                     }
-                    catch (Exception e)
+                    catch (Exception)
                     {
-                        CommandProcessorBase.CheckForSevereException(e);
                         // We do want to ignore exceptions here to try the regular ToString below.
                     }
                 }
@@ -1449,9 +1444,8 @@ namespace System.Management.Automation
                         {
                             return ToStringEnumerator(context, enumerator, separator, format, formatProvider);
                         }
-                        catch (Exception e)
+                        catch (Exception)
                         {
-                            CommandProcessorBase.CheckForSevereException(e);
                             // We do want to ignore exceptions here to try the regular ToString below.
                         }
                     }
@@ -1489,7 +1483,6 @@ namespace System.Management.Automation
             }
             catch (Exception e)
             {
-                CommandProcessorBase.CheckForSevereException(e);
                 throw new ExtendedTypeSystemException("ToStringPSObjectBasicException", e,
                     ExtendedTypeSystem.ToStringException, e.Message);
             }
@@ -1521,8 +1514,8 @@ namespace System.Management.Automation
         /// CodeMethod or ScriptMethod will be used, if available. Enumerations items are
         /// concatenated using $ofs.
         /// </summary>
-        /// <param name="format">repassed to baseObject's IFormatable if present</param>
-        /// <param name="formatProvider">repassed to baseObject's IFormatable if present</param>
+        /// <param name="format">repassed to baseObject's IFormattable if present</param>
+        /// <param name="formatProvider">repassed to baseObject's IFormattable if present</param>
         /// <returns>the string representation for baseObject</returns>
         /// <exception cref="ExtendedTypeSystemException">if an exception was thrown by the BaseObject's ToString</exception>
         public string ToString(string format, IFormatProvider formatProvider)
@@ -1555,7 +1548,7 @@ namespace System.Management.Automation
 
         /// <summary>
         /// Returns a copy of this PSObject. This will copy the BaseObject if
-        /// it is a value type, and use BaseObject.Clone() for the new PSObject, 
+        /// it is a value type, and use BaseObject.Clone() for the new PSObject,
         /// if the BaseObject is ICloneable.
         /// </summary>
         /// <returns>a copy of this object</returns>
@@ -1648,12 +1641,12 @@ namespace System.Management.Automation
         ///     Greater than zero This instance is greater than obj.
         /// </returns>
         /// <exception cref="ExtendedTypeSystemException"> If <paramref name="obj"/> has a different type
-        /// than this intance's BaseObject or if the BaseObject does not implement IComparable.
+        /// than this instance's BaseObject or if the BaseObject does not implement IComparable.
         /// </exception>
         public int CompareTo(object obj)
         {
-            // This ReferenceEqulas is not just an optimization. 
-            // It is necessary so that mshObject.Equals(mshObject) returns 0. 
+            // This ReferenceEquals is not just an optimization.
+            // It is necessary so that mshObject.Equals(mshObject) returns 0.
             // Please see the comments inside the Equals implementation.
             if (Object.ReferenceEquals(this, obj))
             {
@@ -1680,7 +1673,7 @@ namespace System.Management.Automation
         /// <returns>true if the specified Object is equal to the current Object; otherwise, false.</returns>
         public override bool Equals(object obj)
         {
-            // There is a slight difference between BaseObject and PSObject.Base. 
+            // There is a slight difference between BaseObject and PSObject.Base.
             // PSObject.Base returns the containing PSObject that wraps an MshCustomBaseObject.
             // BaseObject returns the MshCustomBaseObject.
             // Because we have to call BaseObject here, and LP.Compare uses PSObject.Base
@@ -1691,7 +1684,7 @@ namespace System.Management.Automation
             }
 
             // The above check validates if we are comparing with the same object references
-            // This check "shortcuts" the comparision if the first object is a CustomObject
+            // This check "shortcuts" the comparison if the first object is a CustomObject
             // since 2 custom objects are not equal.
             if (Object.ReferenceEquals(this.BaseObject, PSCustomObject.SelfInstance))
             {
@@ -1748,7 +1741,7 @@ namespace System.Management.Automation
         /// The name of the member set for adapted members
         /// </summary>
         /// <remarks>
-        /// This needs to be Lower cased as it saves some comparision time elsewhere.
+        /// This needs to be Lower cased as it saves some comparison time elsewhere.
         /// </remarks>
         public const string AdaptedMemberSetName = "psadapted";
 
@@ -1756,7 +1749,7 @@ namespace System.Management.Automation
         /// The name of the member set for extended members
         /// </summary>
         /// <remarks>
-        /// This needs to be Lower cased as it saves some comparision time elsewhere.
+        /// This needs to be Lower cased as it saves some comparison time elsewhere.
         /// </remarks>
         public const string ExtendedMemberSetName = "psextended";
 
@@ -1764,7 +1757,7 @@ namespace System.Management.Automation
         /// The name of the member set for the BaseObject's members
         /// </summary>
         /// <remarks>
-        /// This needs to be Lower cased as it saves some comparision time elsewhere.
+        /// This needs to be Lower cased as it saves some comparison time elsewhere.
         /// </remarks>
         public const string BaseObjectMemberSetName = "psbase";
 
@@ -1773,7 +1766,7 @@ namespace System.Management.Automation
         /// The PSObject's properties
         /// </summary>
         /// <remarks>
-        /// This needs to be Lower cased as it saves some comparision time elsewhere.
+        /// This needs to be Lower cased as it saves some comparison time elsewhere.
         /// </remarks>
         internal const string PSObjectMemberSetName = "psobject";
 
@@ -1781,7 +1774,7 @@ namespace System.Management.Automation
         /// a shortcut to .PSObject.TypeNames
         /// </summary>
         /// <remarks>
-        /// This needs to be Lower cased as it saves some comparision time elsewhere.
+        /// This needs to be Lower cased as it saves some comparison time elsewhere.
         /// </remarks>
         internal const string PSTypeNames = "pstypenames";
 
@@ -1817,7 +1810,7 @@ namespace System.Management.Automation
         }
 
         /// <summary>
-        /// Used in the serialization dupplicate entry hashtable to detect when an PSObject has been serialized
+        /// Used in the serialization duplicate entry hashtable to detect when an PSObject has been serialized
         /// </summary>
         /// <returns>The System.Object implementation of GetHashCode</returns>
         internal int GetReferenceHashCode()
@@ -1826,7 +1819,7 @@ namespace System.Management.Automation
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="settings"></param>
         /// <param name="noteName"></param>
@@ -1836,7 +1829,7 @@ namespace System.Management.Automation
         /// true to make this PSObject as the owner of the memberset.
         /// </param>
         /// <param name="ownerObject">
-        /// PSObject to be used while replicating the owner for PSMemeberSet
+        /// PSObject to be used while replicating the owner for PSMemberSet
         /// </param>
         /// <returns></returns>
         internal static object GetNoteSettingValue(PSMemberSet settings, string noteName,
@@ -2140,15 +2133,15 @@ namespace System.Management.Automation
         /// adapters except for dotNetInstanceAdapter, mshMemberSetAdapter and mshObjectAdapter.
         /// If the original adapter is not one of those, then .net members are also exposed
         /// on the PSObject. This will have the following effect:
-        /// 
+        ///
         /// 1. Every adapted object like xml, wmi, adsi will show adapted members as well as
         ///    .net members.
         /// 2. Users will not need to access PSBase to access original .net members.
         /// 3. This will fix v1.0 ADSI adapter where most of the complaints were about
         ///    discovering original .net members.
-        /// 
-        /// Use of this class will allow us to customize the utlitmate .net member lookup.
-        /// For example, XML adapter already exposes .net methods. 
+        ///
+        /// Use of this class will allow us to customize the ultimate .net member lookup.
+        /// For example, XML adapter already exposes .net methods.
         /// Using this class you can choose exact .net adapter to support .net
         /// member lookup and avoid lookup duplication.
         /// </summary>
@@ -2159,7 +2152,7 @@ namespace System.Management.Automation
         {
             #region Private Data
 
-            // orginal adapter like Xml, ManagementClass, DirectoryEntry etc.
+            // original adapter like Xml, ManagementClass, DirectoryEntry etc.
             // .net adapter
 
             #endregion
@@ -2367,7 +2360,7 @@ namespace System.Management.Automation
     }
 
     /// <summary>
-    /// Serves as a placeholder BaseObject when PSObject's 
+    /// Serves as a placeholder BaseObject when PSObject's
     /// constructor with no parameters is used.
     /// </summary>
     public class PSCustomObject
@@ -2388,7 +2381,7 @@ namespace System.Management.Automation
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <remarks>
     /// Please keep in sync with SerializationMethod from
@@ -2407,7 +2400,7 @@ namespace System.Management.Automation
 namespace Microsoft.PowerShell
 {
     /// <summary>
-    /// Contains auxilliary ToString CodeMethod implementations for some types
+    /// Contains auxiliary ToString CodeMethod implementations for some types
     /// </summary>
     public static partial class ToStringCodeMethods
     {
@@ -2422,7 +2415,7 @@ namespace Microsoft.PowerShell
             sb.Append(']');
         }
 
-        internal static string Type(Type type, bool dropNamespaces = false)
+        internal static string Type(Type type, bool dropNamespaces = false, string key = null)
         {
             if (type == null)
                 return String.Empty;
@@ -2433,7 +2426,7 @@ namespace Microsoft.PowerShell
             {
                 string genericDefinition = Type(type.GetGenericTypeDefinition(), dropNamespaces);
                 // For regular generic types, we find the backtick character, for example:
-                //      System.Collections.Generic.List`1[T] -> 
+                //      System.Collections.Generic.List`1[T] ->
                 //      System.Collections.Generic.List[string]
                 // For nested generic types, we find the left bracket character, for example:
                 //      System.Collections.Generic.Dictionary`2+Enumerator[TKey, TValue] ->
@@ -2457,14 +2450,18 @@ namespace Microsoft.PowerShell
             }
             else
             {
-                result = TypeAccelerators.FindBuiltinAccelerator(type);
+                result = TypeAccelerators.FindBuiltinAccelerator(type, key);
                 if (result == null)
                 {
+                    if (type == typeof(PSCustomObject))
+                    {
+                        return type.Name;
+                    }
                     if (dropNamespaces)
                     {
                         if (typeinfo.IsNested)
                         {
-                            // For nested types, we should return OutterType+InnerType. For example,
+                            // For nested types, we should return OuterType+InnerType. For example,
                             //  System.Environment+SpecialFolder ->  Environment+SpecialFolder
                             string fullName = type.ToString();
                             result = type.Namespace == null

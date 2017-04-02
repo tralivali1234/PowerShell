@@ -20,7 +20,7 @@ namespace System.Management.Automation.Help
     internal class PositionalParameterComparer : IComparer
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="x"></param>
         /// <param name="y"></param>
@@ -234,8 +234,8 @@ namespace System.Management.Automation.Help
                 mshObject.Properties.Add(new PSNoteProperty("WorkflowCommonParameters", commonWorkflow));
 
                 Collection<CommandParameterInfo> parameters = new Collection<CommandParameterInfo>();
-                // GenerateParameters parameters in display order 
-                // ie., Postional followed by
+                // GenerateParameters parameters in display order
+                // ie., Positional followed by
                 //      Named Mandatory (in alpha numeric) followed by
                 //      Named (in alpha numeric)
                 parameterSet.GenerateParametersInDisplayOrder(commonWorkflow,
@@ -255,8 +255,8 @@ namespace System.Management.Automation.Help
         /// </summary>
         /// <param name="obj">HelpInfo object</param>
         /// <param name="parameters">
-        /// a collection of parameters in display order 
-        /// ie., Postional followed by
+        /// a collection of parameters in display order
+        /// ie., Positional followed by
         ///      Named Mandatory (in alpha numeric) followed by
         ///      Named (in alpha numeric)
         /// </param>
