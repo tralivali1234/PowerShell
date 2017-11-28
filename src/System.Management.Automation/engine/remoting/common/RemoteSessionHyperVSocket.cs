@@ -1,5 +1,5 @@
 ﻿/********************************************************************++
-Copyright (c) Microsoft Corporation.  All rights reserved.
+Copyright (c) Microsoft Corporation. All rights reserved.
 --********************************************************************/
 
 using System.Management.Automation.Tracing;
@@ -9,11 +9,6 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using Dbg = System.Diagnostics.Debug;
-
-#if CORECLR
-// Use stubs for SerializableAttribute.
-using Microsoft.PowerShell.CoreClr.Stubs;
-#endif
 
 namespace System.Management.Automation.Remoting
 {

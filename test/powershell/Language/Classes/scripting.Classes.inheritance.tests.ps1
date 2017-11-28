@@ -1,8 +1,6 @@
 #
-# Copyright (c) Microsoft Corporation, 2015
+# Copyright (c) Microsoft Corporation. All rights reserved.
 #
-
-Import-Module $PSScriptRoot\..\LanguageTestSupport.psm1
 
 Describe 'Classes inheritance syntax' -Tags "CI" {
 

@@ -1,5 +1,5 @@
 /********************************************************************++
-Copyright (c) Microsoft Corporation.  All rights reserved.
+Copyright (c) Microsoft Corporation. All rights reserved.
 --********************************************************************/
 
 using System;
@@ -77,19 +77,20 @@ namespace Microsoft.PowerShell.Commands
         /// Encoding optional flag
         /// </summary>
         [Parameter]
-        [ValidateSetAttribute(new string[] { "Unicode", "UTF7", "UTF8", "ASCII", "UTF32", "BigEndianUnicode", "Default", "OEM" })]
-        public string Encoding
-        {
-            get
-            {
-                return _encoding.GetType().Name;
-            }
-            set
-            {
-                _encoding = EncodingConversion.Convert(this, value);
-            }
-        }
-        private Encoding _encoding = System.Text.Encoding.UTF8;
+        [ArgumentToEncodingTransformationAttribute()]
+        [ArgumentCompletions(
+            EncodingConversion.Ascii,
+            EncodingConversion.BigEndianUnicode,
+            EncodingConversion.OEM,
+            EncodingConversion.Unicode,
+            EncodingConversion.Utf7,
+            EncodingConversion.Utf8,
+            EncodingConversion.Utf8Bom,
+            EncodingConversion.Utf8NoBom,
+            EncodingConversion.Utf32
+            )]
+        [ValidateNotNullOrEmpty]
+        public Encoding Encoding { get; set; } = ClrFacade.GetDefaultEncoding();
 
         #endregion Parameters
 
@@ -144,7 +145,7 @@ namespace Microsoft.PowerShell.Commands
             List<string> generatedFiles = GenerateProxyModule(
                 tempDirectory,
                 Path.GetFileName(directory.FullName),
-                _encoding,
+                Encoding,
                 _force,
                 listOfCommandMetadata,
                 alias2resolvedCommandName,
@@ -189,7 +190,7 @@ namespace Microsoft.PowerShell.Commands
             $sourceIdentifier = [system.management.automation.wildcardpattern]::Escape($eventSubscriber.SourceIdentifier)
             Unregister-Event -SourceIdentifier $sourceIdentifier -Force -ErrorAction SilentlyContinue
 
-            if ($previousScript -ne $null)
+            if ($null -ne $previousScript)
             {
                 & $previousScript $args
             }
@@ -2139,11 +2140,11 @@ function Set-PSImplicitRemotingSession
         [Parameter(Mandatory = $false, Position = 1)]
         [bool] $createdByModule = $false)
 
-    if ($PSSession -ne $null)
+    if ($null -ne $PSSession)
     {{
         $script:PSSession = $PSSession
 
-        if ($createdByModule -and ($script:PSSession -ne $null))
+        if ($createdByModule -and ($null -ne $script:PSSession))
         {{
             $moduleName = Get-PSImplicitRemotingModuleName
             $script:PSSession.Name = '{0}' -f $moduleName
@@ -2184,7 +2185,7 @@ if ($PSSessionOverride) {{ Set-PSImplicitRemotingSession $PSSessionOverride }}
         private const string HelperFunctionsGetSessionOptionTemplate = @"
 function Get-PSImplicitRemotingSessionOption
 {{
-    if ($PSSessionOptionOverride -ne $null)
+    if ($null -ne $PSSessionOptionOverride)
     {{
         return $PSSessionOptionOverride
     }}
@@ -2336,14 +2337,14 @@ function Get-PSImplicitRemotingSession
 
     $savedImplicitRemotingHash = '{4}'
 
-    if (($script:PSSession -eq $null) -or ($script:PSSession.Runspace.RunspaceStateInfo.State -ne 'Opened'))
+    if (($null -eq $script:PSSession) -or ($script:PSSession.Runspace.RunspaceStateInfo.State -ne 'Opened'))
     {{
         Set-PSImplicitRemotingSession `
             (& $script:GetPSSession `
                 -InstanceId {0} `
                 -ErrorAction SilentlyContinue )
     }}
-    if (($script:PSSession -ne $null) -and ($script:PSSession.Runspace.RunspaceStateInfo.State -eq 'Disconnected'))
+    if (($null -ne $script:PSSession) -and ($script:PSSession.Runspace.RunspaceStateInfo.State -eq 'Disconnected'))
     {{
         # If we are handed a disconnected session, try re-connecting it before creating a new session.
         Set-PSImplicitRemotingSession `
@@ -2351,7 +2352,7 @@ function Get-PSImplicitRemotingSession
                 -Session $script:PSSession `
                 -ErrorAction SilentlyContinue)
     }}
-    if (($script:PSSession -eq $null) -or ($script:PSSession.Runspace.RunspaceStateInfo.State -ne 'Opened'))
+    if (($null -eq $script:PSSession) -or ($script:PSSession.Runspace.RunspaceStateInfo.State -ne 'Opened'))
     {{
         Write-PSImplicitRemotingMessage ('{1}' -f $commandName)
 
@@ -2370,7 +2371,7 @@ function Get-PSImplicitRemotingSession
 
         {8}
     }}
-    if (($script:PSSession -eq $null) -or ($script:PSSession.Runspace.RunspaceStateInfo.State -ne 'Opened'))
+    if (($null -eq $script:PSSession) -or ($script:PSSession.Runspace.RunspaceStateInfo.State -ne 'Opened'))
     {{
         throw '{3}'
     }}

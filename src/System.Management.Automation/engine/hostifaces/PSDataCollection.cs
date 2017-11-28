@@ -1,5 +1,5 @@
 /********************************************************************++
- * Copyright (c) Microsoft Corporation.  All rights reserved.
+ * Copyright (c) Microsoft Corporation. All rights reserved.
  * --********************************************************************/
 
 using System.Collections;
@@ -10,11 +10,6 @@ using System.Diagnostics.CodeAnalysis; // for fxcop
 using System.Reflection;
 using System.Runtime.Serialization;
 using Dbg = System.Management.Automation.Diagnostics;
-
-#if CORECLR
-// Use stub for SerializableAttribute and ISerializable related types.
-using Microsoft.PowerShell.CoreClr.Stubs;
-#endif
 
 namespace System.Management.Automation
 {

@@ -1,5 +1,5 @@
 /********************************************************************++
-Copyright (c) Microsoft Corporation.  All rights reserved.
+Copyright (c) Microsoft Corporation. All rights reserved.
 --********************************************************************/
 
 using System.Collections.Generic;
@@ -480,7 +480,7 @@ namespace System.Management.Automation
                             StringLiterals.PowerShellCmdletizationFileExtension,
                             StringLiterals.WorkflowFileExtension,
                             StringLiterals.PowerShellNgenAssemblyExtension,
-                            StringLiterals.DependentWorkflowAssemblyExtension};
+                            StringLiterals.PowerShellILAssemblyExtension};
 
         // A list of the extensions to check for implicit module loading and discovery, put the ni.dll in front of .dll to have higher priority to be loaded.
         internal static string[] PSModuleExtensions = new string[] {
@@ -489,7 +489,7 @@ namespace System.Management.Automation
                             StringLiterals.PowerShellCmdletizationFileExtension,
                             StringLiterals.WorkflowFileExtension,
                             StringLiterals.PowerShellNgenAssemblyExtension,
-                            StringLiterals.DependentWorkflowAssemblyExtension};
+                            StringLiterals.PowerShellILAssemblyExtension};
 
         /// <summary>
         /// Returns true if the extension is one of the module extensions...
@@ -557,7 +557,7 @@ namespace System.Management.Automation
 
             try
             {
-                string psHome = Utils.GetApplicationBase(Utils.DefaultPowerShellShellID);
+                string psHome = Utils.DefaultPowerShellAppBase;
                 if (!string.IsNullOrEmpty(psHome))
                 {
                     // Win8: 584267 Powershell Modules are listed twice in x86, and cannot be removed
@@ -585,16 +585,16 @@ namespace System.Management.Automation
         /// It's known as "Program Files" module path in windows powershell.
         /// </summary>
         /// <returns></returns>
-        internal static string GetSharedModulePath()
+        private static string GetSharedModulePath()
         {
 #if UNIX
             return Platform.SelectProductNameForDirectory(Platform.XDG_Type.SHARED_MODULES);
 #else
-            string sharedModulePath = null;
-            string programFilesPath = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
-            if (!string.IsNullOrEmpty(programFilesPath))
+            string sharedModulePath = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
+
+            if (!string.IsNullOrEmpty(sharedModulePath))
             {
-                sharedModulePath = Path.Combine(programFilesPath, Utils.ModuleDirectory);
+                sharedModulePath = Path.Combine(sharedModulePath, Utils.ModuleDirectory);
             }
             return sharedModulePath;
 #endif
@@ -727,8 +727,8 @@ namespace System.Management.Automation
 #if UNIX
             return false;
 #else
-            Dbg.Assert(!string.IsNullOrEmpty(personalModulePath), "caller makes sure it's not null or empty");
-            Dbg.Assert(!string.IsNullOrEmpty(sharedModulePath), "caller makes sure it's not null or empty");
+            Dbg.Assert(!string.IsNullOrEmpty(personalModulePath), "caller makes sure personalModulePath not null or empty");
+            Dbg.Assert(sharedModulePath != null, "caller makes sure sharedModulePath is not null");
 
             const string winSxSModuleDirectory = @"PowerShell\Modules";
             const string winLegacyModuleDirectory = @"WindowsPowerShell\Modules";
@@ -768,10 +768,15 @@ namespace System.Management.Automation
         private static string RemoveSxSPsHomeModulePath(string currentProcessModulePath, string personalModulePath, string sharedModulePath, string psHomeModulePath)
         {
 #if UNIX
-            const string powershellExeName = "powershell";
+            const string powershellExeName = "pwsh";
+            const string oldPowershellExeName = "powershell";
 #else
-            const string powershellExeName = "powershell.exe";
+            const string powershellExeName = "pwsh.exe";
+            const string oldPowershellExeName = "powershell.exe";
 #endif
+            const string powershellDepsName = "pwsh.deps.json";
+            const string oldPowershellDepsName = "powershell.deps.json";
+
             StringBuilder modulePathString = new StringBuilder(currentProcessModulePath.Length);
             char[] invalidPathChars = Path.GetInvalidPathChars();
 
@@ -791,8 +796,10 @@ namespace System.Management.Automation
                 {
                     string parentDir = Path.GetDirectoryName(trimedPath);
                     string psExePath = Path.Combine(parentDir, powershellExeName);
-                    string psDepsPath = Path.Combine(parentDir, "powershell.deps.json");
-                    if (File.Exists(psExePath) && File.Exists(psDepsPath))
+                    string oldExePath = Path.Combine(parentDir, oldPowershellExeName);
+                    string psDepsPath = Path.Combine(parentDir, powershellDepsName);
+                    string oldDepsPath = Path.Combine(parentDir, oldPowershellDepsName);
+                    if ((File.Exists(psExePath) && File.Exists(psDepsPath)) || (File.Exists(oldExePath) && File.Exists(oldDepsPath)))
                     {
                         // Path is a PSHome module path from a different powershell core instance. Ignore it.
                         continue;
@@ -819,12 +826,8 @@ namespace System.Management.Automation
             string personalModulePath = GetPersonalModulePath();
             string sharedModulePath = GetSharedModulePath(); // aka <Program Files> location
             string psHomeModulePath = GetPSHomeModulePath(); // $PSHome\Modules location
-
-#if CORECLR
             bool runningSxS = Platform.IsInbox ? false : true;
-#else
-            bool runningSxS = false;
-#endif
+
             if (!string.IsNullOrEmpty(currentProcessModulePath) &&
                 NeedToClearProcessModulePath(currentProcessModulePath, personalModulePath, sharedModulePath, runningSxS))
             {
@@ -887,14 +890,6 @@ namespace System.Management.Automation
                             int psHomePosition = PathContainsSubstring(currentProcessModulePath, psHomeModulePath); // index of $PSHome\Modules in currentProcessModulePath
                             if (psHomePosition >= 0) // if $PSHome\Modules IS found - insert <Program Files> location before $PSHome\Modules
                             {
-#if !CORECLR
-                                // for bug 6678623, if we are running wow64 process (x86 32-bit process on 64-bit (amd64) OS), then ensure that <SpecialFolder.MyDocuments> exists in currentProcessModulePath / return value
-                                if (Environment.Is64BitOperatingSystem && !Environment.Is64BitProcess)
-                                {
-                                    currentProcessModulePath = AddToPath(currentProcessModulePath, personalModulePath, psHomePosition);
-                                    psHomePosition = PathContainsSubstring(currentProcessModulePath, psHomeModulePath);
-                                }
-#endif
                                 return AddToPath(currentProcessModulePath, sharedModulePath, psHomePosition);
                             } // if $PSHome\Modules NOT found = <scenario 4> = 'PSModulePath has been constrained by a user to create a sand boxed environment without including System Modules'
 

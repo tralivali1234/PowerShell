@@ -1,5 +1,5 @@
 /********************************************************************++
-Copyright (c) Microsoft Corporation.  All rights reserved.
+Copyright (c) Microsoft Corporation. All rights reserved.
 --********************************************************************/
 
 #pragma warning disable 1634, 1691
@@ -9,13 +9,7 @@ Copyright (c) Microsoft Corporation.  All rights reserved.
 using System.Runtime.Serialization;
 using System.Diagnostics.CodeAnalysis;
 using System.Management.Automation.Internal;
-
-#if !CORECLR
 using System.Security.Permissions;
-#else
-// Use stub for SerializableAttribute, SecurityPermissionAttribute and ISerializable related types.
-using Microsoft.PowerShell.CoreClr.Stubs;
-#endif
 
 #pragma warning disable 1634, 1691 // Stops compiler from warning about unknown warnings
 

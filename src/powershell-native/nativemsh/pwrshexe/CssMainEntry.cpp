@@ -1,7 +1,7 @@
 // ----------------------------------------------------------------------
 //
 //  Microsoft Windows NT
-//  Copyright (C) Microsoft Corporation, 2005.
+//  Copyright (c) Microsoft Corporation. All rights reserved.
 //
 //  File:      CoreCLRHost.cpp
 //
@@ -9,8 +9,8 @@
 //
 // ----------------------------------------------------------------------
 
-#include <windows.h>  
-#include <string>  
+#include <windows.h>
+#include <string>
 #include <stdio.h>
 #if !CORECLR
   #include "mscoree.h"
@@ -25,9 +25,6 @@ namespace NativeMsh
 {
     // Define the function pointer for the powershell entry point.
     typedef int (STDMETHODCALLTYPE *MonadRunHelperFp)(LPCWSTR consoleFilePath, LPCWSTR * args, int argc); // int UnmanagedPSEntry.Start(string consoleFilePath, string[] args, int argc)
-
-    // Define the function pointer for AssemblyLoadContext initializer.
-    typedef void (STDMETHODCALLTYPE *LoaderRunHelperFp)(LPCWSTR appPath);
 
     bool TryRun(const int argc, const wchar_t* argv[], HostEnvironment &hostEnvironment, int &exitCode, bool verbose)
     {
@@ -55,27 +52,9 @@ namespace NativeMsh
         }
 
         //-------------------------------------------------------------
-        // Set the powershell custom assembly loader to be the default
-        LoaderRunHelperFp initDelegate = NULL;
-        HRESULT hr = hostWrapper.CreateDelegate(
-            "Microsoft.PowerShell.CoreCLR.AssemblyLoadContext, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
-            "System.Management.Automation.PowerShellAssemblyLoadContextInitializer",
-            "SetPowerShellAssemblyLoadContext",
-            (void**)&initDelegate);
-
-        if (FAILED(hr))
-        {
-            output->DisplayMessage(false, g_CREATING_MSH_ENTRANCE_FAILED, hr);
-        }
-        else
-        {
-            initDelegate(hostEnvironment.GetHostDirectoryPathW());
-        }
-
-        //-------------------------------------------------------------
         // Start the assembly
         MonadRunHelperFp pfnDelegate = NULL;
-        hr = hostWrapper.CreateDelegate(
+        HRESULT hr = hostWrapper.CreateDelegate(
             "Microsoft.PowerShell.ConsoleHost, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
             "Microsoft.PowerShell.UnmanagedPSEntry",
             "Start",

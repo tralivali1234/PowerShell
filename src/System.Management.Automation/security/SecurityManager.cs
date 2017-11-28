@@ -1,5 +1,5 @@
 /********************************************************************++
-Copyright (c) Microsoft Corporation.  All rights reserved.
+Copyright (c) Microsoft Corporation. All rights reserved.
 --********************************************************************/
 
 using Dbg = System.Management.Automation;
@@ -13,12 +13,6 @@ using System.Management.Automation.Host;
 using System.Management.Automation.Language;
 using System.Security;
 using System.Security.Cryptography.X509Certificates;
-
-#if CORECLR
-// Use stub for SecurityZone
-using Microsoft.PowerShell.CoreClr.Stubs;
-using Environment = System.Management.Automation.Environment;
-#endif
 
 namespace Microsoft.PowerShell
 {
@@ -329,8 +323,8 @@ namespace Microsoft.PowerShell
                 if (String.Equals(fi.Extension, ".ps1xml", StringComparison.OrdinalIgnoreCase))
                 {
                     string[] trustedDirectories = new string[]
-                        { Environment.GetFolderPath(Environment.SpecialFolder.System),
-                          Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles)
+                        { Platform.GetFolderPath(Environment.SpecialFolder.System),
+                          Platform.GetFolderPath(Environment.SpecialFolder.ProgramFiles)
                         };
 
                     foreach (string trustedDirectory in trustedDirectories)
@@ -408,6 +402,9 @@ namespace Microsoft.PowerShell
 
         private bool IsLocalFile(string filename)
         {
+#if UNIX
+            return true;
+#else
             SecurityZone zone = ClrFacade.GetFileSecurityZone(filename);
 
             if (zone == SecurityZone.MyComputer ||
@@ -418,6 +415,7 @@ namespace Microsoft.PowerShell
             }
 
             return false;
+#endif
         }
 
         // Checks that a publisher is trusted by the system or is one of

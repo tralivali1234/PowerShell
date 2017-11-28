@@ -1,6 +1,6 @@
 #if !UNIX
 //
-//    Copyright (C) Microsoft.  All rights reserved.
+//    Copyright (c) Microsoft Corporation. All rights reserved.
 //
 using System.Collections.Generic;
 using System.Diagnostics.Eventing;
@@ -43,13 +43,11 @@ namespace System.Management.Automation.Tracing
     /// </summary>
     public delegate void CallbackWithState(object state);
 
-#if !CORECLR // System.Timers.Timer is not available in CoreCLR
     /// <summary>
     /// Delegates that defines a call back with two parameters; state and ElapsedEventArgs.
     /// It will be used in System.Timers.Timer scenarios.
     /// </summary>
     public delegate void CallbackWithStateAndArgs(object state, System.Timers.ElapsedEventArgs args);
-#endif
 
     /// <summary>
     /// ETW events argument class
@@ -175,7 +173,6 @@ namespace System.Management.Automation.Tracing
                 this.asyncCallback = callback;
             }
 
-#if !CORECLR // System.Timers.Timer is not available in CoreCLR
             /// <summary>
             /// It is to be used in System.Timers.Timer scenarios.
             /// </summary>
@@ -211,7 +208,7 @@ namespace System.Management.Automation.Tracing
                 Correlate();
                 this.callbackWithStateAndArgs(state, args);
             }
-#endif
+
             /// <summary>
             /// Correlate
             /// </summary>
@@ -254,7 +251,6 @@ namespace System.Management.Automation.Tracing
             }
         }
 
-        private static Guid powerShellProviderId = Guid.Parse("A0C1853B-5C40-4b15-8766-3CF1C58F985A");
         private static Dictionary<Guid, EventProvider> providers = new Dictionary<Guid, EventProvider>();
         private static object syncLock = new object();
 
@@ -412,7 +408,6 @@ namespace System.Management.Automation.Tracing
             return new CorrelatedCallback(this, callback).Callback;
         }
 
-#if !CORECLR // System.Timers.Timer is not available in CoreCLR
         /// <summary>
         /// Wraps a callback with one object param and one ElapsedEventArgs object
         /// This is menat to be used in System.Timers.Timer scenarios.
@@ -427,7 +422,6 @@ namespace System.Management.Automation.Tracing
             }
             return new CorrelatedCallback(this, callback).Callback;
         }
-#endif
 
         /// <summary>
         /// The provider where the tracing messages will be written to.
@@ -436,7 +430,7 @@ namespace System.Management.Automation.Tracing
         {
             get
             {
-                return powerShellProviderId;
+                return PSEtwLogProvider.ProviderGuid;
             }
         }
 

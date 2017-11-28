@@ -1,5 +1,5 @@
 /********************************************************************++
-Copyright (c) Microsoft Corporation.  All rights reserved.
+Copyright (c) Microsoft Corporation. All rights reserved.
 --********************************************************************/
 
 using System.Collections;
@@ -440,9 +440,23 @@ namespace System.Management.Automation
 
         internal static bool IsTypeEnumerable(Type type)
         {
+            if (type == null) { return false; }
             GetEnumerableDelegate getEnumerable = GetOrCalculateEnumerable(type);
             return (getEnumerable != LanguagePrimitives.ReturnNullEnumerable);
         }
+
+        /// <summary>
+        /// Returns True if the language considers obj to be IEnumerable
+        /// </summary>
+        /// <param name="obj">
+        /// IEnumerable or IEnumerable-like object
+        /// </param>
+        [SuppressMessage("Microsoft.Naming", "CA1720:IdentifiersShouldNotContainTypeNames", MessageId = "obj", Justification = "Since V1 code is already shipped, excluding this message.")]
+        public static bool IsObjectEnumerable(object obj)
+        {
+            return IsTypeEnumerable(PSObject.Base(obj)?.GetType());
+        }
+
 
         /// <summary>
         /// Retrieves the IEnumerable of obj or null if the language does not consider obj to be IEnumerable
@@ -453,26 +467,9 @@ namespace System.Management.Automation
         [SuppressMessage("Microsoft.Naming", "CA1720:IdentifiersShouldNotContainTypeNames", MessageId = "obj", Justification = "Since V1 code is already shipped, excluding this message.")]
         public static IEnumerable GetEnumerable(object obj)
         {
-            if (obj == null)
-            {
-                return null;
-            }
-
-            Type objectType = obj.GetType();
-
-            // if the object passed is an PSObject,
-            // look at the base object. Notice that, if the
-            // object has been serialized, the base object
-            // will be there as an ArrayList if the original
-            // object was IEnumerable
-            if (objectType == typeof(PSObject))
-            {
-                PSObject mshObj = (PSObject)obj;
-                obj = mshObj.BaseObject;
-                objectType = obj.GetType();
-            }
-
-            GetEnumerableDelegate getEnumerable = GetOrCalculateEnumerable(objectType);
+            obj = PSObject.Base(obj);
+            if (obj == null) { return null; }
+            GetEnumerableDelegate getEnumerable = GetOrCalculateEnumerable(obj.GetType());
             return getEnumerable(obj);
         }
 
@@ -1550,7 +1547,7 @@ namespace System.Management.Automation
         ///                                                 query is run using ManagementObjectSearcher Class.
         ///     - to WMIClass                           -   returns ManagementClass represented by the
         ///                                                 string representation of valueToConvert.
-        ///     - to ADSI                               -   returns DirectoryEntry  represented by the
+        ///     - to ADSI                               -   returns DirectoryEntry represented by the
         ///                                                 string representation of valueToConvert.
         ///     - to ADSISearcher                       -   return DirectorySearcher represented by the
         ///                                                 string representation of valueToConvert.
@@ -2127,7 +2124,8 @@ namespace System.Management.Automation
             using (typeConversion.TraceScope("Looking for \"{0}\" cast operator.", methodName))
             {
                 // Get multiple matched Public & Static methods
-                var methods = ClrFacade.GetMethods(targetType, methodName);
+                const BindingFlags flagsToUse = BindingFlags.FlattenHierarchy | BindingFlags.Public | BindingFlags.Static | BindingFlags.InvokeMethod;
+                var methods = targetType.GetMember(methodName, flagsToUse);
                 foreach (MethodInfo method in methods)
                 {
                     if (!resultType.IsAssignableFrom(method.ReturnType))
@@ -2313,7 +2311,7 @@ namespace System.Management.Automation
                                                     IFormatProvider formatProvider,
                                                     TypeTable backupTable)
         {
-            typeConversion.WriteLine("Standard type conversion to  DirectoryEntry.");
+            typeConversion.WriteLine("Standard type conversion to DirectoryEntry.");
 
             string valueToConvertString;
             try
@@ -3339,7 +3337,7 @@ namespace System.Management.Automation
                     valueToConvert.ToString(), resultType.ToString(), e.Message);
             }
 
-            // Check if the result is a defined enum..otherwise throw  an error
+            // Check if the result is a defined enum..otherwise throw an error
             // valueToConvert is the user supplied value. Use that in the error message.
             EnumSingleTypeConverter.ThrowForUndefinedEnum("UndefinedIntegerToEnum", result, valueToConvert, resultType);
 
@@ -3690,7 +3688,7 @@ namespace System.Management.Automation
                     ExecutionContext ecFromTLS = LocalPipeline.GetExecutionContextFromTLS();
                     object result = null;
 
-                    if ((ecFromTLS == null) || (ecFromTLS != null && ecFromTLS.LanguageMode == PSLanguageMode.FullLanguage))
+                    if (ecFromTLS == null || ecFromTLS.LanguageMode == PSLanguageMode.FullLanguage)
                     {
                         result = _constructor();
                         var psobject = valueToConvert as PSObject;

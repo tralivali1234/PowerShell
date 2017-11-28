@@ -1,15 +1,10 @@
 /********************************************************************++
-Copyright (c) Microsoft Corporation.  All rights reserved.
+Copyright (c) Microsoft Corporation. All rights reserved.
 --********************************************************************/
 
 using System.Collections.ObjectModel;
 using System.Management.Automation.Provider;
 using System.Security.AccessControl;
-
-#if CORECLR
-// Use stub for SystemException
-using Microsoft.PowerShell.CoreClr.Stubs;
-#endif
 
 namespace System.Management.Automation
 {

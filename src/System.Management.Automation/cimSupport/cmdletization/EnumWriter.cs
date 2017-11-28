@@ -1,5 +1,5 @@
 ﻿/********************************************************************++
-Copyright (c) Microsoft Corporation.  All rights reserved.
+Copyright (c) Microsoft Corporation. All rights reserved.
 --********************************************************************/
 
 using System;
@@ -65,7 +65,7 @@ namespace Microsoft.PowerShell.Cmdletization
                 eb.DefineLiteral(name, integerValue);
             }
 
-            ClrFacade.CreateEnumType(eb);
+            eb.CreateTypeInfo();
         }
     }
 }

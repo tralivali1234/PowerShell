@@ -1,8 +1,8 @@
-﻿@{
+@{
 GUID="1DA87E53-152B-403E-98DC-74D7B4D63D59"
 Author="Microsoft Corporation"
 CompanyName="Microsoft Corporation"
-Copyright="© Microsoft Corporation. All rights reserved."
+Copyright="Copyright (c) Microsoft Corporation. All rights reserved."
 ModuleVersion="3.1.0.0"
 PowerShellVersion="3.0"
 CmdletsToExport= "Format-List", "Format-Custom", "Format-Table", "Format-Wide",
@@ -20,11 +20,11 @@ CmdletsToExport= "Format-List", "Format-Custom", "Format-Table", "Format-Wide",
     "Clear-Variable", "Export-Clixml", "Import-Clixml", "Import-PowerShellDataFile", "ConvertTo-Xml", "Select-Xml", "Write-Debug",
     "Write-Verbose", "Write-Warning", "Write-Error", "Write-Information", "Write-Output", "Set-PSBreakpoint",
     "Get-PSBreakpoint", "Remove-PSBreakpoint", "Enable-PSBreakpoint", "Disable-PSBreakpoint", "Get-PSCallStack",
-    "Get-TraceSource", "Set-TraceSource", "Trace-Command", "Get-FileHash",
+    "Send-MailMessage", "Get-TraceSource", "Set-TraceSource", "Trace-Command", "Get-FileHash",
     "Get-Runspace", "Debug-Runspace", "Enable-RunspaceDebug", "Disable-RunspaceDebug",
-    "Get-RunspaceDebug", "Wait-Debugger" , "Get-Uptime", "New-TemporaryFile", "Get-Verb", "Format-Hex"
+    "Get-RunspaceDebug", "Wait-Debugger" , "Get-Uptime", "New-TemporaryFile", "Get-Verb", "Format-Hex", "Remove-Alias"
 FunctionsToExport= "Import-PowerShellDataFile"
 AliasesToExport= "fhx"
 NestedModules="Microsoft.PowerShell.Commands.Utility.dll","Microsoft.PowerShell.Utility.psm1"
-HelpInfoURI = 'https://go.microsoft.com/fwlink/?linkid=390787'
+HelpInfoURI = 'https://go.microsoft.com/fwlink/?linkid=855960'
 }

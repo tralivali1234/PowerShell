@@ -1,5 +1,5 @@
 //
-//    Copyright (C) Microsoft.  All rights reserved.
+//    Copyright (c) Microsoft Corporation. All rights reserved.
 //
 using System;
 using System.IO;
@@ -13,9 +13,6 @@ using System.Xml;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-#if CORECLR
-using System.Xml.XPath;
-#endif
 
 
 namespace Microsoft.WSMan.Management

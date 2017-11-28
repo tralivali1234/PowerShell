@@ -13,7 +13,7 @@ When adding new tests, place them in the directories as [outlined below](#test-l
 
 ## CI System
 
-We use [AppVeyor](http://www.appveyor.com/) as a continuous integration (CI) system for Windows 
+We use [AppVeyor](http://www.appveyor.com/) as a continuous integration (CI) system for Windows
 and [Travis CI](http://www.travis-ci.com) for non-Windows platforms.
 
 ### AppVeyor
@@ -53,7 +53,7 @@ They will bring you to the corresponding page with details.
 ### Pester
 
 Our script-based test framework is [Pester](https://github.com/Pester/Pester).
-This is the framework which we are using internally at Microsoft for new script-based tests, 
+This is the framework which we are using internally at Microsoft for new script-based tests,
 and a large number of the tests which are part of the PowerShell project have been migrated from that test base.
 Pester tests can be used to test most of PowerShell behavior (even some API operations can easily be tested in Pester).
 
@@ -76,6 +76,27 @@ Additionally, the tag:
 
 * `SLOW` indicates that the test takes a somewhat longer time to execute (97% of our `CI` tests take 100ms or less), a test which takes longer than 1 second should be considered as a candidate for being tagged `Slow`
 
+#### Requesting additional tests for a PR
+
+In our CI systems, we normally run only run tests tagged with `CI`.
+If in the first line of the last (most recent) commit description you add `[Feature]`,
+we will ensure that we will also run the tests tagged with `Feature`.
+When you would want to do this:
+
+- You have added or changed a `Feature` test.
+- A maintainer asks you to run the `Feature` tests.
+- Based on experience, you are confident that a maintainer will ask you to run the `Feature` tests.
+
+#### Validating packaging changes for a PR
+
+By default, our CI system does a build and run tests for a PR and does not exercise code to create a package.
+If your PR includes changes to packaging, you can have the CI system exercise the packaging code by
+using `[Package]` as the first line in the commit message.
+When you would want to do this:
+
+- You made change to PowerShell Core packaging
+- A maintainer asks you to run as `[Package]`
+
 ### xUnit
 
 For those tests which are not easily run via Pester, we have decided to use [xUnit](https://xunit.github.io/) as the test framework.
@@ -90,6 +111,13 @@ Two helper functions are part of the build.psm1 module to help with that:
 * `Start-PSxUnit` will execute the available xUnit tests run by the CI system
 
 Our CI system runs these as well; there should be no difference between running these on your dev system, versus in CI.
+
+Make sure that the git submodules have been loaded into your project before running `Start-PSPester`, or it will fail to run.
+If you did not clone the project with the `--recursive` flag, you can load the submodules by running: 
+
+```
+git submodule update --init
+```
 
 When running tests in this way, be sure that you have started PowerShell with `-noprofile` as some tests will fail if the
 environment is not the default or has any customization.

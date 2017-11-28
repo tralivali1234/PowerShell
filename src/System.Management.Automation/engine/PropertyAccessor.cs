@@ -9,16 +9,12 @@ using System.Globalization;
 using System.Threading;
 
 using System.Management.Automation;
+using System.Management.Automation.Internal;
 using Microsoft.Win32;
 
-#if CORECLR
-// Some APIs are missing from System.Environment. We use System.Management.Automation.Environment as a proxy type:
-//  - for missing APIs, System.Management.Automation.Environment has extension implementation.
-//  - for existing APIs, System.Management.Automation.Environment redirect the call to System.Environment.
-using Environment = System.Management.Automation.Environment;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-#endif
+
 
 namespace System.Management.Automation
 {
@@ -35,13 +31,7 @@ namespace System.Management.Automation
         /// </summary>
         static ConfigPropertyAccessor()
         {
-#if CORECLR
-            Instance = Platform.IsInbox
-                            ? (ConfigPropertyAccessor) new RegistryAccessor()
-                            : new JsonConfigFileAccessor();
-#else
-            Instance = new RegistryAccessor();
-#endif
+            Instance = new JsonConfigFileAccessor();
         }
         /// <summary>
         /// The instance of the ConfigPropertyAccessor to use to interact with properties.
@@ -112,10 +102,54 @@ namespace System.Management.Automation
         internal abstract string GetDefaultSourcePath();
         internal abstract void SetDefaultSourcePath(string defaultPath);
 
+#if UNIX
+        /// <summary>
+        /// Gets the application identity (name) to use for writing to syslog.
+        /// </summary>
+        /// <returns>
+        /// The string identity to use for writing to syslog.
+        /// <para>
+        /// The default value is 'powershell'
+        /// </para>
+        /// </returns>
+        internal abstract string GetSysLogIdentity();
+
+        /// <summary>
+        /// Gets the log level filter.
+        /// </summary>
+        /// <returns>One of the PSLevel values indicating the level to log.
+        /// <para>
+        /// The default value is PSLevel.Informational
+        /// </para>
+        /// </returns>
+        internal abstract PSLevel GetLogLevel();
+
+        /// <summary>
+        /// Gets the bitmask of the PSChannel values to log.
+        /// </summary>
+        /// <returns>
+        /// A bitmask of PSChannel.Operational and/or PSChannel.Analytic
+        /// <para>
+        /// The default value is PSChannel.Operational
+        /// </para>
+        /// </returns>
+        internal abstract PSChannel GetLogChannels();
+
+        /// <summary>
+        /// Gets the bitmask of keywords to log.
+        /// </summary>
+        /// <returns>
+        /// A bitmask of PSKeyword values.
+        /// <para>
+        /// The default value is all keywords other than UseAlwaysAnalytic
+        /// </para>
+        /// </returns>
+        internal abstract PSKeyword GetLogKeywords();
+
+#endif // UNIX
         #endregion // Interface Methods
     }
 
-#if CORECLR
     /// <summary>
     /// JSON configuration file accessor
     ///
@@ -322,6 +356,155 @@ namespace System.Management.Automation
             WriteValueToFile<string>(fileName, "DefaultSourcePath", defaultPath);
         }
 
+#if UNIX
+        /// <summary>
+        /// Gets the identity name to use for writing to syslog.
+        /// </summary>
+        /// <returns>
+        /// The string identity to use for writing to syslog.
+        /// <para>
+        /// The default value is 'powershell'.
+        /// </para>
+        /// </returns>
+        internal override string GetSysLogIdentity()
+        {
+            string fileName = Path.Combine(psHomeConfigDirectory, configFileName);
+            string identity = ReadValueFromFile<string>(fileName, "LogIdentity");
+
+            if (string.IsNullOrEmpty(identity) ||
+                identity.Equals(LogDefaultValue, StringComparison.OrdinalIgnoreCase))
+            {
+                identity = "powershell";
+            }
+            return identity;
+        }
+
+        /// <summary>
+        /// Gets the log level filter.
+        /// </summary>
+        /// <returns>One of the PSLevel values indicating the level to log.
+        /// <para>
+        /// The default value is PSLevel.Informational.
+        /// </para>
+        /// </returns>
+        internal override PSLevel GetLogLevel()
+        {
+            string fileName = Path.Combine(psHomeConfigDirectory, configFileName);
+            string levelName = ReadValueFromFile<string>(fileName, "LogLevel");
+            PSLevel level;
+
+            if (string.IsNullOrEmpty(levelName) ||
+                levelName.Equals(LogDefaultValue, StringComparison.OrdinalIgnoreCase) ||
+                !Enum.TryParse<PSLevel>(levelName, true, out level))
+            {
+                level = PSLevel.Informational;
+            }
+            return level;
+        }
+
+        /// <summary>
+        /// The supported separator characters for listing channels and keywords in configuration.
+        /// </summary>
+        static readonly char[] s_valueSeparators = new char[] {' ', ',', '|'};
+
+        /// <summary>
+        /// Provides a string name to indicate the default for a configuration setting.
+        /// </summary>
+        const string LogDefaultValue = "default";
+
+        const PSChannel DefaultChannels = PSChannel.Operational;
+
+        /// <summary>
+        /// Gets the bitmask of the PSChannel values to log.
+        /// </summary>
+        /// <returns>
+        /// A bitmask of PSChannel.Operational and/or PSChannel.Analytic.
+        /// <para>
+        /// The default value is PSChannel.Operational.
+        /// </para>
+        /// </returns>
+        internal override PSChannel GetLogChannels()
+        {
+            string fileName = Path.Combine(psHomeConfigDirectory, configFileName);
+            string values = ReadValueFromFile<string>(fileName, "LogChannels");
+
+            PSChannel result = 0;
+            if (!string.IsNullOrEmpty(values))
+            {
+                string[] names = values.Split(s_valueSeparators, StringSplitOptions.RemoveEmptyEntries);
+
+                foreach (string name in names)
+                {
+                    if (name.Equals(LogDefaultValue, StringComparison.OrdinalIgnoreCase))
+                    {
+                        result = 0;
+                        break;
+                    }
+
+                    PSChannel value;
+                    if (Enum.TryParse<PSChannel>(name, true, out value))
+                    {
+                        result |= value;
+                    }
+                }
+            }
+
+            if (result == 0)
+            {
+                result = DefaultChannels;
+            }
+
+            return result;
+        }
+
+        // by default, do not include analytic events.
+        const PSKeyword DefaultKeywords = (PSKeyword) (0xFFFFFFFFFFFFFFFF & ~(ulong)PSKeyword.UseAlwaysAnalytic);
+
+        /// <summary>
+        /// Gets the bitmask of keywords to log.
+        /// </summary>
+        /// <returns>
+        /// A bitmask of PSKeyword values.
+        /// <para>
+        /// The default value is all keywords other than UseAlwaysAnalytic.
+        /// </para>
+        /// </returns>
+        internal override PSKeyword GetLogKeywords()
+        {
+            string fileName = Path.Combine(psHomeConfigDirectory, configFileName);
+            string values = ReadValueFromFile<string>(fileName, "LogKeywords");
+
+            PSKeyword result = 0;
+            if (!string.IsNullOrEmpty(values))
+            {
+                string[] names = values.Split(s_valueSeparators, StringSplitOptions.RemoveEmptyEntries);
+
+                foreach (string name in names)
+                {
+                    if (name.Equals(LogDefaultValue, StringComparison.OrdinalIgnoreCase))
+                    {
+                        result = 0;
+                        break;
+                    }
+
+                    PSKeyword value;
+                    if (Enum.TryParse<PSKeyword>(name, true, out value))
+                    {
+                        result |= value;
+                    }
+                }
+            }
+
+            if (result == 0)
+            {
+                result = DefaultKeywords;
+            }
+
+            return result;
+        }
+
+#endif // UNIX
+
         private T ReadValueFromFile<T>(string fileName, string key)
         {
             fileLock.EnterReadLock();
@@ -491,308 +674,6 @@ namespace System.Management.Automation
             if (File.Exists(fileName))
             {
                 UpdateValueInFile<T>(fileName, key, default(T), false);
-            }
-        }
-    }
-
-#endif // CORECLR
-
-    internal class RegistryAccessor : ConfigPropertyAccessor
-    {
-        private const string DisablePromptToUpdateHelpRegPath = "Software\\Microsoft\\PowerShell";
-        private const string DisablePromptToUpdateHelpRegPath32 = "Software\\Wow6432Node\\Microsoft\\PowerShell";
-        private const string DisablePromptToUpdateHelpRegKey = "DisablePromptToUpdateHelp";
-        private const string DefaultSourcePathRegPath = "Software\\Policies\\Microsoft\\Windows\\PowerShell\\UpdatableHelp";
-        private const string DefaultSourcePathRegKey = "DefaultSourcePath";
-
-        internal RegistryAccessor()
-        {
-        }
-
-        /// <summary>
-        /// Gets the specified module path from the appropriate Environment entry in the registry.
-        /// </summary>
-        /// <param name="scope"></param>
-        /// <returns>The specified module path. Null if not present.</returns>
-        internal override string GetModulePath(PropertyScope scope)
-        {
-            if (PropertyScope.CurrentUser == scope)
-            {
-                return ModuleIntrinsics.GetExpandedEnvironmentVariable(Constants.PSModulePathEnvVar, EnvironmentVariableTarget.User);
-            }
-            else
-            {
-                return ModuleIntrinsics.GetExpandedEnvironmentVariable(Constants.PSModulePathEnvVar, EnvironmentVariableTarget.Machine);
-            }
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="scope"></param>
-        /// <param name="shellId"></param>
-        /// <returns>The execution policy string if found, otherwise null.</returns>
-        internal override string GetExecutionPolicy(PropertyScope scope, string shellId)
-        {
-            string regKeyName = Utils.GetRegistryConfigurationPath(shellId);
-            RegistryKey scopedKey = Registry.LocalMachine;
-
-            // Override if set to another value;
-            if (PropertyScope.CurrentUser == scope)
-            {
-                scopedKey = Registry.CurrentUser;
-            }
-
-            return GetRegistryString(scopedKey, regKeyName, "ExecutionPolicy");
-        }
-
-        internal override void SetExecutionPolicy(PropertyScope scope, string shellId, string executionPolicy)
-        {
-            string regKeyName = Utils.GetRegistryConfigurationPath(shellId);
-            RegistryKey scopedKey = Registry.LocalMachine;
-
-            // Override if set to another value;
-            if (PropertyScope.CurrentUser == scope)
-            {
-                scopedKey = Registry.CurrentUser;
-            }
-
-            using (RegistryKey key = scopedKey.CreateSubKey(regKeyName))
-            {
-                if (null != key)
-                {
-                    key.SetValue("ExecutionPolicy", executionPolicy, RegistryValueKind.String);
-                }
-            }
-        }
-
-        internal override void RemoveExecutionPolicy(PropertyScope scope, string shellId)
-        {
-            string regKeyName = Utils.GetRegistryConfigurationPath(shellId);
-            RegistryKey scopedKey = Registry.LocalMachine;
-
-            // Override if set to another value;
-            if (PropertyScope.CurrentUser == scope)
-            {
-                scopedKey = Registry.CurrentUser;
-            }
-
-            using (RegistryKey key = scopedKey.OpenSubKey(regKeyName, true))
-            {
-                if (key != null)
-                {
-                    if (key.GetValue("ExecutionPolicy") != null)
-                        key.DeleteValue("ExecutionPolicy");
-                }
-            }
-        }
-
-        /// <summary>
-        /// Existing Key = HKLM\SOFTWARE\Microsoft\PowerShell\1\ShellIds
-        /// Proposed value = existing default. Probably "1"
-        /// </summary>
-        /// <returns>Whether console prompting should happen.</returns>
-        internal override bool GetConsolePrompting()
-        {
-            string policyKeyName = Utils.GetRegistryConfigurationPrefix();
-            string tempPrompt = GetRegistryString(Registry.LocalMachine, policyKeyName, "ConsolePrompting");
-
-            if (null != tempPrompt)
-            {
-                return Convert.ToBoolean(tempPrompt, CultureInfo.InvariantCulture);
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        internal override void SetConsolePrompting(bool shouldPrompt)
-        {
-            string policyKeyName = Utils.GetRegistryConfigurationPrefix();
-            SetRegistryString(Registry.LocalMachine, policyKeyName, "ConsolePrompting", shouldPrompt.ToString());
-        }
-
-        /// <summary>
-        /// Existing Key = HKLM\SOFTWARE\Microsoft\PowerShell
-        /// Proposed value = Existing default. Probably "0"
-        /// </summary>
-        /// <returns>Boolean indicating whether Update-Help should prompt</returns>
-        internal override bool GetDisablePromptToUpdateHelp()
-        {
-            using (RegistryKey hklm = Registry.LocalMachine.OpenSubKey(DisablePromptToUpdateHelpRegPath))
-            {
-                if (hklm != null)
-                {
-                    object disablePromptToUpdateHelp = hklm.GetValue(DisablePromptToUpdateHelpRegKey, null, RegistryValueOptions.None);
-
-                    if (disablePromptToUpdateHelp == null)
-                    {
-                        return true;
-                    }
-                    else
-                    {
-                        int result;
-
-                        if (LanguagePrimitives.TryConvertTo<int>(disablePromptToUpdateHelp, out result))
-                        {
-                            return (result != 1);
-                        }
-
-                        return true;
-                    }
-                }
-                else
-                {
-                    return true;
-                }
-            }
-        }
-
-        internal override void SetDisablePromptToUpdateHelp(bool prompt)
-        {
-            int valueToSet = prompt ? 1 : 0;
-            using (RegistryKey hklm = Registry.LocalMachine.OpenSubKey(DisablePromptToUpdateHelpRegPath, true))
-            {
-                if (hklm != null)
-                {
-                    hklm.SetValue(DisablePromptToUpdateHelpRegKey, valueToSet, RegistryValueKind.DWord);
-                }
-            }
-
-            using (RegistryKey hklm = Registry.LocalMachine.OpenSubKey(DisablePromptToUpdateHelpRegPath32, true))
-            {
-                if (hklm != null)
-                {
-                    hklm.SetValue(DisablePromptToUpdateHelpRegKey, valueToSet, RegistryValueKind.DWord);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Existing Key = HKCU and HKLM\Software\Policies\Microsoft\Windows\PowerShell\UpdatableHelp
-        /// Proposed value = blank.This should be supported though
-        /// </summary>
-        /// <returns></returns>
-        internal override string GetDefaultSourcePath()
-        {
-            return GetRegistryString(Registry.LocalMachine, DefaultSourcePathRegPath, DefaultSourcePathRegKey);
-        }
-
-        internal override void SetDefaultSourcePath(string defaultPath)
-        {
-            SetRegistryString(Registry.LocalMachine, DefaultSourcePathRegPath, DefaultSourcePathRegKey, defaultPath);
-        }
-
-        /// <summary>
-        /// Reads a DWORD from the Registry. Exceptions are intentionally allowed to pass through to
-        /// the caller because different classes and methods within the code base handle Registry
-        /// exceptions differently. Some suppress exceptions and others pass them to the user.
-        /// </summary>
-        /// <param name="rootKey"></param>
-        /// <param name="pathToKey"></param>
-        /// <param name="valueName"></param>
-        /// <returns></returns>
-        private int? GetRegistryDword(RegistryKey rootKey, string pathToKey, string valueName)
-        {
-            using (RegistryKey regKey = rootKey.OpenSubKey(pathToKey))
-            {
-                if (null == regKey)
-                {
-                    // Key not found
-                    return null;
-                }
-
-                // verify the value kind as a string
-                RegistryValueKind kind = regKey.GetValueKind(valueName);
-
-                if (kind == RegistryValueKind.DWord)
-                {
-                    return regKey.GetValue(valueName) as int?;
-                }
-                else
-                {
-                    // The function expected a DWORD, but got another type. This is a coding error or a registry key typing error.
-                    return null;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Exceptions are intentionally allowed to pass through to
-        /// the caller because different classes and methods within the code base handle Registry
-        /// exceptions differently. Some suppress exceptions and others pass them to the user.
-        /// </summary>
-        /// <param name="rootKey"></param>
-        /// <param name="pathToKey"></param>
-        /// <param name="valueName"></param>
-        /// <param name="value"></param>
-        private void SetRegistryDword(RegistryKey rootKey, string pathToKey, string valueName, int value)
-        {
-            using (RegistryKey regKey = rootKey.OpenSubKey(pathToKey))
-            {
-                if (null != regKey)
-                {
-                    regKey.SetValue(valueName, value, RegistryValueKind.DWord);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Exceptions are intentionally allowed to pass through to
-        /// the caller because different classes and methods within the code base handle Registry
-        /// exceptions differently. Some suppress exceptions and others pass them to the user.
-        /// </summary>
-        /// <param name="rootKey"></param>
-        /// <param name="pathToKey"></param>
-        /// <param name="valueName"></param>
-        /// <returns></returns>
-        private string GetRegistryString(RegistryKey rootKey, string pathToKey, string valueName)
-        {
-            using (RegistryKey regKey = rootKey.OpenSubKey(pathToKey))
-            {
-                if (null == regKey)
-                {
-                    // Key not found
-                    return null;
-                }
-
-                object regValue = regKey.GetValue(valueName);
-                if (null != regValue)
-                {
-                    // verify the value kind as a string
-                    RegistryValueKind kind = regKey.GetValueKind(valueName);
-
-                    if (kind == RegistryValueKind.ExpandString ||
-                        kind == RegistryValueKind.String)
-                    {
-                        return regValue as string;
-                    }
-                }
-
-                // The function expected a string, but got another type or the value doesn't exist.
-                return null;
-            }
-        }
-
-        /// <summary>
-        /// Exceptions are intentionally allowed to pass through to
-        /// the caller because different classes and methods within the code base handle Registry
-        /// exceptions differently. Some suppress exceptions and others pass them to the user.
-        /// </summary>
-        /// <param name="rootKey"></param>
-        /// <param name="pathToKey"></param>
-        /// <param name="valueName"></param>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        private void SetRegistryString(RegistryKey rootKey, string pathToKey, string valueName, string value)
-        {
-            using (RegistryKey key = rootKey.CreateSubKey(pathToKey))
-            {
-                if (null != key)
-                {
-                    key.SetValue(valueName, value, RegistryValueKind.String);
-                }
             }
         }
     }

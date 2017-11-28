@@ -1,5 +1,5 @@
 /********************************************************************++
-Copyright (c) Microsoft Corporation.  All rights reserved.
+Copyright (c) Microsoft Corporation. All rights reserved.
 --********************************************************************/
 using System;
 using System.IO;
@@ -14,10 +14,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
-#if CORECLR
-// Use stub for TypeLibTypeAttribute
-using Microsoft.PowerShell.CoreClr.Stubs;
-#endif
 
 #pragma warning disable 1591
 
@@ -842,9 +838,9 @@ namespace Microsoft.WSMan.Management
         void AddOption([MarshalAs(UnmanagedType.BStr)] string OptionName, object OptionValue, int mustComply);
 
 
-        /// <summary><para><c>MustUnderstandOptions</c> property of <c>IWSManResourceLocator</c> interface.  </para><para>Sets the  MustUnderstandOptions value</para></summary>
+        /// <summary><para><c>MustUnderstandOptions</c> property of <c>IWSManResourceLocator</c> interface.  </para><para>Sets the MustUnderstandOptions value</para></summary>
         /// <remarks><para>An original IDL definition of <c>MustUnderstandOptions</c> property was the following:  <c>long MustUnderstandOptions</c>;</para></remarks>
-        // Sets the  MustUnderstandOptions value
+        // Sets the MustUnderstandOptions value
         // IDL: long MustUnderstandOptions;
 
         int MustUnderstandOptions

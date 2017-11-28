@@ -1,11 +1,12 @@
 /********************************************************************++
-Copyright (c) Microsoft Corporation.  All rights reserved.
+Copyright (c) Microsoft Corporation. All rights reserved.
 --********************************************************************/
 
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Data;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Dynamic;
@@ -30,7 +31,7 @@ namespace System.Management.Automation
 {
     /// <summary>
     /// Base class for all Adapters
-    /// This is the place to look every time you create a new Adapter. Consider if you 
+    /// This is the place to look every time you create a new Adapter. Consider if you
     /// should implement each of the virtual methods here.
     /// The base class deals with errors and performs additional operations before and after
     /// calling the derived virtual methods.
@@ -95,7 +96,7 @@ namespace System.Management.Automation
         /// in the first call to GetMember and GetMembers so that subsequent
         /// calls can use the cache.
         /// In the case of the .NET adapter that would be a cache from the .NET type to
-        /// the public properties and fields available in that type. 
+        /// the public properties and fields available in that type.
         /// In the case of the DirectoryEntry adapter, this could be a cache of the objectClass
         /// to the properties available in it.
         /// </summary>
@@ -318,7 +319,7 @@ namespace System.Management.Automation
             throw PSTraceSource.NewNotSupportedException();
         }
 
-        #endregion parameterized property      
+        #endregion parameterized property
 
         #endregion virtual
 
@@ -861,10 +862,7 @@ namespace System.Management.Automation
                         return 0;
                     }
                 }
-            }
 
-            if (betterCount == 0)
-            {
                 // Apply tie breaking rules, related to expanded parameters
                 if (candidate1.expandedParameters != null && candidate2.expandedParameters != null)
                 {
@@ -879,10 +877,8 @@ namespace System.Management.Automation
                 {
                     return 1;
                 }
-            }
 
-            if (betterCount == 0)
-            {
+
                 // Apply tie breaking rules, related to specificity of parameters
                 betterCount = CompareTypeSpecificity(candidate1, candidate2);
             }
@@ -1115,7 +1111,7 @@ namespace System.Management.Automation
             }
 
             // Dual-purpose of ([type]<expression>).method() syntax makes this code a little bit tricky to understand.
-            // First purpose of this syntax is cast. 
+            // First purpose of this syntax is cast.
             // Second is a non-virtual super-class method call.
             //
             // Consider this code:
@@ -1125,12 +1121,12 @@ namespace System.Management.Automation
             //     [string]foo() {return 'B.foo'}
             //     [string]foo($a) {return 'B.foo'}
             // }
-            // 
+            //
             // class Q : B {
             //     [string]$Name
             //     Q([string]$name) {$this.name = $name}
             // }
-            // 
+            //
             // ([Q]'t').foo()
             // ```
             //
@@ -1138,7 +1134,7 @@ namespace System.Management.Automation
             // So methodDeclaringType is [B] and targetType is [Q]
             //
             // Now consider another code
-            // 
+            //
             // ```
             // ([object]"abc").ToString()
             // ```
@@ -1564,7 +1560,7 @@ namespace System.Management.Automation
         /// <summary>
         /// Called in GetBestMethodAndArguments after a call to FindBestMethod to perform the
         /// type conversion, copying(varArg) and optional value setting of the final arguments.
-        /// </summary>        
+        /// </summary>
         internal static object[] GetMethodArgumentsBase(string methodName,
             ParameterInformation[] parameters, object[] arguments,
             bool expandParamsOnBest)
@@ -1750,7 +1746,7 @@ namespace System.Management.Automation
                     if (resultType == typeof(object))
                     {
                         PSObject.memberResolution.WriteLine("Parameter was an PSObject and will be converted to System.Object.");
-                        // we use PSObject.Base so we don't return 
+                        // we use PSObject.Base so we don't return
                         // PSCustomObject
                         return PSObject.Base(mshObj);
                     }
@@ -2471,8 +2467,8 @@ namespace System.Management.Automation
                 if (declaringTypeInfo.IsValueType ||
                     propertyTypeInfo.IsGenericType ||
                     declaringTypeInfo.IsGenericType ||
-                    property.DeclaringType.IsComObject() ||
-                    property.PropertyType.IsComObject())
+                    property.DeclaringType.IsCOMObject ||
+                    property.PropertyType.IsCOMObject)
                 {
                     this.readOnly = property.GetSetMethod() == null;
                     this.writeOnly = property.GetGetMethod() == null;
@@ -2814,8 +2810,8 @@ namespace System.Management.Automation
         {
             var typeInfo = type.GetTypeInfo();
             Type typeToGetMethod = type;
-#if CORECLR 
-            // Assemblies in CoreCLR might not allow reflection execution on their internal types. In such case, we walk up 
+#if CORECLR
+            // Assemblies in CoreCLR might not allow reflection execution on their internal types. In such case, we walk up
             // the derivation chain to find the first public parent, and use reflection methods on the public parent.
             if (!TypeResolver.IsPublic(typeInfo) && DisallowPrivateReflection(typeInfo))
             {
@@ -2910,8 +2906,8 @@ namespace System.Management.Automation
         /// <param name="bindingFlags">bindingFlags to use</param>
         private static void PopulateEventReflectionTable(Type type, Dictionary<string, EventCacheEntry> typeEvents, BindingFlags bindingFlags)
         {
-#if CORECLR 
-            // Assemblies in CoreCLR might not allow reflection execution on their internal types. In such case, we walk up 
+#if CORECLR
+            // Assemblies in CoreCLR might not allow reflection execution on their internal types. In such case, we walk up
             // the derivation chain to find the first public parent, and use reflection events on the public parent.
             TypeInfo typeInfo = type.GetTypeInfo();
             if (!TypeResolver.IsPublic(typeInfo) && DisallowPrivateReflection(typeInfo))
@@ -2953,7 +2949,7 @@ namespace System.Management.Automation
         /// </summary>
         private static bool PropertyAlreadyPresent(List<PropertyInfo> previousProperties, PropertyInfo property)
         {
-            // The loop below 
+            // The loop below
             bool returnValue = false;
             ParameterInfo[] propertyParameters = property.GetIndexParameters();
             int propertyIndexLength = propertyParameters.Length;
@@ -2997,7 +2993,7 @@ namespace System.Management.Automation
         {
             var tempTable = new Dictionary<string, List<PropertyInfo>>(StringComparer.OrdinalIgnoreCase);
             Type typeToGetPropertyAndField = type;
-#if CORECLR 
+#if CORECLR
             // Assemblies in CoreCLR might not allow reflection execution on their internal types. In such case, we walk up the
             // derivation chain to find the first public parent, and use reflection properties/fileds on the public parent.
             TypeInfo typeInfo = type.GetTypeInfo();
@@ -3121,7 +3117,7 @@ namespace System.Management.Automation
             }
 
             var productAttribute = assembly.GetCustomAttribute<AssemblyProductAttribute>();
-            if (productAttribute != null && string.Equals(productAttribute.Product, "Microsoft® .NET Framework", StringComparison.OrdinalIgnoreCase))
+            if (productAttribute != null && string.Equals(productAttribute.Product, "MicrosoftÂ® .NET Framework", StringComparison.OrdinalIgnoreCase))
             {
                 disallowReflection = true;
             }
@@ -3562,7 +3558,7 @@ namespace System.Management.Automation
         /// in the first call to GetMember and GetMembers so that subsequent
         /// calls can use the cache.
         /// In the case of the .NET adapter that would be a cache from the .NET type to
-        /// the public properties and fields available in that type. 
+        /// the public properties and fields available in that type.
         /// In the case of the DirectoryEntry adapter, this could be a cache of the objectClass
         /// to the properties available in it.
         /// </summary>
@@ -3831,7 +3827,7 @@ namespace System.Management.Automation
                     methodInformation.method.Name, arguments.Length, inner.Message);
             }
             //
-            // Note that FlowControlException, ScriptCallDepthException and ParameterBindingException will be wrapped in 
+            // Note that FlowControlException, ScriptCallDepthException and ParameterBindingException will be wrapped in
             // a TargetInvocationException only when the invocation uses reflection so we need to bubble them up here as well.
             //
             catch (ParameterBindingException) { throw; }
@@ -3941,7 +3937,7 @@ namespace System.Management.Automation
 
         /// <summary>
         /// this is a flavor of MethodInvokeDotNet to deal with a peculiarity of property setters:
-        /// Tthe setValue is always the last parameter. This enables a parameter after a varargs or optional 
+        /// Tthe setValue is always the last parameter. This enables a parameter after a varargs or optional
         /// parameters and GetBestMethodAndArguments is not prepared for that.
         /// This method disregards the last parameter in its call to GetBestMethodAndArguments used in this case
         /// more for its "Arguments" side than for its "BestMethod" side, since there is only one method.
@@ -4222,7 +4218,7 @@ namespace System.Management.Automation
     internal class BaseDotNetAdapterForAdaptedObjects : DotNetAdapter
     {
         /// <summary>
-        /// Return a collection representing the <paramref name="obj"/> object's 
+        /// Return a collection representing the <paramref name="obj"/> object's
         /// members as returned by CLR reflection.
         /// </summary>
         /// <typeparam name="T"></typeparam>
@@ -4469,7 +4465,7 @@ namespace System.Management.Automation
         /// in the first call to GetMember and GetMembers so that subsequent
         /// calls can use the cache.
         /// In the case of the .NET adapter that would be a cache from the .NET type to
-        /// the public properties and fields available in that type. 
+        /// the public properties and fields available in that type.
         /// In the case of the DirectoryEntry adapter, this could be a cache of the objectClass
         /// to the properties available in it.
         /// </summary>
@@ -4527,7 +4523,7 @@ namespace System.Management.Automation
         /// in the first call to GetMember and GetMembers so that subsequent
         /// calls can use the cache.
         /// In the case of the .NET adapter that would be a cache from the .NET type to
-        /// the public properties and fields available in that type. 
+        /// the public properties and fields available in that type.
         /// In the case of the DirectoryEntry adapter, this could be a cache of the objectClass
         /// to the properties available in it.
         /// </summary>
@@ -4547,10 +4543,10 @@ namespace System.Management.Automation
             return returnValue;
         }
 
-        #endregion  virtual
+        #endregion virtual
     }
     /// <summary>
-    /// Base class for all adapters that adapt only properties and retain 
+    /// Base class for all adapters that adapt only properties and retain
     /// .NET methods
     /// </summary>
     internal abstract class PropertyOnlyAdapter : DotNetAdapter
@@ -4626,7 +4622,7 @@ namespace System.Management.Automation
         /// in the first call to GetMember and GetMembers so that subsequent
         /// calls can use the cache.
         /// In the case of the .NET adapter that would be a cache from the .NET type to
-        /// the public properties and fields available in that type. 
+        /// the public properties and fields available in that type.
         /// In the case of the DirectoryEntry adapter, this could be a cache of the objectClass
         /// to the properties available in it.
         /// </summary>
@@ -5007,6 +5003,221 @@ namespace System.Management.Automation
         }
     }
 
+    /// <summary>
+    /// Deals with DataRow objects
+    /// </summary>
+    internal class DataRowAdapter : PropertyOnlyAdapter
+    {
+        #region virtual
+        /// <summary>
+        /// Retrieves all the properties available in the object.
+        /// </summary>
+        /// <param name="obj">object to get all the property information from</param>
+        /// <param name="members">collection where the members will be added</param>
+        protected override void DoAddAllProperties<T>(object obj, PSMemberInfoInternalCollection<T> members)
+        {
+            DataRow dataRow = (DataRow)obj;
+            if (dataRow.Table == null || dataRow.Table.Columns == null)
+            {
+                return;
+            }
+
+            foreach (DataColumn property in dataRow.Table.Columns)
+            {
+                members.Add(new PSProperty(property.ColumnName, this, obj, property.ColumnName) as T);
+            }
+
+            return;
+        }
+        /// <summary>
+        /// Returns null if propertyName is not a property in the adapter or
+        /// the corresponding PSProperty with its adapterData set to information
+        /// to be used when retrieving the property.
+        /// </summary>
+        /// <param name="obj">object to retrieve the PSProperty from</param>
+        /// <param name="propertyName">name of the property to be retrieved</param>
+        /// <returns>The PSProperty corresponding to propertyName from obj</returns>
+        protected override PSProperty DoGetProperty(object obj, string propertyName)
+        {
+            DataRow dataRow = (DataRow)obj;
+
+            if (!dataRow.Table.Columns.Contains(propertyName))
+            {
+                return null;
+            }
+
+            string columnName = dataRow.Table.Columns[propertyName].ColumnName;
+            return new PSProperty(columnName, this, obj, columnName);
+        }
+
+        /// <summary>
+        /// Returns the name of the type corresponding to the property
+        /// </summary>
+        /// <param name="property">PSProperty obtained in a previous DoGetProperty</param>
+        /// <param name="forDisplay">True if the result is for display purposes only</param>
+        /// <returns>the name of the type corresponding to the property</returns>
+        protected override string PropertyType(PSProperty property, bool forDisplay)
+        {
+            string columnName = (string)property.adapterData;
+            DataRow dataRow = (DataRow)property.baseObject;
+            var dataType = dataRow.Table.Columns[columnName].DataType;
+            return forDisplay ? ToStringCodeMethods.Type(dataType) : dataType.FullName;
+        }
+
+        /// <summary>
+        /// Returns true if the property is settable
+        /// </summary>
+        /// <param name="property">property to check</param>
+        /// <returns>true if the property is settable</returns>
+        protected override bool PropertyIsSettable(PSProperty property)
+        {
+            string columnName = (string)property.adapterData;
+            DataRow dataRow = (DataRow)property.baseObject;
+            return !dataRow.Table.Columns[columnName].ReadOnly;
+        }
+
+        /// <summary>
+        /// Returns true if the property is gettable
+        /// </summary>
+        /// <param name="property">property to check</param>
+        /// <returns>true if the property is gettable</returns>
+        protected override bool PropertyIsGettable(PSProperty property)
+        {
+            return true;
+        }
+
+
+        /// <summary>
+        /// Returns the value from a property coming from a previous call to DoGetProperty
+        /// </summary>
+        /// <param name="property">PSProperty coming from a previous call to DoGetProperty</param>
+        /// <returns>The value of the property</returns>
+        protected override object PropertyGet(PSProperty property)
+        {
+            DataRow dataRow = (DataRow)property.baseObject;
+            return dataRow[(string)property.adapterData];
+        }
+        /// <summary>
+        /// Sets the value of a property coming from a previous call to DoGetProperty
+        /// </summary>
+        /// <param name="property">PSProperty coming from a previous call to DoGetProperty</param>
+        /// <param name="setValue">value to set the property with</param>
+        /// <param name="convertIfPossible">instructs the adapter to convert before setting, if the adapter supports conversion</param>
+        protected override void PropertySet(PSProperty property, object setValue, bool convertIfPossible)
+        {
+            DataRow dataRow = (DataRow)property.baseObject;
+            dataRow[(string)property.adapterData] = setValue;
+            return;
+        }
+        #endregion virtual
+    }
+    /// <summary>
+    /// Deals with DataRowView objects
+    /// </summary>
+    internal class DataRowViewAdapter : PropertyOnlyAdapter
+    {
+        #region virtual
+        /// <summary>
+        /// Retrieves all the properties available in the object.
+        /// </summary>
+        /// <param name="obj">object to get all the property information from</param>
+        /// <param name="members">collection where the members will be added</param>
+        protected override void DoAddAllProperties<T>(object obj, PSMemberInfoInternalCollection<T> members)
+        {
+            DataRowView dataRowView = (DataRowView)obj;
+            if (dataRowView.Row == null || dataRowView.Row.Table == null || dataRowView.Row.Table.Columns == null)
+            {
+                return;
+            }
+
+            foreach (DataColumn property in dataRowView.Row.Table.Columns)
+            {
+                members.Add(new PSProperty(property.ColumnName, this, obj, property.ColumnName) as T);
+            }
+
+            return;
+        }
+        /// <summary>
+        /// Returns null if propertyName is not a property in the adapter or
+        /// the corresponding PSProperty with its adapterData set to information
+        /// to be used when retrieving the property.
+        /// </summary>
+        /// <param name="obj">object to retrieve the PSProperty from</param>
+        /// <param name="propertyName">name of the property to be retrieved</param>
+        /// <returns>The PSProperty corresponding to propertyName from obj</returns>
+        protected override PSProperty DoGetProperty(object obj, string propertyName)
+        {
+            DataRowView dataRowView = (DataRowView)obj;
+
+            if (!dataRowView.Row.Table.Columns.Contains(propertyName))
+            {
+                return null;
+            }
+            string columnName = dataRowView.Row.Table.Columns[propertyName].ColumnName;
+            return new PSProperty(columnName, this, obj, columnName);
+        }
+
+        /// <summary>
+        /// Returns the name of the type corresponding to the property
+        /// </summary>
+        /// <param name="property">PSProperty obtained in a previous DoGetProperty</param>
+        /// <param name="forDisplay">True if the result is for display purposes only</param>
+        /// <returns>the name of the type corresponding to the property</returns>
+        protected override string PropertyType(PSProperty property, bool forDisplay)
+        {
+            string columnName = (string)property.adapterData;
+            DataRowView dataRowView = (DataRowView)property.baseObject;
+            var dataType = dataRowView.Row.Table.Columns[columnName].DataType;
+            return forDisplay ? ToStringCodeMethods.Type(dataType) : dataType.FullName;
+        }
+
+        /// <summary>
+        /// Returns true if the property is settable
+        /// </summary>
+        /// <param name="property">property to check</param>
+        /// <returns>true if the property is settable</returns>
+        protected override bool PropertyIsSettable(PSProperty property)
+        {
+            string columnName = (string)property.adapterData;
+            DataRowView dataRowView = (DataRowView)property.baseObject;
+            return !dataRowView.Row.Table.Columns[columnName].ReadOnly;
+        }
+
+        /// <summary>
+        /// Returns true if the property is gettable
+        /// </summary>
+        /// <param name="property">property to check</param>
+        /// <returns>true if the property is gettable</returns>
+        protected override bool PropertyIsGettable(PSProperty property)
+        {
+            return true;
+        }
+
+        /// <summary>
+        /// Returns the value from a property coming from a previous call to DoGetProperty
+        /// </summary>
+        /// <param name="property">PSProperty coming from a previous call to DoGetProperty</param>
+        /// <returns>The value of the property</returns>
+        protected override object PropertyGet(PSProperty property)
+        {
+            DataRowView dataRowView = (DataRowView)property.baseObject;
+            return dataRowView[(string)property.adapterData];
+        }
+        /// <summary>
+        /// Sets the value of a property coming from a previous call to DoGetProperty
+        /// </summary>
+        /// <param name="property">PSProperty coming from a previous call to DoGetProperty</param>
+        /// <param name="setValue">value to set the property with</param>
+        /// <param name="convertIfPossible">instructs the adapter to convert before setting, if the adapter supports conversion</param>
+        protected override void PropertySet(PSProperty property, object setValue, bool convertIfPossible)
+        {
+            DataRowView dataRowView = (DataRowView)property.baseObject;
+            dataRowView[(string)property.adapterData] = setValue;
+            return;
+        }
+        #endregion virtual
+    }
+
     internal class TypeInference
     {
         [TraceSource("ETS", "Extended Type System")]
@@ -5048,7 +5259,7 @@ namespace System.Management.Automation
 
             MethodInfo inferredMethod = Infer(genericMethod, typeParameters, typesOfMethodParameters, typesOfMethodArguments);
 
-            // normal inference failed, perhaps instead of inferring for 
+            // normal inference failed, perhaps instead of inferring for
             //   M<T1,T2,T3>(T1, T2, ..., params T3 [])
             // we can try to infer for this signature instead
             //   M<T1,T2,T3>)(T1, T2, ..., T3, T3, T3, T3)

@@ -1,5 +1,5 @@
 /********************************************************************++
- * Copyright (c) Microsoft Corporation.  All rights reserved.
+ * Copyright (c) Microsoft Corporation. All rights reserved.
  * --********************************************************************/
 
 using System.Collections.Generic;
@@ -7,7 +7,9 @@ using System.Linq;
 using System.Threading;
 using System.Management.Automation.Host;
 using System.Management.Automation.Internal;
+#if LEGACYTELEMETRY
 using Microsoft.PowerShell.Telemetry.Internal;
+#endif
 using Dbg = System.Management.Automation.Diagnostics;
 
 #pragma warning disable 1634, 1691 // Stops compiler from warning about unknown warnings
@@ -35,22 +37,14 @@ namespace System.Management.Automation.Runspaces
         /// <exception cref="System.ArgumentNullException">
         /// host is null.
         /// </exception>
-        /// <param name="runspaceConfiguration">
-        /// configuration information for this minshell.
-        /// </param>
-        protected RunspaceBase(PSHost host, RunspaceConfiguration runspaceConfiguration)
+        protected RunspaceBase(PSHost host)
         {
             if (host == null)
             {
                 throw PSTraceSource.NewArgumentNullException("host");
             }
-            if (runspaceConfiguration == null)
-            {
-                throw PSTraceSource.NewArgumentNullException("runspaceConfiguration");
-            }
-
+            InitialSessionState = InitialSessionState.CreateDefault();
             Host = host;
-            RunspaceConfiguration = runspaceConfiguration;
         }
 
         /// <summary>
@@ -141,17 +135,7 @@ namespace System.Management.Automation.Runspaces
         protected PSHost Host { get; }
 
         /// <summary>
-        /// runspaceConfiguration information for this runspace
-        /// </summary>
-#if CORECLR
-        internal
-#else
-        public
-#endif
-        override RunspaceConfiguration RunspaceConfiguration { get; }
-
-        /// <summary>
-        /// runspaceConfiguration information for this runspace
+        /// InitialSessionState information for this runspace
         /// </summary>
         public override InitialSessionState InitialSessionState { get; }
 
@@ -279,6 +263,7 @@ namespace System.Management.Automation.Runspaces
             OpenHelper(syncCall);
             if (etwEnabled) RunspaceEventSource.Log.OpenRunspaceStop();
 
+#if LEGACYTELEMETRY
             // We report startup telementry when opening the runspace - because this is the first time
             // we are really using PowerShell. This isn't the cleanest place though, because
             // sometimes there are many runspaces created - the callee ensures telemetry is only
@@ -288,6 +273,7 @@ namespace System.Management.Automation.Runspaces
             {
                 TelemetryAPI.ReportStartupTelemetry(null);
             }
+#endif
         }
 
 
@@ -839,7 +825,7 @@ namespace System.Management.Automation.Runspaces
         /// list of pipelines in execution</param>
         ///
         /// <exception cref="InvalidRunspaceStateException">
-        /// Thrown if the runspace  is not in the Opened state.
+        /// Thrown if the runspace is not in the Opened state.
         /// <see cref="RunspaceState"/>.
         /// </exception>
         ///

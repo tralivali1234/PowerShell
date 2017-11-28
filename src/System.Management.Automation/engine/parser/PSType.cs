@@ -1,5 +1,5 @@
 /********************************************************************++
-Copyright (c) Microsoft Corporation.  All rights reserved.
+Copyright (c) Microsoft Corporation. All rights reserved.
 --********************************************************************/
 
 using System.Collections.Generic;
@@ -16,10 +16,11 @@ namespace System.Management.Automation.Language
 {
     internal class TypeDefiner
     {
+        internal const string DynamicClassAssemblyName = "PowerShell Class Assembly";
+
         private static int s_globalCounter = 0;
-        private static readonly object[] s_emptyArgArray = Utils.EmptyArray<object>();
         private static readonly CustomAttributeBuilder s_hiddenCustomAttributeBuilder =
-            new CustomAttributeBuilder(typeof(HiddenAttribute).GetConstructor(Type.EmptyTypes), s_emptyArgArray);
+            new CustomAttributeBuilder(typeof(HiddenAttribute).GetConstructor(Type.EmptyTypes), Utils.EmptyArray<object>());
 
         private static readonly string s_sessionStateKeeperFieldName = "__sessionStateKeeper";
         internal static readonly string SessionStateFieldName = "__sessionState";
@@ -253,7 +254,7 @@ namespace System.Management.Automation.Language
             internal readonly TypeBuilder _staticHelpersTypeBuilder;
             private readonly Dictionary<string, PropertyMemberAst> _definedProperties;
             private readonly Dictionary<string, List<Tuple<FunctionMemberAst, Type[]>>> _definedMethods;
-            internal readonly List<Tuple<string, object>> _fieldsToInitForMemberFunctions;
+            internal readonly List<(string fieldName, IParameterMetadataProvider bodyAst, bool isStatic)> _fieldsToInitForMemberFunctions;
             private bool _baseClassHasDefaultCtor;
 
             /// <summary>
@@ -274,9 +275,9 @@ namespace System.Management.Automation.Language
                 _typeBuilder = module.DefineType(typeName, Reflection.TypeAttributes.Class | Reflection.TypeAttributes.Public, baseClass, interfaces.ToArray());
                 _staticHelpersTypeBuilder = module.DefineType(string.Format(CultureInfo.InvariantCulture, "{0}_<staticHelpers>", typeName), Reflection.TypeAttributes.Class);
                 DefineCustomAttributes(_typeBuilder, typeDefinitionAst.Attributes, _parser, AttributeTargets.Class);
-                _typeDefinitionAst.Type = _typeBuilder.AsType();
+                _typeDefinitionAst.Type = _typeBuilder;
 
-                _fieldsToInitForMemberFunctions = new List<Tuple<string, object>>();
+                _fieldsToInitForMemberFunctions = new List<(string, IParameterMetadataProvider, bool)>();
                 _definedMethods = new Dictionary<string, List<Tuple<FunctionMemberAst, Type[]>>>(StringComparer.OrdinalIgnoreCase);
                 _definedProperties = new Dictionary<string, PropertyMemberAst>(StringComparer.OrdinalIgnoreCase);
 
@@ -582,7 +583,7 @@ namespace System.Management.Automation.Language
 
                 if (hasValidateAttributes)
                 {
-                    var typeToLoad = _typeBuilder.AsType();
+                    Type typeToLoad = _typeBuilder;
                     setIlGen.Emit(OpCodes.Ldtoken, typeToLoad);
                     setIlGen.Emit(OpCodes.Call, typeof(Type).GetMethod("GetTypeFromHandle")); // load current Type on stack
                     setIlGen.Emit(OpCodes.Ldstr, propertyMemberAst.Name); // load name of Property
@@ -703,14 +704,14 @@ namespace System.Management.Automation.Language
 
             private bool MethodExistsOnBaseClassAndFinal(string methodName, Type[] parameterTypes)
             {
-                TypeInfo baseType = _typeBuilder.BaseType.GetTypeInfo();
+                Type baseType = _typeBuilder.BaseType;
 
                 // If baseType is PS class, then method will be virtual, once we define it.
                 if (baseType is TypeBuilder)
                 {
                     return false;
                 }
-                var mi = baseType.AsType().GetMethod(methodName, parameterTypes);
+                var mi = baseType.GetMethod(methodName, parameterTypes);
                 return mi != null && mi.IsFinal;
             }
 
@@ -884,8 +885,7 @@ namespace System.Management.Automation.Language
                 ilGenerator.EmitCall(OpCodes.Call, invokeHelper, null);
                 ilGenerator.Emit(OpCodes.Ret);
 
-                var methodWrapper = new ScriptBlockMemberMethodWrapper(ipmp);
-                _fieldsToInitForMemberFunctions.Add(Tuple.Create(wrapperFieldName, (object)methodWrapper));
+                _fieldsToInitForMemberFunctions.Add((wrapperFieldName, ipmp, isStatic));
             }
         }
 
@@ -1101,29 +1101,40 @@ namespace System.Management.Automation.Language
             }
         }
 
-        private static IEnumerable<CustomAttributeBuilder> GetAssemblyAttributeBuilders()
+        private static IEnumerable<CustomAttributeBuilder> GetAssemblyAttributeBuilders(string scriptFile)
         {
-            yield return new CustomAttributeBuilder(typeof(DynamicClassImplementationAssemblyAttribute).GetConstructor(Type.EmptyTypes), s_emptyArgArray);
+            var ctor = typeof(DynamicClassImplementationAssemblyAttribute).GetConstructor(Type.EmptyTypes);
+            var emptyArgs = Utils.EmptyArray<object>();
+
+            if (string.IsNullOrEmpty(scriptFile)) {
+                yield return new CustomAttributeBuilder(ctor, emptyArgs);
+                yield break;
+            }
+
+            var propertyInfo = new PropertyInfo[] {
+                typeof(DynamicClassImplementationAssemblyAttribute).GetProperty(nameof(DynamicClassImplementationAssemblyAttribute.ScriptFile)) };
+            var propertyArgs = new object[] { scriptFile };
+
+            yield return new CustomAttributeBuilder(ctor, emptyArgs,
+                propertyInfo, propertyArgs, Utils.EmptyArray<FieldInfo>(), emptyArgs);
+
         }
 
+        private static int counter = 0;
         internal static Assembly DefineTypes(Parser parser, Ast rootAst, TypeDefinitionAst[] typeDefinitions)
         {
             Diagnostics.Assert(rootAst.Parent == null, "Caller should only define types from the root ast");
 
             var definedTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-            // First character is a special mark that allows us to cheaply ignore dynamic generated assemblies in ClrFacede.GetAssemblies()
-            // Two replaces at the end are for not-allowed characters. They are replaced by similar-looking chars.
-            string assemblyName = ClrFacade.FIRST_CHAR_PSASSEMBLY_MARK + (string.IsNullOrWhiteSpace(rootAst.Extent.File)
-                                      ? "powershell"
-                                      : rootAst.Extent.File
-                                      .Replace('\\', (char)0x29f9)
-                                      .Replace('/', (char)0x29f9)
-                                      .Replace(':', (char)0x0589));
-
-            var assembly = AssemblyBuilder.DefineDynamicAssembly(new AssemblyName(assemblyName),
-                                                                 AssemblyBuilderAccess.RunAndCollect, GetAssemblyAttributeBuilders());
-            var module = assembly.DefineDynamicModule(assemblyName);
+            var assemblyName = new AssemblyName(DynamicClassAssemblyName)
+            {
+                // We could generate a unique name, but a unique version works too.
+                Version = new Version(1, 0, 0, Interlocked.Increment(ref counter))
+            };
+            var assembly = AssemblyBuilder.DefineDynamicAssembly(assemblyName,
+                AssemblyBuilderAccess.RunAndCollect, GetAssemblyAttributeBuilders(rootAst.Extent.File));
+            var module = assembly.DefineDynamicModule(DynamicClassAssemblyName);
 
             var defineTypeHelpers = new List<DefineTypeHelper>();
             var defineEnumHelpers = new List<DefineEnumHelper>();
@@ -1159,27 +1170,33 @@ namespace System.Management.Automation.Language
 
             foreach (var helper in defineTypeHelpers)
             {
-                Diagnostics.Assert(helper._typeDefinitionAst.Type.GetTypeInfo() is TypeBuilder, "Type should be the TypeBuilder");
+                Diagnostics.Assert(helper._typeDefinitionAst.Type is TypeBuilder, "Type should be the TypeBuilder");
                 bool runtimeTypeAssigned = false;
                 if (!helper.HasFatalErrors)
                 {
                     try
                     {
-                        var type = helper._typeBuilder.CreateTypeInfo().AsType();
+                        var type = helper._typeBuilder.CreateType();
                         helper._typeDefinitionAst.Type = type;
                         runtimeTypeAssigned = true;
-                        var helperType = helper._staticHelpersTypeBuilder.CreateTypeInfo().AsType();
+                        var helperType = helper._staticHelpersTypeBuilder.CreateType();
+
+                        SessionStateKeeper sessionStateKeeper = new SessionStateKeeper();
+                        helperType.GetField(s_sessionStateKeeperFieldName, BindingFlags.NonPublic | BindingFlags.Static).SetValue(null, sessionStateKeeper);
 
                         if (helper._fieldsToInitForMemberFunctions != null)
                         {
                             foreach (var tuple in helper._fieldsToInitForMemberFunctions)
                             {
-                                helperType.GetField(tuple.Item1, BindingFlags.NonPublic | BindingFlags.Static)
-                                    .SetValue(null, tuple.Item2);
+                                // If the wrapper is for a static method, we need the sessionStateKeeper to determine the right SessionState to run.
+                                // If the wrapper is for an instance method, we use the SessionState that the instance is bound to, and thus don't need sessionStateKeeper.
+                                var methodWrapper = tuple.isStatic
+                                    ? new ScriptBlockMemberMethodWrapper(tuple.bodyAst, sessionStateKeeper)
+                                    : new ScriptBlockMemberMethodWrapper(tuple.bodyAst);
+                                helperType.GetField(tuple.fieldName, BindingFlags.NonPublic | BindingFlags.Static)
+                                    .SetValue(null, methodWrapper);
                             }
                         }
-
-                        helperType.GetField(s_sessionStateKeeperFieldName, BindingFlags.NonPublic | BindingFlags.Static).SetValue(null, new SessionStateKeeper());
                     }
                     catch (TypeLoadException e)
                     {

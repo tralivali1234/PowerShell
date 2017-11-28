@@ -1,7 +1,5 @@
-﻿#if CORECLR
-
-/********************************************************************++
-Copyright (c) Microsoft Corporation.  All rights reserved.
+﻿/********************************************************************++
+Copyright (c) Microsoft Corporation. All rights reserved.
 --********************************************************************/
 
 using System;
@@ -31,15 +29,21 @@ namespace Microsoft.PowerShell.Commands
         {
             get
             {
-                var headers = new Dictionary<string, IEnumerable<string>>(StringComparer.OrdinalIgnoreCase);
-                foreach (var entry in BaseResponse.Headers)
+                if(_headers == null)
                 {
-                    headers[entry.Key] = entry.Value;
+                    _headers = WebResponseHelper.GetHeadersDictionary(BaseResponse);
                 }
 
-                return headers;
+                return _headers;
             }
         }
+
+        private Dictionary<string, IEnumerable<string>> _headers = null;
+
+        /// <summary>
+        /// gets the RelationLink property
+        /// </summary>
+        public Dictionary<string, string> RelationLink { get; internal set; }
 
         #endregion
 
@@ -116,4 +120,3 @@ namespace Microsoft.PowerShell.Commands
         #endregion
     }
 }
-#endif

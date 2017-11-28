@@ -1,5 +1,5 @@
 Describe "Native streams behavior with PowerShell" -Tags 'CI' {
-    $powershell = Join-Path -Path $PsHome -ChildPath "powershell"
+    $powershell = Join-Path -Path $PsHome -ChildPath "pwsh"
 
     Context "Error stream" {
         # we are using powershell itself as an example of a native program.
@@ -27,7 +27,7 @@ Describe "Native streams behavior with PowerShell" -Tags 'CI' {
             $out[0] | Should BeOfType 'System.Management.Automation.ErrorRecord'
             $out[0].FullyQualifiedErrorId | Should Be 'NativeCommandError'
 
-            $out | Select-Object -Skip 1 | % {
+            $out | Select-Object -Skip 1 | ForEach-Object {
                 $_ | Should BeOfType 'System.Management.Automation.ErrorRecord'
                 $_.FullyQualifiedErrorId | Should Be 'NativeCommandErrorMessage'
             }
@@ -49,22 +49,26 @@ Describe "Native streams behavior with PowerShell" -Tags 'CI' {
         It 'preserves error stream as is with Out-String' {
             ($out | Out-String).Replace("`r", '') | Should Be "foo`n`nbar`n`nbazmiddlefoo`n`nbar`n`nbaz`n"
         }
+
+        It 'does not get truncated or split when redirected' {
+            $longtext = "0123456789"
+            while ($longtext.Length -lt [console]::WindowWidth) {
+                $longtext += $longtext
+            }
+            pwsh -c "& { [Console]::Error.WriteLine('$longtext') }" 2>&1 > $testdrive\error.txt
+            $e = Get-Content -Path $testdrive\error.txt
+            $e.Count | Should BeExactly 1
+            $e | Should BeExactly $longtext
+        }
     }
 }
 
 Describe 'piping powershell objects to finished native executable' -Tags 'CI' {
-    # Find where test/powershell is so we can find the echoargs command relative to it
-    $powershellTestDir = $PSScriptRoot
-    while ($powershellTestDir -notmatch 'test[\\/]powershell$') {
-        $powershellTestDir = Split-Path $powershellTestDir
-    }
-    $echoArgs = Join-Path (Split-Path $powershellTestDir) tools/EchoArgs/bin/echoargs
-
     It 'doesn''t throw any exceptions, when we are piping to the closed executable' {
-        1..3 | % {
+        1..3 | ForEach-Object {
             Start-Sleep -Milliseconds 100
-            # yeild some multi-line formatted object
+            # yield some multi-line formatted object
             @{'a' = 'b'}
-        } | & $echoArgs | Should Be $null
+        } | testexe -echoargs | Should Be $null
     }
 }

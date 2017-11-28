@@ -1,16 +1,10 @@
 /********************************************************************++
-Copyright (c) Microsoft Corporation.  All rights reserved.
+Copyright (c) Microsoft Corporation. All rights reserved.
 --********************************************************************/
 
 using System.Runtime.Serialization;
 using System.Reflection;
-
-#if CORECLR
-// Use stubs for SystemException, SerializationInfo and SecurityPermissionAttribute
-using Microsoft.PowerShell.CoreClr.Stubs;
-#else
 using System.Security.Permissions;
-#endif
 
 namespace System.Management.Automation.Runspaces
 {

@@ -1,7 +1,7 @@
 // ----------------------------------------------------------------------
 //
 //  Microsoft Windows NT
-//  Copyright (C) Microsoft Corporation, 2007.
+//  Copyright (c) Microsoft Corporation. All rights reserved.
 //
 //  Contents:  Entry points for managed PowerShell plugin worker used to
 //  host powershell in a WSMan service.
@@ -337,7 +337,7 @@ namespace System.Management.Automation.Remoting
                     // Wrap the provided handle so it can be passed to the registration function
                     SafeWaitHandle safeWaitHandle = new SafeWaitHandle(requestDetails.shutdownNotificationHandle, false); // Owned by WinRM
                     EventWaitHandle eventWaitHandle = new EventWaitHandle(false, EventResetMode.AutoReset);
-                    ClrFacade.SetSafeWaitHandle(eventWaitHandle, safeWaitHandle);
+                    eventWaitHandle.SafeWaitHandle = safeWaitHandle;
 
                     _registeredShutDownWaitHandle = ThreadPool.RegisterWaitForSingleObject(
                             eventWaitHandle,

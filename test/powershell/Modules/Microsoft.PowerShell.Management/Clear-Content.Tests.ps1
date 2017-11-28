@@ -12,7 +12,7 @@ function Get-NonExistantProviderName
    param ( [int]$length = 8 )
    do {
        $providerName = get-randomstring -length $length
-   } until ( (get-psprovider -PSProvider $providername -erroraction silentlycontinue) -eq $null )
+   } until ( $null -eq (get-psprovider -PSProvider $providername -erroraction silentlycontinue) )
    $providerName
 }
 
@@ -22,7 +22,7 @@ function Get-NonExistantDriveName
     param ( [int]$length = 8 )
     do {
         $driveName = Get-RandomString -length $length
-    } until ( (get-psdrive $driveName -erroraction silentlycontinue) -eq $null )
+    } until ( $null -eq (get-psdrive $driveName -erroraction silentlycontinue) )
     $drivename
 }
 
@@ -83,7 +83,7 @@ Describe "Clear-Content cmdlet tests" -Tags "CI" {
       get-content -Path "TESTDRIVE:/$file3" -stream $streamName | should BeNullOrEmpty
     }
 
-    It "the '-Stream' dynamic parameter is visible to get-command in the filesystem" {
+    It "the '-Stream' dynamic parameter is visible to get-command in the filesystem" -Skip:(!$IsWindows) {
       try {
         push-location TESTDRIVE:
         (get-command clear-content -stream foo).parameters.keys -eq "stream" | should be "stream"

@@ -1,6 +1,4 @@
-Import-Module $PSScriptRoot\..\..\Common\Test.Helpers.psm1
-
-Describe "Start-Process" -Tags @("CI","SLOW") {
+Describe "Start-Process" -Tags @("Feature") {
 
     BeforeAll {
         $isNanoServer = [System.Management.Automation.Platform]::IsNanoServer
@@ -12,15 +10,15 @@ Describe "Start-Process" -Tags @("CI","SLOW") {
         $tempFile = Join-Path -Path $TestDrive -ChildPath PSTest
         $assetsFile = Join-Path -Path (Join-Path -Path $PSScriptRoot -ChildPath assets) -ChildPath SortTest.txt
         if ($IsWindows) {
-	        $pingParam = "-n 2 localhost"
+            $pingParam = "-n 2 localhost"
         }
-        elseif ($IsLinux -Or $IsOSX) {
+        elseif ($IsLinux -Or $IsMacOS) {
 	        $pingParam = "-c 2 localhost"
         }
     }
 
     # Note that ProcessName may still be `powershell` due to dotnet/corefx#5378
-    # This has been fixed on Linux, but not on OS X
+    # This has been fixed on Linux, but not on macOS
 
     It "Should process arguments without error" {
 	    $process = Start-Process ping -ArgumentList $pingParam -PassThru -RedirectStandardOutput "$TESTDRIVE/output"
@@ -107,14 +105,38 @@ Describe "Start-Process" -Tags @("CI","SLOW") {
         $process | Stop-Process
     }
 
-    It "Should open the application that associates with extension '.txt'" -Skip:(!$isFullWin) {
-        $txtFile = Join-Path $TestDrive "TxtTest.txt"
-        New-Item $txtFile -ItemType File -Force
-        $process = Start-Process $txtFile -PassThru -WindowStyle Normal
-        $process.Name | Should Not BeNullOrEmpty
-        $process.Id | Should BeGreaterThan 1
-        $process | Stop-Process
+    It "Should be able to use the -WhatIf switch without performing the actual action" {
+        $pingOutput = Join-Path $TestDrive "pingOutput.txt"
+        { Start-Process -Wait $pingCommand -ArgumentList $pingParam -RedirectStandardOutput $pingOutput -WhatIf -ErrorAction Stop } | Should Not Throw
+        $pingOutput | Should Not Exist 
     }
 
-    Remove-Item -Path $tempFile -Force
+    It "Should return null when using -WhatIf switch with -PassThru" {
+        Start-Process $pingCommand -ArgumentList $pingParam -PassThru -WhatIf | Should Be $null
+   }
+}
+
+Describe "Start-Process tests requiring admin" -Tags "Feature","RequireAdminOnWindows" {
+
+    BeforeEach {
+        cmd /c assoc .foo=foofile
+        cmd /c ftype foofile=cmd /c echo %1^> $testdrive\foo.txt
+        Remove-Item $testdrive\foo.txt -Force -ErrorAction SilentlyContinue
+    }
+
+    AfterEach {
+        cmd /c assoc .foo=
+        cmd /c ftype foofile=
+    }
+
+    It "Should open the application that is associated a file" -Skip:(!$isFullWin) {
+        $fooFile = Join-Path $TestDrive "FooTest.foo"
+        New-Item $fooFile -ItemType File -Force
+        Start-Process $fooFile
+
+        Wait-FileToBePresent -File "$testdrive\foo.txt" -TimeoutInSeconds 10 -IntervalInMilliseconds 100
+
+        "$testdrive\foo.txt" | Should Exist
+        Get-Content $testdrive\foo.txt | Should BeExactly $fooFile
+    }
 }

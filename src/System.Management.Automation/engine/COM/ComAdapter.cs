@@ -1,5 +1,5 @@
 /********************************************************************++
-Copyright (c) Microsoft Corporation.  All rights reserved.
+Copyright (c) Microsoft Corporation. All rights reserved.
 --********************************************************************/
 
 using System.Collections.Generic;
@@ -8,9 +8,6 @@ using System.Text;
 using System.ComponentModel;
 using Microsoft.PowerShell;
 
-#if CORECLR
-using System.Reflection;
-#endif
 
 namespace System.Management.Automation
 {

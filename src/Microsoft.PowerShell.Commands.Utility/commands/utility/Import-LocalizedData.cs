@@ -1,5 +1,5 @@
 /********************************************************************++
-Copyright (c) Microsoft Corporation.  All rights reserved.
+Copyright (c) Microsoft Corporation. All rights reserved.
 --********************************************************************/
 
 using System;
@@ -285,7 +285,7 @@ namespace Microsoft.PowerShell.Commands
             {
                 try
                 {
-                    culture = ClrFacade.GetCultureInfo(_uiculture);
+                    culture = CultureInfo.GetCultureInfo(_uiculture);
                 }
                 catch (ArgumentException)
                 {

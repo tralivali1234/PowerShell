@@ -2,7 +2,7 @@
     Context "Group-Object" {
         It "AsHashtable returns a hashtable" {
             $result = Get-Process | Group-Object -Property ProcessName -AsHashTable
-            $result["powershell"].Count | Should BeGreaterThan 0
+            $result["pwsh"].Count | Should BeGreaterThan 0
         }
 
         It "AsString returns a string" {
@@ -89,7 +89,7 @@ Describe "Object cmdlets" -Tags "CI" {
 
         It 'should return correct error for non-numeric input' {
             $gmi = "abc",[Datetime]::Now | measure  -sum -max -ev err -ea silentlycontinue
-            $err | % { $_.FullyQualifiedErrorId | Should Be 'NonNumericInputObject,Microsoft.PowerShell.Commands.MeasureObjectCommand' }
+            $err | ForEach-Object { $_.FullyQualifiedErrorId | Should Be 'NonNumericInputObject,Microsoft.PowerShell.Commands.MeasureObjectCommand' }
         }
 
         It 'should have the correct count' {

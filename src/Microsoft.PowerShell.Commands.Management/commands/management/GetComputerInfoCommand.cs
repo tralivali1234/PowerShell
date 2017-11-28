@@ -1,6 +1,8 @@
 ﻿/********************************************************************++
-Copyright (c) Microsoft Corporation.  All rights reserved.
+Copyright (c) Microsoft Corporation. All rights reserved.
 --********************************************************************/
+
+#if !UNIX
 
 using System;
 using System.Collections.Generic;
@@ -434,8 +436,14 @@ namespace Microsoft.PowerShell.Commands
                 var wmiGuard = session.GetFirst<WmiDeviceGuard>(CIMHelper.DeviceGuardNamespace,
                                                                 CIMHelper.ClassNames.DeviceGuard);
 
-                if (wmiGuard != null)
+                if (wmiGuard != null) {
+                    var smartStatus = EnumConverter<DeviceGuardSmartStatus>.Convert((int?)wmiGuard.VirtualizationBasedSecurityStatus ?? 0);
+                    if (smartStatus != null)
+                    {
+                        status = (DeviceGuardSmartStatus)smartStatus;
+                    }
                     guard = wmiGuard.AsOutputType;
+                }
             }
 
             return new DeviceGuardInfo
@@ -3256,7 +3264,7 @@ namespace Microsoft.PowerShell.Commands
 
         /// <summary>
         /// If a HyperVisor is not present, indicates the state of the
-        /// requirement that the processor supports  Intel or AMD Virtual
+        /// requirement that the processor supports Intel or AMD Virtual
         /// Machine Monitor extensions
         /// </summary>
         public bool? HyperVRequirementVMMonitorModeExtensions { get; internal set; }
@@ -5099,17 +5107,10 @@ namespace Microsoft.PowerShell.Commands
     {
         private static class PInvokeDllNames
         {
-#if CORECLR
             public const string GetPhysicallyInstalledSystemMemoryDllName = "api-ms-win-core-sysinfo-l1-2-1.dll";
             public const string LCIDToLocaleNameDllName = "kernelbase.dll";
             public const string PowerDeterminePlatformRoleExDllName = "api-ms-win-power-base-l1-1-0.dll";
             public const string GetFirmwareTypeDllName = "api-ms-win-core-kernel32-legacy-l1-1-1";
-#else
-            public const string GetPhysicallyInstalledSystemMemoryDllName = "kernel32.dll";
-            public const string LCIDToLocaleNameDllName = "kernel32.dll";
-            public const string PowerDeterminePlatformRoleExDllName = "Powrprof.dll";
-            public const string GetFirmwareTypeDllName = "kernel32.dll";
-#endif
         }
 
         public const int LOCALE_NAME_MAX_LENGTH = 85;
@@ -5179,3 +5180,5 @@ namespace Microsoft.PowerShell.Commands
     }
     #endregion Native
 }
+
+#endif

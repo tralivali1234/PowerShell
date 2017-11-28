@@ -1,17 +1,11 @@
 /********************************************************************++
-Copyright (c) Microsoft Corporation.  All rights reserved.
+Copyright (c) Microsoft Corporation. All rights reserved.
 --********************************************************************/
 
 using System.Management.Automation.Internal;
 using System.Management.Automation.Language;
 using System.Runtime.Serialization;
-
-#if !CORECLR
 using System.Security.Permissions;
-#else
-// Use stub for SerializableAttribute, SecurityPermissionAttribute and ISerializable related types.
-using Microsoft.PowerShell.CoreClr.Stubs;
-#endif
 
 namespace System.Management.Automation
 {

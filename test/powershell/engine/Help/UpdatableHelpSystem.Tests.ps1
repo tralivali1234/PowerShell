@@ -12,7 +12,7 @@ $powershellCoreModules = @(
     "Microsoft.PowerShell.Core"
     "Microsoft.PowerShell.Diagnostics"
     "Microsoft.PowerShell.Management"
-    "Microsoft.PowerShell.LocalAccounts"
+    # "Microsoft.PowerShell.LocalAccounts" removed due to #4274
     "Microsoft.PowerShell.Security"
     "Microsoft.PowerShell.Utility"
     "Microsoft.WsMan.Management"
@@ -178,7 +178,7 @@ function RunUpdateHelpTests
             It "Validate Update-Help for module '$moduleName'" -Pending:$Pending {
 
                 # If the help file is already installed, delete it.
-                Get-ChildItem $testCases[$moduleName].HelpInstallationPath -Include @("about_*.txt","*help.xml") -Recurse -ea SilentlyContinue |
+                Get-ChildItem $testCases[$moduleName].HelpInstallationPath -Include @("*help.xml") -Recurse -ea SilentlyContinue |
                     Remove-Item -Force -ErrorAction SilentlyContinue
 
                 if ((Get-UICulture).Name -ne "en-Us")
@@ -265,11 +265,11 @@ function ValidateSaveHelp
         [string]$path
     )
 
-    $compressedFile = GetFiles -fileType "*$extension" -path $path | foreach {Split-Path $_ -Leaf}
+    $compressedFile = GetFiles -fileType "*$extension" -path $path | ForEach-Object {Split-Path $_ -Leaf}
     $expectedCompressedFile = $testCases[$moduleName].CompressedFiles
     $expectedCompressedFile | Should Be $compressedFile
 
-    $helpInfoFile = GetFiles -fileType "*HelpInfo.xml" -path $path | foreach {Split-Path $_ -Leaf}
+    $helpInfoFile = GetFiles -fileType "*HelpInfo.xml" -path $path | ForEach-Object {Split-Path $_ -Leaf}
     $expectedHelpInfoFile = $testCases[$moduleName].HelpInfoFiles
     $expectedHelpInfoFile | Should Be $helpInfoFile
 }

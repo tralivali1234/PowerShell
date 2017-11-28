@@ -1,50 +1,57 @@
 # escape=`
-FROM microsoft/nanoserver:latest
-MAINTAINER brycem@microsoft.com
-LABEL Readme.md="https://github.com/PowerShell/PowerShell/blob/master/docker/README.md"
-LABEL Description="This Dockerfile will install the latest release of PS."
+# Args used by from statements must be defined here:
+ARG NanoServerVersion=1709
+ARG WindowsServerCoreVersion=latest
+ARG WindowsServerCoreRepo=microsoft/windowsservercore
+ARG NanoServerRepo=microsoft/nanoserver
 
-ARG POWERSHELL_ZIP=https://github.com/PowerShell/PowerShell/releases/download/v6.0.0-alpha.17/PowerShell_6.0.0-alpha.17-win10-win2016-x64.zip
-ARG POWERSHELL_SHA256=3D770CF4C5744992622E043A52F9A285C695BFE8F1B94BB070C4026582CA64B0
+# Use server core as an installer container to extract PowerShell,
+# As this is a multi-stage build, this stage will eventually be thrown away
+FROM ${WindowsServerCoreRepo}:$WindowsServerCoreVersion  AS installer-env
 
-# Setup PowerShell - Log-to > C:\Docker.log
-SHELL ["C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe", "-command"]
-ADD $POWERSHELL_ZIP /powershell-win10-x64.zip
-ENV POWERSHELL_SHA256=$POWERSHELL_SHA256
+# Arguments for installing powershell, must be defined in the container they are used
+ARG PS_VERSION=6.0.0-rc
 
-# Install PowerShell package and clean up
-RUN $ErrorActionPreference='Stop'; `
-    $ConfirmPreference='None'; `
-    $VerbosePreference='Continue'; `
-    Start-Transcript -path C:\Dockerfile.log -append -IncludeInvocationHeader ; `
-    $PSVersionTable | Write-Output ; `
-    $VerInfo = Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion' ; `
-    ('FullBuildString: '+$VerInfo.BuildLabEx) | Write-Output ; `
-    ('OperatingSystem:  '+$VerInfo.ProductName+' '+$VerInfo.EditionId+' '+$VerInfo.InstallationType)  | Write-Output ; `
-    [System.IO.FileInfo]$ZipFile = Get-Item -Path ./powershell-win10-x64.zip ; `
-    [String]$ZipHash=(Get-FileHash  -Path $ZipFile -Algorithm SHA256 | select -ExpandProperty Hash) ; `
-    If ($ZipHash -notmatch $Env:POWERSHELL_SHA256) { `
-      Throw [String]$('['+$ZipHash+'] does not match ['+$Env:POWERSHELL_SHA256+']!') `
-    } ; `
-    New-Item -Path $Env:ProgramFiles/PowerShell -ItemType Directory -Force | out-null ; `
-    [System.IO.DirectoryInfo]$PsFolder=New-Item -Path $Env:ProgramFiles\PowerShell -ItemType Directory -Force ; `
-    Add-Type -AssemblyName System.IO.Compression.ZipFile ; `
-    [System.IO.Compression.ZipFile]::ExtractToDirectory($ZipFile,$PsFolder) ; `
-    if (Get-ChildItem -Path $PsFolder/powershell.exe) { `
-      Remove-Item -Path $ZipFile ; `
-      New-Item -Type SymbolicLink -Path $PsFolder\ -Name latest -Value $PsFolder `
-    } else { throw 'Installation failed!  See c:\Dockerfile.log' } ;
+ENV PS_DOWNLOAD_URL https://github.com/PowerShell/PowerShell/releases/download/v$PS_VERSION/PowerShell-$PS_VERSION-win-x64.zip
 
-# Verify New Powershell.exe runs
-SHELL ["C:\\Program Files\\PowerShell\\latest\\PowerShell.exe", "-command"]
-RUN Start-Transcript -path C:\Dockerfile.log -append -IncludeInvocationHeader ; `
-    $ErrorActionPreference='Stop'; `
-    Write-Output $PSVersionTable ; `
-    If (-not($PSVersionTable.PSEdition -Match 'Core')) { `
-      Throw [String]$('['+$PSVersionTable.PSEdition+'] is not [Core]!') ; `
-    } ;
+SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
+
+RUN if (!($env:PS_VERSION -match '^\d+\.\d+\.\d+(-\w+(\.\d+)?)?$' )) {throw ('PS_Version ({0}) must match the regex "^\d+\.\d+\.\d+(-\w+(\.\d+)?)?$"' -f $env:PS_VERSION)}
+RUN Invoke-WebRequest $Env:PS_DOWNLOAD_URL -OutFile powershell.zip
+
+RUN Expand-Archive powershell.zip -DestinationPath \PowerShell
+
+# Install PowerShell into NanoServer
+FROM ${NanoServerRepo}:$NanoServerVersion
+
+ARG VCS_REF="none"
+ARG PS_VERSION=6.0.0-rc
+ARG IMAGE_NAME=microsoft/powershell
+
+LABEL maintainer="PowerShell Team <powershellteam@hotmail.com>" `
+      readme.md="https://github.com/PowerShell/PowerShell/blob/master/docker/README.md" `
+      description="This Dockerfile will install the latest release of PS." `
+      org.label-schema.usage="https://github.com/PowerShell/PowerShell/tree/master/docker#run-the-docker-image-you-built" `
+      org.label-schema.url="https://github.com/PowerShell/PowerShell/blob/master/docker/README.md" `
+      org.label-schema.vcs-url="https://github.com/PowerShell/PowerShell" `
+      org.label-schema.name="powershell" `
+      org.label-schema.vcs-ref=${VCS_REF} `
+      org.label-schema.vendor="PowerShell" `
+      org.label-schema.version=${PS_VERSION} `
+      org.label-schema.schema-version="1.0" `
+      org.label-schema.docker.cmd="docker run ${IMAGE_NAME} pwsh -c '$psversiontable'" `
+      org.label-schema.docker.cmd.devel="docker run ${IMAGE_NAME}" `
+      org.label-schema.docker.cmd.test="docker run ${IMAGE_NAME} pwsh -c Invoke-Pester" `
+      org.label-schema.docker.cmd.help="docker run ${IMAGE_NAME} pwsh -c Get-Help"
+
+# Copy Powershell Core from the installer containter
+ENV ProgramFiles C:\Program Files
+COPY --from=installer-env ["\\PowerShell\\", "$ProgramFiles\\PowerShell"]
 
 # Persist %PSCORE% ENV variable for user convenience
-ENV PSCORE='"C:\Program Files\PowerShell\latest\PowerShell.exe"'
+ENV PSCORE="$ProgramFiles\PowerShell\pwsh.exe"
 
-ENTRYPOINT ["C:\\Program Files\\PowerShell\\latest\\PowerShell.exe"]
+# Set the path
+RUN setx PATH "%PATH%;%ProgramFiles%\PowerShell"
+
+CMD ["pwsh.exe"]

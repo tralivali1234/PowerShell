@@ -1,5 +1,5 @@
 /********************************************************************++
-Copyright (c) Microsoft Corporation.  All rights reserved.
+Copyright (c) Microsoft Corporation. All rights reserved.
 --********************************************************************/
 
 using System;
@@ -197,7 +197,7 @@ namespace Microsoft.PowerShell
             switch (format)
             {
                 case DataFormat.XML:
-                    _xmlReader = XmlReader.Create(textReader);
+                    _xmlReader = XmlReader.Create(textReader,  new XmlReaderSettings { XmlResolver = null });
                     _xmlDeserializer = new Deserializer(_xmlReader);
                     break;
                 case DataFormat.Text:

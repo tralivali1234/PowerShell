@@ -1,5 +1,5 @@
 /********************************************************************++
- * Copyright (c) Microsoft Corporation.  All rights reserved.
+ * Copyright (c) Microsoft Corporation. All rights reserved.
  * --********************************************************************/
 
 using System.Collections.Generic;
@@ -700,7 +700,7 @@ namespace System.Management.Automation.Remoting
                         //Rooted path of dll is provided.
                         assemblyPath = assemblyName;
                     }
-                    result = ClrFacade.LoadFrom(assemblyPath);
+                    result = Assembly.LoadFrom(assemblyPath);
                 }
                 catch (FileLoadException e)
                 {

@@ -8,10 +8,10 @@ Describe 'Common Tests - Validate Markdown Files' -Tag 'CI' {
     BeforeAll {
         # Skip if not windows, We don't need these tests to run on linux (the tests run fine in travis-ci)
         $skip = !$IsWindows
-        if ( !$skip ) 
+        if ( !$skip )
         {
             $NpmInstalled = "not installed"
-            if (Get-Command -Name 'npm' -ErrorAction SilentlyContinue) 
+            if (Get-Command -Name 'npm' -ErrorAction SilentlyContinue)
             {
                 $NpmInstalled = "Installed"
                 Write-Verbose -Message "NPM is checking Gulp is installed. This may take a few moments." -Verbose
@@ -27,10 +27,10 @@ Describe 'Common Tests - Validate Markdown Files' -Tag 'CI' {
                     -Wait `
                     -WorkingDirectory $PSScriptRoot `
                     -NoNewWindow
-            } 
+            }
             elseif( -not $env:AppVeyor)
             {
-                <# 
+                <#
                     On Windows, but not an AppVeyor and pre-requisites are missing
                     For now we will skip, and write a warning.  Work to resolve this is tracked in:
                     https://github.com/PowerShell/PowerShell/issues/3429
@@ -42,9 +42,9 @@ Describe 'Common Tests - Validate Markdown Files' -Tag 'CI' {
     }
 
     AfterAll {
-        if ( !$skip ) 
+        if ( !$skip )
         {
-            <# 
+            <#
                 NPM install all the tools needed to run this test in the test folder.
                 We will now clean these up.
                 We're using this tool to delete the node_modules folder because it gets too long
@@ -74,7 +74,14 @@ Describe 'Common Tests - Validate Markdown Files' -Tag 'CI' {
             $docsToTest = @(
                 './*.md'
                 './docs/*.md'
+                './docs/building/*.md'
+                './docs/cmdlet-example/*.md'
                 './docs/installation/*.md'
+                './docs/maintainers/README.md'
+                './demos/SSHRemoting/*.md'
+                './docker/*.md'
+                './tools/*.md'
+                './.github/CONTRIBUTING.md'
             )
             $filter = ($docsToTest -join ',')
             &"gulp" test-mdsyntax --silent `
@@ -100,21 +107,14 @@ Describe 'Common Tests - Validate Markdown Files' -Tag 'CI' {
 
         $mdIssuesPath | should exist
 
-        Get-Content -Path $mdIssuesPath | ForEach-Object -Process {
-            if ([string]::IsNullOrEmpty($_) -eq $false -and $_ -ne '--EMPTY--')
-            {
-                Write-Warning -Message $_
-                $mdErrors ++
-            }
-        }
-
+        [string] $markdownErrors = Get-Content -Path $mdIssuesPath
         Remove-Item -Path $mdIssuesPath -Force -ErrorAction SilentlyContinue
 
-        if($mdErrors -gt 0)
+        if ($markdownErrors -ne "--EMPTY--")
         {
-            Write-Warning 'See https://github.com/DavidAnson/markdownlint/blob/master/doc/Rules.md for an explination of the error codes.'
+            $markdownErrors += ' (See https://github.com/DavidAnson/markdownlint/blob/master/doc/Rules.md for an explanation of the error codes)'
         }
 
-        $mdErrors | Should Be 0
+        $markdownErrors | Should BeExactly "--EMPTY--"
     }
 }

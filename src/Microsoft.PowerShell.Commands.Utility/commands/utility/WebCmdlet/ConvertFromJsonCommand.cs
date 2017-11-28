@@ -1,5 +1,5 @@
 ﻿/********************************************************************++
-Copyright (c) Microsoft Corporation.  All rights reserved.
+Copyright (c) Microsoft Corporation. All rights reserved.
 --********************************************************************/
 
 using System;
@@ -20,43 +20,26 @@ namespace Microsoft.PowerShell.Commands
         #region parameters
 
         /// <summary>
-        /// gets or sets the InputString property
+        /// Gets or sets the InputString property.
         /// </summary>
         [Parameter(Mandatory = true, Position = 0, ValueFromPipeline = true)]
         [AllowEmptyString]
         public string InputObject { get; set; }
 
         /// <summary>
-        /// inputObjectBuffer buffers all InputObjet contents available in the pipeline.
+        /// InputObjectBuffer buffers all InputObject contents available in the pipeline.
         /// </summary>
         private List<string> _inputObjectBuffer = new List<string>();
+
+        /// <summary>
+        /// Returned data structure is a Hashtable instead a CustomPSObject.
+        /// </summary>
+        [Parameter()]
+        public SwitchParameter AsHashtable { get; set; }
 
         #endregion parameters
 
         #region overrides
-
-        /// <summary>
-        /// Prerequisite checks
-        /// </summary>
-        protected override void BeginProcessing()
-        {
-#if CORECLR
-            JsonObject.ImportJsonDotNetModule(this);
-#else
-            try
-            {
-                System.Reflection.Assembly.Load(new AssemblyName("System.Web.Extensions, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35"));
-            }
-            catch (System.IO.FileNotFoundException)
-            {
-                ThrowTerminatingError(new ErrorRecord(
-                    new NotSupportedException(WebCmdletStrings.ExtendedProfileRequired),
-                    "ExtendedProfileRequired",
-                    ErrorCategory.NotInstalled,
-                    null));
-            }
-#endif
-        }
 
         /// <summary>
         ///  Buffers InputObjet contents available in the pipeline.
@@ -67,13 +50,13 @@ namespace Microsoft.PowerShell.Commands
         }
 
         /// <summary>
-        /// the main execution method for the convertfrom-json command
+        /// The main execution method for the ConvertFrom-Json command.
         /// </summary>
         protected override void EndProcessing()
         {
             // When Input is provided through pipeline, the input can be represented in the following two ways:
-            // 1. Each input to the buffer is a complete Json content. There can be multiple inputs of this format.
-            // 2. The complete buffer input collectively represent a single JSon format. This is typically the majority of the case.
+            // 1. Each input in the collection is a complete Json content. There can be multiple inputs of this format.
+            // 2. The complete input is a collection which represents a single Json content. This is typically the majority of the case.
             if (_inputObjectBuffer.Count > 0)
             {
                 if (_inputObjectBuffer.Count == 1)
@@ -85,6 +68,7 @@ namespace Microsoft.PowerShell.Commands
                     bool successfullyConverted = false;
                     try
                     {
+                        // Try to deserialize the first element.
                         successfullyConverted = ConvertFromJsonHelper(_inputObjectBuffer[0]);
                     }
                     catch (ArgumentException)
@@ -102,6 +86,7 @@ namespace Microsoft.PowerShell.Commands
                     }
                     else
                     {
+                        // Process the entire input as a single Json content.
                         ConvertFromJsonHelper(string.Join(System.Environment.NewLine, _inputObjectBuffer.ToArray()));
                     }
                 }
@@ -116,7 +101,7 @@ namespace Microsoft.PowerShell.Commands
         private bool ConvertFromJsonHelper(string input)
         {
             ErrorRecord error = null;
-            object result = JsonObject.ConvertFromJson(input, out error);
+            object result = JsonObject.ConvertFromJson(input, AsHashtable.IsPresent, out error);
 
             if (error != null)
             {

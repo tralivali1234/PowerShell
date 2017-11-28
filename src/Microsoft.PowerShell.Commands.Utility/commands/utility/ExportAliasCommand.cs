@@ -1,5 +1,5 @@
 /********************************************************************++
-Copyright (c) Microsoft Corporation.  All rights reserved.
+Copyright (c) Microsoft Corporation. All rights reserved.
 --********************************************************************/
 
 using System;
@@ -8,13 +8,6 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Management.Automation;
 using System.Management.Automation.Internal;
-
-#if CORECLR
-// Some APIs are missing from System.Environment. We use System.Management.Automation.Environment as a proxy type:
-//  - for missing APIs, System.Management.Automation.Environment has extension implementation.
-//  - for existing APIs, System.Management.Automation.Environment redirect the call to System.Environment.
-using Environment = System.Management.Automation.Environment;
-#endif
 
 namespace Microsoft.PowerShell.Commands
 {

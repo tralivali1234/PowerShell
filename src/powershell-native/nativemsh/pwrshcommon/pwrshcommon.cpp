@@ -1,5 +1,5 @@
 /********************************************************************++
-Copyright (c) Microsoft Corporation.  All rights reserved.
+Copyright (c) Microsoft Corporation. All rights reserved.
 --********************************************************************/
 
 //
@@ -13,7 +13,7 @@ Copyright (c) Microsoft Corporation.  All rights reserved.
 #include <sstream>
 #include "WinSystemCallFacade.h"
 
-namespace NativeMsh 
+namespace NativeMsh
 {
     //
     // Defining these as "static" ensures internal linkage of the values.
@@ -60,7 +60,7 @@ namespace NativeMsh
             // this should never cause overflow because VerifyInteger guarantees pwchMinorVersion
             // has less than g_MAX_NUMBER_OF_DIGITS_IN_VERSION which is 10.
             unsigned long ulTempResult = wcstoul(pwchStart, &pwchIntEnd, 10);
-            // Make sure the whole string is an integer and fits an int 
+            // Make sure the whole string is an integer and fits an int
             if (pwchEnd != pwchIntEnd || ulTempResult > (unsigned long)INT_MAX)
             {
                 returnResult = false;
@@ -486,7 +486,7 @@ namespace NativeMsh
     }
 
     unsigned int PwrshCommon::IsEngineRegKeyWithVersionExisting(
-        LPCWSTR wszMonadVersion, 
+        LPCWSTR wszMonadVersion,
         LPCWSTR wszMonadMajorVersion)
     {
         unsigned int exitCode = EXIT_CODE_SUCCESS;
@@ -554,7 +554,7 @@ namespace NativeMsh
                 break;
             }
 
-            // For PowerShell 3 and 4, the registry is 3. 
+            // For PowerShell 3 and 4, the registry is 3.
             if ((monadMajorVersion == 4) || (monadMajorVersion == 5))
             {
                 monadMajorVersion = 3;
@@ -669,28 +669,52 @@ namespace NativeMsh
     // NOTE: The names must not include the .dll extension because it will be added programmatically.
     static PCSTR trustedAssemblies[] =
     {
+        "Microsoft.ApplicationInsights",
+        "Microsoft.CodeAnalysis",
+        "Microsoft.CodeAnalysis.CSharp",
         "Microsoft.CSharp",
+        "Microsoft.Management.Infrastructure",
+        "Microsoft.Management.Infrastructure.CimCmdlets",
+        "Microsoft.Management.Infrastructure.Native",
+        "Microsoft.PowerShell.Commands.Diagnostics",
+        "Microsoft.PowerShell.Commands.Management",
+        "Microsoft.PowerShell.Commands.Utility",
+        "Microsoft.PowerShell.ConsoleHost",
+        "Microsoft.PowerShell.CoreCLR.Eventing",
+        "Microsoft.PowerShell.LocalAccounts",
+        "Microsoft.PowerShell.PSReadLine",
+        "Microsoft.PowerShell.SDK",
+        "Microsoft.PowerShell.Security",
         "Microsoft.VisualBasic",
         "Microsoft.Win32.Primitives",
-        "Microsoft.Win32.Registry.AccessControl",
         "Microsoft.Win32.Registry",
+        "Microsoft.Win32.Registry.AccessControl",
+        "Microsoft.WSMan.Management",
+        "Microsoft.WSMan.Runtime",
         "mscorlib",
+        "netstandard",
+        "Newtonsoft.Json",
+        "System",
         "System.AppContext",
         "System.Buffers",
-        "System.Collections.Concurrent",
         "System.Collections",
+        "System.Collections.Concurrent",
         "System.Collections.Immutable",
         "System.Collections.NonGeneric",
         "System.Collections.Specialized",
-        "System.ComponentModel.Annotations",
-        "System.ComponentModel.DataAnnotations",
+        "System.Configuration",
         "System.ComponentModel",
+        "System.ComponentModel.Annotations",
+        "System.ComponentModel.Composition",
+        "System.ComponentModel.DataAnnotations",
         "System.ComponentModel.EventBasedAsync",
         "System.ComponentModel.Primitives",
         "System.ComponentModel.TypeConverter",
         "System.Console",
         "System.Core",
+        "System.Data",
         "System.Data.Common",
+        "System.Data.SqlClient",
         "System.Diagnostics.Contracts",
         "System.Diagnostics.Debug",
         "System.Diagnostics.DiagnosticSource",
@@ -701,19 +725,22 @@ namespace NativeMsh
         "System.Diagnostics.Tools",
         "System.Diagnostics.TraceSource",
         "System.Diagnostics.Tracing",
-        "System",
+        "System.Drawing",
+        "System.Drawing.Primitives",
         "System.Dynamic.Runtime",
-        "System.Globalization.Calendars",
         "System.Globalization",
+        "System.Globalization.Calendars",
         "System.Globalization.Extensions",
-        "System.IO.Compression",
-        "System.IO.Compression.ZipFile",
         "System.IO",
-        "System.IO.FileSystem.AccessControl",
+        "System.IO.Compression",
+        "System.IO.Compression.FileSystem",
+        "System.IO.Compression.ZipFile",
         "System.IO.FileSystem",
+        "System.IO.FileSystem.AccessControl",
         "System.IO.FileSystem.DriveInfo",
         "System.IO.FileSystem.Primitives",
         "System.IO.FileSystem.Watcher",
+        "System.IO.IsolatedStorage",
         "System.IO.MemoryMappedFiles",
         "System.IO.Packaging",
         "System.IO.Pipes",
@@ -722,19 +749,25 @@ namespace NativeMsh
         "System.Linq.Expressions",
         "System.Linq.Parallel",
         "System.Linq.Queryable",
+        "System.Management.Automation",
         "System.Net",
         "System.Net.Http",
         "System.Net.Http.WinHttpHandler",
+        "System.Net.HttpListener",
+        "System.Net.Mail",
         "System.Net.NameResolution",
         "System.Net.NetworkInformation",
         "System.Net.Ping",
         "System.Net.Primitives",
         "System.Net.Requests",
         "System.Net.Security",
+        "System.Net.ServicePoint",
         "System.Net.Sockets",
+        "System.Net.WebClient",
         "System.Net.WebHeaderCollection",
-        "System.Net.WebSockets.Client",
+        "System.Net.WebProxy",
         "System.Net.WebSockets",
+        "System.Net.WebSockets.Client",
         "System.Numerics",
         "System.Numerics.Vectors",
         "System.ObjectModel",
@@ -742,8 +775,10 @@ namespace NativeMsh
         "System.Private.DataContractSerialization",
         "System.Private.ServiceModel",
         "System.Private.Uri",
-        "System.Reflection.DispatchProxy",
+        "System.Private.Xml",
+        "System.Private.Xml.Linq",
         "System.Reflection",
+        "System.Reflection.DispatchProxy",
         "System.Reflection.Emit",
         "System.Reflection.Emit.ILGeneration",
         "System.Reflection.Emit.Lightweight",
@@ -753,18 +788,22 @@ namespace NativeMsh
         "System.Reflection.TypeExtensions",
         "System.Resources.Reader",
         "System.Resources.ResourceManager",
-        "System.Runtime.CompilerServices.VisualC",
+        "System.Resources.Writer",
         "System.Runtime",
+        "System.Runtime.CompilerServices.VisualC",
         "System.Runtime.Extensions",
         "System.Runtime.Handles",
         "System.Runtime.InteropServices",
         "System.Runtime.InteropServices.RuntimeInformation",
+        "System.Runtime.InteropServices.WindowsRuntime",
         "System.Runtime.Loader",
         "System.Runtime.Numerics",
         "System.Runtime.Serialization",
+        "System.Runtime.Serialization.Formatters",
         "System.Runtime.Serialization.Json",
         "System.Runtime.Serialization.Primitives",
         "System.Runtime.Serialization.Xml",
+        "System.Security",
         "System.Security.AccessControl",
         "System.Security.Claims",
         "System.Security.Cryptography.Algorithms",
@@ -775,32 +814,38 @@ namespace NativeMsh
         "System.Security.Cryptography.Pkcs",
         "System.Security.Cryptography.Primitives",
         "System.Security.Cryptography.X509Certificates",
+        "System.Security.Permissions",
         "System.Security.Principal",
         "System.Security.Principal.Windows",
         "System.Security.SecureString",
-        "System.ServiceModel",
         "System.ServiceModel.Duplex",
         "System.ServiceModel.Http",
         "System.ServiceModel.NetTcp",
         "System.ServiceModel.Primitives",
         "System.ServiceModel.Security",
         "System.ServiceModel.Web",
+        "System.ServiceProcess",
         "System.ServiceProcess.ServiceController",
-        "System.Text.Encoding.CodePages",
         "System.Text.Encoding",
+        "System.Text.Encoding.CodePages",
         "System.Text.Encoding.Extensions",
         "System.Text.Encodings.Web",
         "System.Text.RegularExpressions",
-        "System.Threading.AccessControl",
         "System.Threading",
+        "System.Threading.AccessControl",
         "System.Threading.Overlapped",
-        "System.Threading.Tasks.Dataflow",
         "System.Threading.Tasks",
+        "System.Threading.Tasks.Dataflow",
         "System.Threading.Tasks.Extensions",
         "System.Threading.Tasks.Parallel",
         "System.Threading.Thread",
         "System.Threading.ThreadPool",
         "System.Threading.Timer",
+        "System.Transactions",
+        "System.Transactions.Local",
+        "System.ValueTuple",
+        "System.Web",
+        "System.Web.HttpUtility",
         "System.Windows",
         "System.Xml",
         "System.Xml.Linq",
@@ -810,9 +855,7 @@ namespace NativeMsh
         "System.Xml.XmlDocument",
         "System.Xml.XmlSerializer",
         "System.Xml.XPath",
-        "System.Xml.XPath.XDocument",
-        "System.Xml.XPath.XmlDocument",
-        "Microsoft.PowerShell.CoreCLR.AssemblyLoadContext"
+        "System.Xml.XPath.XDocument"
     };
 
     // Define the function pointer for the CLR entry point
@@ -828,20 +871,20 @@ namespace NativeMsh
     // The location where CoreCLR PowerShell Ext binaries are expected to be installed for inbox PowerShell.
     static PCSTR coreCLRPowerShellExtInstallDirectory = "%windir%\\system32\\CoreClrPowerShellExt\\v1.0\\";
 
-    // The default PowerShell install directory for inbox PowerShell. 
+    // The default PowerShell install directory for inbox PowerShell.
     // This location may be overridden by placing a config file in the same directory as the PowerShell host.
     static PCSTR powerShellInstallPath = "%windir%\\System32\\WindowsPowerShell\\v1.0\\";
 
     unsigned int PwrshCommon::IdentifyHostDirectory(
         HostEnvironment& hostEnvironment)
     {
-        // Discover the path to the plugin or the executable (pwrshplugin.dll or powershell.exe). 
+        // Discover the path to the plugin or the executable (pwrshplugin.dll or powershell.exe).
         // For PowerShell Core, the plugin no longer resides in %windir%\\system32 (it is in a sub-directory).
         // If pwrshplugin.dll is not loaded, it means that this is running via powershell.exe.
         wchar_t hostPath[MAX_PATH];
         DWORD thisModuleLength;
 
-        if (GetModuleHandleW(L"pwrshplugin.dll")) 
+        if (GetModuleHandleW(L"pwrshplugin.dll"))
         {
             thisModuleLength = GetModuleFileNameW(GetModuleHandleW(L"pwrshplugin.dll"), hostPath, MAX_PATH);
         }
@@ -854,7 +897,7 @@ namespace NativeMsh
             // TODO: Use GetLastError() to find the specific error #
             return EXIT_CODE_INIT_FAILURE;
         }
-        
+
         // Search for the last backslash in the host path.
         int lastBackslashIndex;
         for (lastBackslashIndex = thisModuleLength - 1; lastBackslashIndex >= 0; lastBackslashIndex--)
@@ -880,13 +923,13 @@ namespace NativeMsh
             hostEnvironment.SetHostDirectoryPathW(reader->GetPathToPowerShell().c_str());
             hostEnvironment.SetCoreCLRDirectoryPathW(reader->GetPathToCoreClr().c_str());
         }
-        else 
+        else
         {
             // There was an issue accessing or parsing the config file OR
             // we are working for the EXE.
             //
-            // TODO: This should not be the fallback for inbox PowerShell.exe. 
-            // It should use coreCLRInstallDirectory and coreCLRPowerShellExtInstallDirectory. 
+            // TODO: This should not be the fallback for inbox PowerShell.exe.
+            // It should use coreCLRInstallDirectory and coreCLRPowerShellExtInstallDirectory.
             //
             // Use the directory detected via GetModuleFileName + GetModuleHandle
             hostEnvironment.SetHostDirectoryPathW(hostPath);
@@ -990,15 +1033,15 @@ namespace NativeMsh
     //
     //
 
-    PwrshCommon::PwrshCommon() 
+    PwrshCommon::PwrshCommon()
         : output(new PwrshCommonOutputDefault()), reader(new ConfigFileReader()), sysCalls(new WinSystemCallFacade())
     {
     }
 
     PwrshCommon::PwrshCommon(
-        IPwrshCommonOutput* outObj, 
+        IPwrshCommonOutput* outObj,
         ConfigFileReader* rdr,
-        SystemCallFacade* systemCalls) 
+        SystemCallFacade* systemCalls)
         : output(outObj), reader(rdr), sysCalls(systemCalls)
     {
         if (NULL == output)
@@ -1349,7 +1392,7 @@ namespace NativeMsh
             this->output->DisplayMessage(false, g_STARTING_CLR_FAILED, GetLastError());
             return exitCode;
         }
-        
+
         const int nMaxProps = 8;
         LPCSTR props[nMaxProps];
         LPCSTR vals[nMaxProps];
@@ -1361,25 +1404,22 @@ namespace NativeMsh
         bool listEmpty = true;
         this->GetTrustedAssemblyList(hostEnvironment.GetCoreCLRDirectoryPath(), assemblyList, listEmpty);
 
-        // Fall back to attempt to load the CLR from the alternate inbox location
-        // or if the ALC was not located in the CoreCLR directory.
-        std::string assemblyListToSearch = assemblyList.str();
-        if (listEmpty ||
-            (std::string::npos == assemblyListToSearch.rfind("Microsoft.PowerShell.CoreCLR.AssemblyLoadContext")))
+        if (listEmpty)
         {
+            // Fall back to attempt to load the CLR from the alternate inbox location
             char coreCLRPowerShellExtInstallPath[MAX_PATH];
             ::ExpandEnvironmentStringsA(coreCLRPowerShellExtInstallDirectory, coreCLRPowerShellExtInstallPath, MAX_PATH);
             this->GetTrustedAssemblyList(coreCLRPowerShellExtInstallPath, assemblyList, listEmpty);
         }
         if (listEmpty)
         {
-            // No CoreCLR assemblies were found in either location. There is no 
+            // No CoreCLR assemblies were found in either location. There is no
             // point in continuing.
             this->output->DisplayMessage(false, g_STARTING_CLR_FAILED, GetLastError());
             return EXIT_CODE_INIT_FAILURE;
         }
 
-        props[nProps] = "TRUSTED_PLATFORM_ASSEMBLIES";        
+        props[nProps] = "TRUSTED_PLATFORM_ASSEMBLIES";
         std::string tempStr = assemblyList.str();
         vals[nProps] = tempStr.c_str();
         nProps++;
@@ -1393,7 +1433,7 @@ namespace NativeMsh
         nProps++;
 
         int hr = hostWrapper->InitializeClr(
-                hostEnvironment.GetHostDirectoryPath(), 
+                hostEnvironment.GetHostDirectoryPath(),
                 friendlyName,
                 nProps,
                 props,

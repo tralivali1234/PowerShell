@@ -1,5 +1,5 @@
 /********************************************************************++
- * Copyright (c) Microsoft Corporation.  All rights reserved.
+ * Copyright (c) Microsoft Corporation. All rights reserved.
  * --********************************************************************/
 
 using System.Collections;
@@ -650,7 +650,7 @@ namespace System.Management.Automation
             // on Remoting in PowerShell engine
             try
             {
-                string personalfolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                string personalfolder = Platform.GetFolderPath(Environment.SpecialFolder.MyDocuments);
                 args.Runspace.ExecutionContext.EngineSessionState.SetLocation(personalfolder);
             }
             catch (Exception)
@@ -2458,7 +2458,7 @@ namespace System.Management.Automation
             }
 
             // Set debug mode to "None" so that current command can stop and not
-            // potentially hang in a debugger stop.  Use RestoreDebugger() to
+            // potentially not respond in a debugger stop.  Use RestoreDebugger() to
             // restore debugger to original mode.
             _wrappedDebugger.Value.SetDebugMode(DebugModes.None);
             if (InBreakpoint)

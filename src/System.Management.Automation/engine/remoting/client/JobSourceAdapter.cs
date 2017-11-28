@@ -1,5 +1,5 @@
 ﻿/********************************************************************++
-Copyright (c) Microsoft Corporation.  All rights reserved.
+Copyright (c) Microsoft Corporation. All rights reserved.
 --********************************************************************/
 
 using System.Collections.Generic;
@@ -9,11 +9,6 @@ using System.Management.Automation.Runspaces;
 using System.IO;
 using System.Collections;
 using System.Runtime.Serialization;
-
-#if CORECLR
-// Use stubs for SerializableAttribute, SerializationInfo and ISerializable related types.
-using Microsoft.PowerShell.CoreClr.Stubs;
-#endif
 
 // Stops compiler from warning about unknown warnings
 #pragma warning disable 1634, 1691

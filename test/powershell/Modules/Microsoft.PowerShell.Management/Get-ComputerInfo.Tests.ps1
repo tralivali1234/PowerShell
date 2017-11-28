@@ -2,25 +2,51 @@
 # TEST SPECIFIC HELPER METHODS FOR TESTING Get-ComputerInfo cmdlet
 #
 
-$computerInfoAll > $null
+$computerInfoAll = $null
 
 function Get-ComputerInfoForTest
 {
-    param([string[]] $properties = $null, [bool] $forceRefresh = $false) # NOTE: $forceRefresh only applies to the case where $properties is null
+    # NOTE: $forceRefresh only applies to the case where $properties is null
+    param([string[]] $properties = $null, [switch] $forceRefresh)
 
-    $computerInfo = $null >$null # RETURN VALUE
+    # non-windows systems show all tests as skipped so we can just return null
+    # here because we won't ever look at it
+    if ( ! $IsWindows )
+    {
+        return $null
+    }
+
+    $computerInfo = $null
     if ( $properties )
     {
         return Get-ComputerInfo -Property $properties
     }
     else
     {
-        if ( $forceRefresh -or $script:computerInfoAll -eq $null)
+        # run once unless we really need to run again
+        if ( $forceRefresh -or $null -eq $script:computerInfoAll)
         {
             $script:computerInfoAll = Get-ComputerInfo
         }
         return $script:computerInfoAll
     }
+}
+
+function Get-StringValuesFromValueMap
+{
+    param([string[]] $values, [hashtable] $valuemap)
+
+    [string] $stringValues = [string]::Empty
+
+    foreach ($value in $values)
+    {
+        if ($stringValues -ne [string]::Empty)
+        {
+            $stringValues += ","
+        }
+        $stringValues += $valuemap[$value]
+    }
+    $stringValues
 }
 
 function Get-PropertyNamesForComputerInfoTest
@@ -95,7 +121,7 @@ function Get-PropertyNamesForComputerInfoTest
         "CsPauseAfterReset",
         "CsPCSystemType",
         "CsPCSystemTypeEx",
-        "CsPhyicallyInstalledMemory",
+        "CsPhysicallyInstalledMemory",
         "CsPowerManagementCapabilities",
         "CsPowerManagementSupported",
         "CsPowerOnPasswordStatus",
@@ -216,6 +242,17 @@ function New-ExpectedComputerInfo
 {
     param([string[]]$propertyNames)
 
+    # create a spoofed object for non-windows to be used
+    if ( ! $IsWindows )
+    {
+        $expected = New-Object -TypeName PSObject
+        foreach ($propertyName in [string[]]$propertyNames)
+        {
+            Add-Member -MemberType NoteProperty -Name $propertyName -Value $null -InputObject $expected
+        }
+        return $expected
+    }
+
     # P-INVOKE TYPE DEF START ******************************************
     function Get-FirmwareType
     {
@@ -270,7 +307,7 @@ public static extern int LCIDToLocaleName(uint localeID, System.Text.StringBuild
     function Get-BiosFirmwareType
     {
         [int]$firmwareType = 0
-        (Get-FirmwareType)::GetFirmwareType([ref]$firmwareType)
+        $null = (Get-FirmwareType)::GetFirmwareType([ref]$firmwareType)
         return $firmwareType
     }
 
@@ -283,11 +320,11 @@ public static extern int LCIDToLocaleName(uint localeID, System.Text.StringBuild
         [int] $memoryInKilobytes = 0
         if ($isCore)
         {
-            (Get-PhysicallyInstalledSystemMemoryCore)::GetPhysicallyInstalledSystemMemory([ref]$memoryInKilobytes)
+            $null = (Get-PhysicallyInstalledSystemMemoryCore)::GetPhysicallyInstalledSystemMemory([ref]$memoryInKilobytes)
         }
         else
         {
-            (Get-PhysicallyInstalledSystemMemory)::GetPhysicallyInstalledSystemMemory([ref]$memoryInKilobytes)
+            $null = (Get-PhysicallyInstalledSystemMemory)::GetPhysicallyInstalledSystemMemory([ref]$memoryInKilobytes)
         }
 
         return $memoryInKilobytes
@@ -340,7 +377,7 @@ public static extern int LCIDToLocaleName(uint localeID, System.Text.StringBuild
         $configHash = @{}
         foreach ($config in $configs)
         {
-            if ($config.Index -ne $null)
+            if ($null -ne $config.Index)
             {
                 $configHash.Add([string]$config.Index,$config)
             }
@@ -497,7 +534,7 @@ public static extern int LCIDToLocaleName(uint localeID, System.Text.StringBuild
         $serverLevels = @{}
         try
         {
-            if ($regKey -ne $null)
+            if ($null -ne $regKey)
             {
                 $serverLevelNames = $regKey.GetValueNames()
 
@@ -513,10 +550,10 @@ public static extern int LCIDToLocaleName(uint localeID, System.Text.StringBuild
         }
         finally
         {
-            if ($regKey -ne $null) { $regKey.Dispose()}
+            if ($null -ne $regKey) { $regKey.Dispose()}
         }
 
-        if ($serverLevels -eq $null -or $serverLevels.Count -eq 0)
+        if ($null -eq $serverLevels -or $serverLevels.Count -eq 0)
         {
             return $null
         }
@@ -579,7 +616,7 @@ public static extern int LCIDToLocaleName(uint localeID, System.Text.StringBuild
         $virtualizationFirmwareEnabled  = $null
         $vMMonitorModeExtensions  = $null
 
-        if (($hypervisorPresent -ne $null) -and ($hypervisorPresent -ne $true))
+        if (($null -ne $hypervisorPresent) -and ($hypervisorPresent -ne $true))
         {
             $dataExecutionPrevention_Available = Get-CimClassPropVal Win32_OperatingSystem DataExecutionPrevention_Available
 
@@ -610,7 +647,7 @@ public static extern int LCIDToLocaleName(uint localeID, System.Text.StringBuild
             try
             {
                 $layoutAsHex = [System.Convert]::ToUInt32($layout, 16)
-                if ($layoutAsHex -ne $null)
+                if ($null -ne $layoutAsHex)
                 {
                     $result = Convert-LocaleIdToLocaleName $layoutAsHex
                 }
@@ -660,11 +697,11 @@ public static extern int LCIDToLocaleName(uint localeID, System.Text.StringBuild
 
         $locale =  Get-CimClassPropVal Win32_OperatingSystem Locale
 
-        if ($locale -ne $null)
+        if ($null -ne $locale)
         {
             #$localeAsHex = $locale -as [hex]
             $localeAsHex = [System.Convert]::ToUInt32($locale, 16)
-            if ($localeAsHex -ne $null)
+            if ($null -ne $localeAsHex)
             {
 
                 try
@@ -679,7 +716,7 @@ public static extern int LCIDToLocaleName(uint localeID, System.Text.StringBuild
                 }
             }
 
-            if ($localeName -eq $null)
+            if ($null -eq $localeName)
             {
                 try
                 {
@@ -699,7 +736,7 @@ public static extern int LCIDToLocaleName(uint localeID, System.Text.StringBuild
     {
         $osPagingFiles = @()
         $pageFileUsage =  Get-CimClass Win32_PageFileUsage
-        if ($pageFileUsage -ne $null)
+        if ($null -ne $pageFileUsage)
         {
             foreach ($pageFileItem in $pageFileUsage)
             {
@@ -818,7 +855,7 @@ public static extern int LCIDToLocaleName(uint localeID, System.Text.StringBuild
             "CsPauseAfterReset" {return Get-CimClassPropVal Win32_ComputerSystem PauseAfterReset}
             "CsPCSystemType" {return Get-CimClassPropVal Win32_ComputerSystem PCSystemType}
             "CsPCSystemTypeEx" {return Get-CimClassPropVal Win32_ComputerSystem PCSystemTypeEx}
-            "CsPhyicallyInstalledMemory" {return Get-CsPhysicallyInstalledSystemMemory}
+            "CsPhysicallyInstalledMemory" {return Get-CsPhysicallyInstalledSystemMemory}
             "CsPowerManagementCapabilities" {return Get-CimClassPropVal Win32_ComputerSystem PowerManagementCapabilities}
             "CsPowerManagementSupported" {return Get-CimClassPropVal Win32_ComputerSystem PowerManagementSupported}
             "CsPowerOnPasswordStatus" {return Get-CimClassPropVal Win32_ComputerSystem PowerOnPasswordStatus}
@@ -961,196 +998,6 @@ public static extern int LCIDToLocaleName(uint localeID, System.Text.StringBuild
     return $expected
 }
 
-#
-# COMMON TEST HELPER METHODS
-#
-function Build-TestCases
-{
-    param($observed, $expected)
-
-    $propertNames = Get-CommonProperties $observed $expected
-    $testCases = @()
-    foreach ($propertyName in [string[]]$propertNames)
-    {
-        $expectedValue = $expected.PsObject.Properties.Item($propertyName).Value
-        $observedValue = $observed.PsObject.Properties.Item($propertyName).Value
-
-        $testCase = @{
-            "Expected" = $expectedValue;
-            "Observed" = $observedValue;
-            "PropertyName" = $propertyName}
-        $testCases += $testCase
-    }
-    $testCases
-}
-
-function Get-CommonProperties
-{
-    param($observed,$expected)
-
-    if (!$observed) { return $null }
-    if (!$expected) { return $null }
-
-    $propListObserved = $observed | Get-Member -MemberType Properties | Select-Object -ExpandProperty Name | Select-Object -Unique
-    $propListExpected = $expected | Get-Member -MemberType Properties | Select-Object -ExpandProperty Name | Select-Object -Unique
-
-    $propCount = [math]::max($propListObserved.Count,$propListExpected.Count)
-    $syncWinNum = [math]::round(($propCount/2),0)
-
-    $commonProp = Compare-Object -SyncWindow $syncWinNum -ReferenceObject $propListExpected -DifferenceObject $propListObserved -ExcludeDifferent -IncludeEqual
-    return $commonProp | Select-Object -ExpandProperty InputObject
-}
-
-function Assert-Properties
-{
-    param($refObject, [string[]] $propListExpected)
-
-    $propListObserved = $refObject | Get-Member -MemberType Properties | Select-Object -ExpandProperty Name | Select-Object -Unique
-    $compResult = Compare-Object $propListObserved $propListExpected | Select-Object -ExpandProperty InputObject
-    if ($compResult)
-    {
-        $observedList = ([string]::Join("|",$propListObserved))
-        $expectedList = ([string]::Join("|",$propListExpected))
-        $observedList | Should Be $expectedList
-    }
-}
-
-function Assert-ListsSame
-{
-    param([object[]] $expected, [object[]] $observed)
-
-    $compResult = Compare-Object $observed $expected | Select-Object -ExpandProperty InputObject
-    if ($compResult)
-    {
-        $observedList = ([string]::Join("|",$observed))
-        $expectedList = ([string]::Join("|",$expected))
-        $observedList | Should Be $expectedList
-    }
-}
-
-function Assert-NoProperties
-{
-    param($refObject)
-
-    if ($refObject)
-    {
-        $propListObserved = $refObject | Get-Member -MemberType Properties | Select-Object -ExpandProperty Name | Select-Object -Unique
-        $propListObserved.Count | Should Be 0
-    }
-}
-
-function Assert-Default
-{
-    param($observed,$expected)
-
-    if (($observed) -and ($observed.GetType().Name -eq "string"))
-    {
-        # we do NOT want to do case-sensitive comparisons for strings
-        $observed | Should Be $expected
-    }
-    else
-    {
-        $observed | Should BeExactly $expected
-    }
-}
-
-function Assert-ObjectsHaveSamePropertyValues
-{
-    param($i,$observed,$expected)
-
-    $items = Build-TestCases $observed $expected
-    foreach($item in $items)
-    {
-        try
-        {
-            Assert-Default $item.Observed $item.Expected
-        }
-        catch
-        {
-            $propertyName = $item.PropertyName
-            $exception = New-Object System.Exception ("Failure in Assert-ListsHavePropertyValues for list item index = $i and Property = $propertyName",$_.Exception)
-		    throw $exception
-        }
-    }
-}
-
-function Assert-ListsHaveSamePropertyValues
-{
-    param($observed,$expected)
-
-    if ($expected.Count)
-    {
-        $observed.Count | Should Be $expected.Count
-    }
-    for ($i=0; $i -lt $observed.Count; $i++)
-    {
-        $itemObserved = $observed[$i]
-        $itemExpected = $null
-        if ( $itemExpected.Count ) { $itemExpected  = $expected[$i] }
-        Assert-ObjectsHaveSamePropertyValues $i $itemObserved $itemExpected
-    }
-}
-
-function Exec-OneTestPass
-{
-    param($testName, $propertyNames, $propertyFilter, $expectedProperties = $null, $forceRefresh = $false)
-
-    if ($IsWindows)
-    {
-        if ($propertyFilter)
-        {
-            $observed  = Get-ComputerInfoForTest $propertyFilter
-        }
-        else
-        {
-            $observed  = Get-ComputerInfoForTest $null $forceRefresh
-        }
-        $observed | Should Not BeNullOrEmpty
-    }
-
-    # if property filter passed-in, validate properties of observed object
-    if ($propertyFilter)
-    {
-        It "[$testName] Validate Property Filter" {
-            if ($expectedProperties)
-            {
-                Assert-Properties $observed $expectedProperties
-            }
-            else
-            {
-               Assert-NoProperties $observed
-            }
-        }
-    }
-
-    if ($expectedProperties)
-    {
-        if ($IsWindows)
-        {
-            $expected = New-ExpectedComputerInfo $propertyNames
-            $expected | Should Not BeNullOrEmpty
-
-            $testCases = Build-TestCases $observed $expected
-        }
-
-        It "[$testName] Init common Test objects validation" {
-            $testCases | Should Not BeNullOrEmpty
-        }
-
-        It "[$testName] Compare observed to expected for property = <PropertyName>" -TestCases $testCases {
-            param($observed, $expected, $propertyName)
-
-            switch($propertyName)
-            {
-                "CsNetworkAdapters" { Assert-ListsHaveSamePropertyValues $observed $expected }
-                "CsProcessors"      { Assert-ListsHaveSamePropertyValues $observed $expected }
-                "OsHotFixes"        { Assert-ListsHaveSamePropertyValues $observed $expected }
-                default             { Assert-Default $observed $expected }
-            }
-        }
-    }
-}
-
 try {
     #skip all tests on non-windows platform
     $originalDefaultParameterValues = $PSDefaultParameterValues.Clone()
@@ -1165,104 +1012,195 @@ try {
     }
 
     Describe "Tests for Get-ComputerInfo" -tags "Feature", "RequireAdminOnWindows" {
+        Context "Validate All Properties" {
+            BeforeAll {
+                # do this once here rather than multiple times in Test 01
+                $computerInformation = Get-ComputerInfoForTest
+                $propertyNames = Get-PropertyNamesForComputerInfoTest
+                $Expected = New-ExpectedComputerInfo $propertyNames
+                $testCases = $propertyNames | %{ @{ "Property" = $_ } }
+            }
 
-        #
-        # Test 01. Standard Property test - No property filter applied
-        #
-        $propertyNames = Get-PropertyNamesForComputerInfoTest
-        $expectedProperties = $propertyNames
-        $testName = "Test 01. Standard Property test - No property filter applied"
-        Exec-OneTestPass $testName $propertyNames $propertyFilter $expectedProperties
+            #
+            # Test 01. Standard Property test - No property filter applied
+            # This is done with a set of test cases to improve failure investigation
+            # since the data we get back comes from a number of sources, it will be
+            # easier to debug the problem if we know *all* the failures
+            # issue: https://github.com/PowerShell/PowerShell/issues/4762
+            #    CsPhysicallyInstalledMemory not available when run in nightly builds
+            It "Test 01. Standard Property test - all properties (<property>)" -testcase $testCases -Pending {
+                param ( $property )
+                $specialProperties = "CsNetworkAdapters","CsProcessors","OsHotFixes"
+                if ( $specialProperties -contains $property )
+                {
+                    $ObservedList = $ComputerInformation.$property
+                    $ExpectedList = $Expected.$property
+                    $SpecialPropertyList = ($ObservedList)[0].psobject.properties.name
+                    Compare-Object $ObservedList $ExpectedList -property $SpecialPropertyList | should BeNullOrEmpty
+                }
+                else
+                {
+                    $left = $computerInformation.$property
+                    $right = $Expected.$Property
+                    # if we have a list, we need to compare it appropriately
+                    if ( $left -is [Collections.IList] )
+                    {
+                        $left = $left -join ":"
+                        $right = $right -join ":"
+                    }
+                    $left | should be $right
+                }
+            }
+        }
 
-        #
-        # Test 02.001 Filter Property - Property filter with one valid item
-        #
-        $testName = "Test 02.001 Filter Property - Property filter with one valid item"
-        $propertyNames =  @("BiosBIOSVersion")
-        $expectedProperties = @("BiosBIOSVersion")
-        $propertyFilter = "BiosBIOSVersion"
-        Exec-OneTestPass $testName $propertyNames $propertyFilter $expectedProperties
+        Context "Filter Variations" {
+            #
+            # Test 02.001 Filter Property - Property filter with one valid item
+            #
+            It "Test 02.001 Filter Property - Property filter with one valid item" {
+                $propertyNames =  @("BiosBIOSVersion")
+                $expectedProperties = @("BiosBIOSVersion")
+                $propertyFilter = "BiosBIOSVersion"
+                $computerInfoWithProp = Get-ComputerInfoForTest -properties $propertyFilter
+                $computerInfoWithProp | should beoftype [pscustomobject]
+                @($computerInfoWithProp.psobject.properties).count | should be 1
+                $computerInfoWithProp.$propertyFilter | Should be $expected.$propertyFilter
+            }
 
-        #
-        # Test 02.002 Filter Property - Property filter with three valid items
-        #
-        $testName = "Test 02.002 Filter Property - Property filter with three valid items"
-        $propertyNames =  @("BiosBIOSVersion","BiosBuildNumber","BiosCaption")
-        $expectedProperties = @("BiosBIOSVersion","BiosBuildNumber","BiosCaption")
-        $propertyFilter = @("BiosBIOSVersion","BiosBuildNumber","BiosCaption")
-        Exec-OneTestPass $testName $propertyNames $propertyFilter $expectedProperties
+            #
+            # Test 02.002 Filter Property - Property filter with three valid items
+            #
+            It "Test 02.002 Filter Property - Property filter with three valid items" {
+                $propertyNames =  @("BiosBIOSVersion","BiosBuildNumber","BiosCaption")
+                $expectedProperties = @("BiosBIOSVersion","BiosBuildNumber","BiosCaption")
+                $propertyFilter = @("BiosBIOSVersion","BiosBuildNumber","BiosCaption")
+                $computerInfoWithProp = Get-ComputerInfoForTest -properties $propertyFilter
+                $computerInfoWithProp | should beoftype [pscustomobject]
+                @($computerInfoWithProp.psobject.properties).count | should be 3
+                foreach($property in $propertyFilter) {
+                    $ComputerInfoWithProp.$property | Should Be $Expected.$property
+                }
+            }
 
-        #
-        # Test 02.003 Filter Property - Property filter with one invalid item
-        #
-        $testName = "Test 02.003 Filter Property - Property filter with one invalid item"
-        $propertyNames =  $null
-        $expectedProperties = $null
-        $propertyFilter = @("BiosBIOSVersionXXX")
-        Exec-OneTestPass $testName $propertyNames $propertyFilter $expectedProperties
+            #
+            # Test 02.003 Filter Property - Property filter with one invalid item
+            #
+            It "Test 02.003 Filter Property - Property filter with one invalid item" {
+                $propertyNames =  $null
+                $expectedProperties = $null
+                $propertyFilter = @("BiosBIOSVersionXXX")
+                $computerInfoWithProp = Get-ComputerInfoForTest -properties $propertyFilter
+                $computerInfoWithProp | should beoftype [pscustomobject]
+                @($computerInfoWithProp.psobject.properties).count | should be 0
+            }
 
-        #
-        # Test 02.004 Filter Property - Property filter with four invalid items
-        #
-        $testName = "Test 02.004 Filter Property - Property filter with four invalid items"
-        $propertyNames =  $null
-        $expectedProperties = $null
-        $propertyFilter = @("BiosBIOSVersionXXX","InvalidProperty1","InvalidProperty2","InvalidProperty3")
-        Exec-OneTestPass $testName $propertyNames $propertyFilter $expectedProperties
+            #
+            # Test 02.004 Filter Property - Property filter with four invalid items
+            #
+            It "Test 02.004 Filter Property - Property filter with four invalid items" {
+                $propertyNames =  $null
+                $expectedProperties = $null
+                $propertyFilter = @("BiosBIOSVersionXXX","InvalidProperty1","InvalidProperty2","InvalidProperty3")
+                $computerInfoWithProp = Get-ComputerInfoForTest -properties $propertyFilter
+                $computerInfoWithProp | should beoftype [pscustomobject]
+                @($computerInfoWithProp.psobject.properties).count | should be 0
+            }
 
-        #
-        # Test 02.005 Filter Property - Property filter with valid and invalid items: ver #1
-        #
-        $testName = "Test 02.005 Filter Property - Property filter with valid and invalid items: ver #1"
-        $propertyNames =  @("BiosCodeSet","BiosCurrentLanguage","BiosDescription")
-        $expectedProperties = @("BiosCodeSet","BiosCurrentLanguage","BiosDescription")
-        $propertyFilter = @("InvalidProperty1","BiosCodeSet","BiosCurrentLanguage","BiosDescription")
-        Exec-OneTestPass $testName $propertyNames $propertyFilter $expectedProperties
+            #
+            # Test 02.005 Filter Property - Property filter with valid and invalid items: ver #1
+            #
+            It "Test 02.005 Filter Property - Property filter with valid and invalid items: ver #1" {
+                $propertyNames =  @("BiosCodeSet","BiosCurrentLanguage","BiosDescription")
+                $expectedProperties = @("BiosCodeSet","BiosCurrentLanguage","BiosDescription")
+                $propertyFilter = @("InvalidProperty1","BiosCodeSet","BiosCurrentLanguage","BiosDescription")
+                $computerInfoWithProp = Get-ComputerInfoForTest -properties $propertyFilter
+                $computerInfoWithProp | should beoftype [pscustomobject]
+                $realProperties  = $propertyFilter | Where-Object { $_ -notmatch "^InvalidProperty[0-9]+" }
+                @($computerInfoWithProp.psobject.properties).count | should be $realProperties.Count
+                foreach ( $property in $realProperties )
+                {
+                    $computerInfoWithProp.$property | Should Be $expected.$property
+                }
+            }
 
-        #
-        # Test 02.006 Filter Property - Property filter with valid and invalid items: ver #2
-        #
-        $testName = "Test 02.006 Filter Property - Property filter with valid and invalid items: ver #2"
-        $propertyNames =  @("BiosCodeSet","BiosCurrentLanguage","BiosDescription")
-        $expectedProperties = @("BiosCodeSet","BiosCurrentLanguage","BiosDescription")
-        $propertyFilter = @("BiosCodeSet","InvalidProperty1","BiosCurrentLanguage","BiosDescription","InvalidProperty2")
-        Exec-OneTestPass $testName $propertyNames $propertyFilter $expectedProperties
+            #
+            # Test 02.006 Filter Property - Property filter with valid and invalid items: ver #2
+            #
+            It "Test 02.006 Filter Property - Property filter with valid and invalid items: ver #2" {
+                $propertyNames =  @("BiosCodeSet","BiosCurrentLanguage","BiosDescription")
+                $expectedProperties = @("BiosCodeSet","BiosCurrentLanguage","BiosDescription")
+                $propertyFilter = @("BiosCodeSet","InvalidProperty1","BiosCurrentLanguage","BiosDescription","InvalidProperty2")
+                $computerInfoWithProp = Get-ComputerInfoForTest -properties $propertyFilter
+                $computerInfoWithProp | should beoftype [pscustomobject]
+                $realProperties  = $propertyFilter | Where-Object { $_ -notmatch "^InvalidProperty[0-9]+" }
+                @($computerInfoWithProp.psobject.properties).count | should be $realProperties.Count
+                foreach ( $property in $realProperties )
+                {
+                    $computerInfoWithProp.$property | Should Be $expected.$property
+                }
+            }
 
-        #
-        # Test 02.007 Filter Property - Property filter with wild card: ver #1
-        #
-        $testName = "02.007 Filter Property - Property filter with wild card: ver #1"
-        $propertyNames =  @("BiosCaption","BiosCharacteristics","BiosCodeSet","BiosCurrentLanguage")
-        $expectedProperties = @("BiosCaption","BiosCharacteristics","BiosCodeSet","BiosCurrentLanguage")
-        $propertyFilter = @("BiosC*")
-        Exec-OneTestPass $testName $propertyNames $propertyFilter $expectedProperties
+            #
+            # Test 02.007 Filter Property - Property filter with wild card: ver #1
+            #
+            It "Test 02.007 Filter Property - Property filter with wild card: ver #1" {
+                $propertyNames =  @("BiosCaption","BiosCharacteristics","BiosCodeSet","BiosCurrentLanguage")
+                $expectedProperties = @("BiosCaption","BiosCharacteristics","BiosCodeSet","BiosCurrentLanguage")
+                $propertyFilter = @("BiosC*")
+                $computerInfoWithProp = Get-ComputerInfoForTest -properties $propertyFilter
+                $computerInfoWithProp | should beoftype [pscustomobject]
+                @($computerInfoWithProp.psobject.properties).count | should be $expectedProperties.Count
+                foreach ( $property in $expectedProperties )
+                {
+                    $computerInfoWithProp.$property | Should Be $expected.$property
+                }
+            }
 
-        #
-        # Test 02.008 Filter Property - Property filter with wild card and fixed
-        #
-        $testName = "Test 02.008 Filter Property - Property filter with wild card and fixed"
-        $propertyNames =  @("BiosCaption","BiosCharacteristics","BiosCodeSet","BiosCurrentLanguage","CsCaption")
-        $expectedProperties = @("BiosCaption","BiosCharacteristics","BiosCodeSet","BiosCurrentLanguage","CsCaption")
-        $propertyFilter = @("BiosC*","CsCaption")
-        Exec-OneTestPass $testName $propertyNames $propertyFilter $expectedProperties
+            #
+            # Test 02.008 Filter Property - Property filter with wild card and fixed
+            #
+            It "Test 02.008 Filter Property - Property filter with wild card and fixed" {
+                $propertyNames =  @("BiosCaption","BiosCharacteristics","BiosCodeSet","BiosCurrentLanguage","CsCaption")
+                $expectedProperties = @("BiosCaption","BiosCharacteristics","BiosCodeSet","BiosCurrentLanguage","CsCaption")
+                $propertyFilter = @("BiosC*","CsCaption")
+                $computerInfoWithProp = Get-ComputerInfoForTest -properties $propertyFilter
+                $computerInfoWithProp | should beoftype [pscustomobject]
+                @($computerInfoWithProp.psobject.properties).count | should be $expectedProperties.Count
+                foreach ( $property in $expectedProperties )
+                {
+                    $computerInfoWithProp.$property | Should Be $expected.$property
+                }
+            }
 
-        #
-        # Test 02.009 Filter Property - Property filter with wild card, fixed and invalid
-        #
-        $testName = "Test 02.009 Filter Property - Property filter with wild card, fixed and invalid"
-        $propertyNames =  @("BiosCaption","BiosCharacteristics","BiosCodeSet","BiosCurrentLanguage","CsCaption")
-        $expectedProperties = @("BiosCaption","BiosCharacteristics","BiosCodeSet","BiosCurrentLanguage","CsCaption")
-        $propertyFilter = @("CsCaption","InvalidProperty1","BiosC*")
-        Exec-OneTestPass $testName $propertyNames $propertyFilter $expectedProperties
+            #
+            # Test 02.009 Filter Property - Property filter with wild card, fixed and invalid
+            #
+            It "Test 02.009 Filter Property - Property filter with wild card, fixed and invalid" {
+                $propertyNames =  @("BiosCaption","BiosCharacteristics","BiosCodeSet","BiosCurrentLanguage","CsCaption")
+                $expectedProperties = @("BiosCaption","BiosCharacteristics","BiosCodeSet","BiosCurrentLanguage","CsCaption")
+                $propertyFilter = @("CsCaption","InvalidProperty1","BiosC*")
+                $computerInfoWithProp = Get-ComputerInfoForTest -properties $propertyFilter
+                $computerInfoWithProp | should beoftype [pscustomobject]
+                @($computerInfoWithProp.psobject.properties).count | should be $expectedProperties.Count
+                foreach ( $property in $expectedProperties )
+                {
+                    $computerInfoWithProp.$property | Should Be $expected.$property
+                }
+            }
 
-        #
-        # Test 02.010 Filter Property - Property filter with wild card invalid
-        #
-        $testName = "Test 02.010 Filter Property - Property filter with wild card invalid"
-        $propertyNames =  $null
-        $expectedProperties = $null
-        $propertyFilter = @("BiosBIOSVersionX*")
-        Exec-OneTestPass $testName $propertyNames $propertyFilter $expectedProperties
+            #
+            # Test 02.010 Filter Property - Property filter with wild card invalid
+            #
+            It "Test 02.010 Filter Property - Property filter with wild card invalid" {
+                $propertyNames =  $null
+                $expectedProperties = $null
+                $propertyFilter = @("BiosBIOSVersionX*")
+                $computerInfoWithProp = Get-ComputerInfoForTest -properties $propertyFilter
+                $computerInfoWithProp | should beoftype [pscustomobject]
+                @($computerInfoWithProp.psobject.properties).count | should be 0
+            }
+        }
+
     }
 
     Describe "Special Case Tests for Get-ComputerInfo" -tags "Feature", "RequireAdminOnWindows" {
@@ -1308,7 +1246,7 @@ try {
                     {
                         $instance = Get-CimInstance Win32_DeviceGuard -Namespace 'root\Microsoft\Windows\DeviceGuard' -ErrorAction Stop
                         $ss = $instance.VirtualizationBasedSecurityStatus;
-                        if ($ss -ne $null)
+                        if ($null -ne $ss)
                         {
                             $returnValue.SmartStatus = $ss;
                         }
@@ -1332,12 +1270,7 @@ try {
             }
         }
 
-        It "Verify that alias 'gin' exists" {
-            $result = (Get-Alias -Name "gin").Name
-            $result | Should Be "gin"
-        }
-
-        It "Test for DeviceGuard properties" {
+        It "Test for DeviceGuard properties" -Pending {
             if (-not (HasDeviceGuardLicense))
             {
                 $observed.DeviceGuardSmartStatus | Should Be 0
@@ -1351,11 +1284,46 @@ try {
             else
             {
                 $deviceGuard = Get-DeviceGuard
-                $observed.DeviceGuardSmartStatus | Should Be $deviceGuard.SmartStatus
-                $observed.DeviceGuardRequiredSecurityProperties | Should Be $deviceGuard.RequiredSecurityProperties
+                # can't get amended qualifiers using cim cmdlets so we define them here
+                $requiredSecurityPropertiesValues = @{
+                    "1" = "BaseVirtualizationSupport"
+                    "2" = "SecureBoot"
+                    "3" = "DMAProtection"
+                    "4" = "SecureMemoryOverwrite"
+                    "5" = "UEFICodeReadonly"
+                    "6" = "SMMSecurityMitigations1.0"
+                }
+                $smartStatusValues = @{
+                    "0" = "Off"
+                    "1" = "Enabled"
+                    "2" = "Running"
+                }
+                $securityServicesRunningValues = @{
+                    "0" = "0"
+                    "1" = "CredentialGuard"
+                    "2" = "HypervisorEnforcedCodeIntegrity"
+                }
+                $observed.DeviceGuardSmartStatus | Should Be (Get-StringValuesFromValueMap -valuemap $smartStatusValues -values $deviceGuard.SmartStatus)
+                if ($deviceGuard.RequiredSecurityProperties -eq $null)
+                {
+                    $observed.DeviceGuardRequiredSecurityProperties | Should BeNullOrEmpty
+                }
+                else
+                {
+                    $observed.DeviceGuardRequiredSecurityProperties | Should Not BeNullOrEmpty
+                    [string]::Join(",", $observed.DeviceGuardRequiredSecurityProperties) | Should Be (Get-StringValuesFromValueMap -valuemap $requiredSecurityPropertiesValues -values $deviceGuard.RequiredSecurityProperties)
+                }
                 $observed.DeviceGuardAvailableSecurityProperties | Should Be $deviceGuard.AvailableSecurityProperties
                 $observed.DeviceGuardSecurityServicesConfigured | Should Be $deviceGuard.SecurityServicesConfigured
-                $observed.DeviceGuardSecurityServicesRunning | Should Be $deviceGuard.SecurityServicesRunning
+                if ($deviceGuard.SecurityServicesRunning -eq $null)
+                {
+                    $observed.DeviceGuardSecurityServicesRunning | Should BeNullOrEmpty
+                }
+                else
+                {
+                    $observed.DeviceGuardSecurityServicesRunning | Should Not BeNullOrEmpty
+                    [string]::Join(",", $observed.DeviceGuardSecurityServicesRunning) | Should Be (Get-StringValuesFromValueMap -valuemap $securityServicesRunningValues -values $deviceGuard.SecurityServicesRunning)
+                }
                 $observed.DeviceGuardCodeIntegrityPolicyEnforcementStatus | Should Be $deviceGuard.CodeIntegrityPolicyEnforcementStatus
                 $observed.DeviceGuardUserModeCodeIntegrityPolicyEnforcementStatus | Should Be $deviceGuard.UserModeCodeIntegrityPolicyEnforcementStatus
             }

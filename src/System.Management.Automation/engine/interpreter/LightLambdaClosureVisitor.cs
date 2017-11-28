@@ -4,7 +4,7 @@
  *
  * This source code is subject to terms and conditions of the Apache License, Version 2.0. A
  * copy of the license can be found in the License.html file at the root of this distribution. If
- * you cannot locate the  Apache License, Version 2.0, please send an email to
+ * you cannot locate the Apache License, Version 2.0, please send an email to
  * dlr@microsoft.com. By using this source code in any fashion, you are agreeing to be bound
  * by the terms of the Apache License, Version 2.0.
  *
@@ -21,11 +21,6 @@ using Microsoft.Scripting.Ast;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using AstUtils = System.Management.Automation.Interpreter.Utils;
-
-#if CORECLR
-// Use stub for IRuntimeVariables.
-using Microsoft.PowerShell.CoreClr.Stubs;
-#endif
 
 namespace System.Management.Automation.Interpreter
 {

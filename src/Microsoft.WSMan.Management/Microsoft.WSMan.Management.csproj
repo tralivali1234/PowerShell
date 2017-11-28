@@ -1,27 +1,21 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
+﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
+  <Import Project="..\..\PowerShell.Common.props" />
   <PropertyGroup>
-    <VersionPrefix>6.0.0</VersionPrefix>
-    <TargetFramework>netstandard1.6</TargetFramework>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <DelaySign>true</DelaySign>
+    <Description>PowerShell Core's Microsoft.WSMan.Management project</Description>
     <AssemblyName>Microsoft.WSMan.Management</AssemblyName>
-    <AssemblyOriginatorKeyFile>../signing/visualstudiopublic.snk</AssemblyOriginatorKeyFile>
-    <SignAssembly>true</SignAssembly>
-    <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
-    <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\System.Management.Automation\System.Management.Automation.csproj" />
     <ProjectReference Include="..\Microsoft.WSMan.Runtime\Microsoft.WSMan.Runtime.csproj" />
+    <PackageReference Include="System.ServiceProcess.ServiceController" Version="4.4.0" />    
   </ItemGroup>
 
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard1.6' ">
+  <PropertyGroup>
     <DefineConstants>$(DefineConstants);CORECLR</DefineConstants>
   </PropertyGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.6' ">
+  <ItemGroup>
     <Compile Remove="WsManSnapin.cs" />
   </ItemGroup>
 

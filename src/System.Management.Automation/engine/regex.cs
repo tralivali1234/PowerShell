@@ -1,5 +1,5 @@
 /********************************************************************++
-Copyright (c) Microsoft Corporation.  All rights reserved.
+Copyright (c) Microsoft Corporation. All rights reserved.
 --********************************************************************/
 
 #pragma warning disable 1634, 1691
@@ -13,11 +13,6 @@ using System.Text.RegularExpressions;
 using System.Management.Automation.Internal;
 using System.Runtime.Serialization;
 using Dbg = System.Management.Automation.Diagnostics;
-
-#if CORECLR
-// Use stub for SerializableAttribute, NonSerializedAttribute and ISerializable related types.
-using Microsoft.PowerShell.CoreClr.Stubs;
-#endif
 
 namespace System.Management.Automation
 {
@@ -733,12 +728,10 @@ namespace System.Management.Automation
         {
             RegexOptions regexOptions = RegexOptions.Singleline;
 
-#if !CORECLR // RegexOptions.Compiled is not in CoreCLR
             if ((options & WildcardOptions.Compiled) != 0)
             {
                 regexOptions |= RegexOptions.Compiled;
             }
-#endif
             if ((options & WildcardOptions.IgnoreCase) != 0)
             {
                 regexOptions |= RegexOptions.IgnoreCase;

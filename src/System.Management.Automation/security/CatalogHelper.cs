@@ -1,7 +1,7 @@
 #if !UNIX
 
 /********************************************************************++
-Copyright (c) Microsoft Corporation.  All rights reserved.
+Copyright (c) Microsoft Corporation. All rights reserved.
 --********************************************************************/
 
 using Dbg = System.Management.Automation;
@@ -95,7 +95,7 @@ namespace System.Management.Automation
             int catalogVersion = -1;
 
             IntPtr catalogData = NativeMethods.CryptCATStoreFromHandle(catalogHandle);
-            NativeMethods.CRYPTCATSTORE catalogInfo = ClrFacade.PtrToStructure<NativeMethods.CRYPTCATSTORE>(catalogData);
+            NativeMethods.CRYPTCATSTORE catalogInfo = Marshal.PtrToStructure<NativeMethods.CRYPTCATSTORE>(catalogData);
 
             if (catalogInfo.dwPublicVersion == catalogVersion2)
             {
@@ -384,7 +384,7 @@ namespace System.Management.Automation
         {
             string relativePath = string.Empty;
 
-            NativeMethods.CRYPTCATATTRIBUTE currentMemberAttr = ClrFacade.PtrToStructure<NativeMethods.CRYPTCATATTRIBUTE>(memberAttrInfo);
+            NativeMethods.CRYPTCATATTRIBUTE currentMemberAttr = Marshal.PtrToStructure<NativeMethods.CRYPTCATATTRIBUTE>(memberAttrInfo);
 
             // check if this is the attribute we are looking for
             // catalog generated other way not using New-FileCatalog can have attributes we don't understand
@@ -503,7 +503,7 @@ namespace System.Management.Automation
                     {
                         catAttrInfo = NativeMethods.CryptCATEnumerateCatAttr(resultCatalog, catAttrInfo);
 
-                        // If we found attribute it is a file information  retrieve its relative path
+                        // If we found attribute it is a file information retrieve its relative path
                         // and add it to catalog hash collection if its not in excluded files criteria
                         if (catAttrInfo != IntPtr.Zero)
                         {
@@ -524,8 +524,8 @@ namespace System.Management.Automation
                         memberInfo = NativeMethods.CryptCATEnumerateMember(resultCatalog, memberInfo);
                         if (memberInfo != IntPtr.Zero)
                         {
-                            NativeMethods.CRYPTCATMEMBER currentMember = ClrFacade.PtrToStructure<NativeMethods.CRYPTCATMEMBER>(memberInfo);
-                            NativeMethods.SIP_INDIRECT_DATA pIndirectData = ClrFacade.PtrToStructure<NativeMethods.SIP_INDIRECT_DATA>(currentMember.pIndirectData);
+                            NativeMethods.CRYPTCATMEMBER currentMember = Marshal.PtrToStructure<NativeMethods.CRYPTCATMEMBER>(memberInfo);
+                            NativeMethods.SIP_INDIRECT_DATA pIndirectData = Marshal.PtrToStructure<NativeMethods.SIP_INDIRECT_DATA>(currentMember.pIndirectData);
 
                             // For Catalog version 2 CryptoAPI puts hashes of file attributes(relative path in our case) in Catalog as well
                             // We validate those along with file hashes so we are skipping duplicate entries
@@ -549,7 +549,7 @@ namespace System.Management.Automation
                                 while (memberAttrInfo != IntPtr.Zero);
 
                                 // If we did not find any Relative Path for the item in catalog we should quit
-                                // This catalog must  not be valid for our use as catalogs generated using New-FileCatalog
+                                // This catalog must not be valid for our use as catalogs generated using New-FileCatalog
                                 // always contains relative file Paths
                                 if (String.IsNullOrEmpty(relativePath))
                                 {
@@ -793,7 +793,7 @@ namespace System.Management.Automation
             return false;
         }
         /// <summary>
-        /// Call back when error is  thrown by catalog API's
+        /// Call back when error is thrown by catalog API's
         /// </summary>
         private static void ParseErrorCallback(DWORD dwErrorArea, DWORD dwLocalError, string pwszLine)
         {

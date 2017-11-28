@@ -1,5 +1,5 @@
 /********************************************************************++
-Copyright (c) Microsoft Corporation.  All rights reserved.
+Copyright (c) Microsoft Corporation. All rights reserved.
 --********************************************************************/
 
 using System;
@@ -108,8 +108,20 @@ namespace Microsoft.PowerShell.Commands
         /// </summary>
         ///
         [Parameter]
-        [ValidateSetAttribute(new string[] { "Unicode", "UTF7", "UTF8", "ASCII", "UTF32", "BigEndianUnicode", "Default", "OEM" })]
-        public string Encoding { get; set; } = "Unicode";
+        [ArgumentToEncodingTransformationAttribute()]
+        [ArgumentCompletions(
+            EncodingConversion.Ascii,
+            EncodingConversion.BigEndianUnicode,
+            EncodingConversion.OEM,
+            EncodingConversion.Unicode,
+            EncodingConversion.Utf7,
+            EncodingConversion.Utf8,
+            EncodingConversion.Utf8Bom,
+            EncodingConversion.Utf8NoBom,
+            EncodingConversion.Utf32
+            )]
+        [ValidateNotNullOrEmpty]
+        public Encoding Encoding { get; set; } = ClrFacade.GetDefaultEncoding();
 
         #endregion Command Line Parameters
 
@@ -239,12 +251,6 @@ namespace Microsoft.PowerShell.Commands
                 }
                 _fs.Dispose();
                 _fs = null;
-            }
-            // reset the read-only attribute
-            if (null != _readOnlyFileInfo)
-            {
-                _readOnlyFileInfo.Attributes |= FileAttributes.ReadOnly;
-                _readOnlyFileInfo = null;
             }
         }
 
@@ -531,7 +537,7 @@ namespace Microsoft.PowerShell.Commands
         private CustomSerialization _serializer;
 
         /// <summary>
-        ///Memory Stream used for  serialization
+        /// Memory Stream used for serialization
         /// </summary>
         private MemoryStream _ms;
 
@@ -572,11 +578,11 @@ namespace Microsoft.PowerShell.Commands
 
             if (Depth == 0)
             {
-                _serializer = new CustomSerialization(_xw, _notypeinformation);
+                _serializer = new CustomSerialization(_xw, NoTypeInformation);
             }
             else
             {
-                _serializer = new CustomSerialization(_xw, _notypeinformation, Depth);
+                _serializer = new CustomSerialization(_xw, NoTypeInformation, Depth);
             }
         }
 
@@ -645,14 +651,8 @@ namespace Microsoft.PowerShell.Commands
 
         internal ImportXmlHelper(string fileName, PSCmdlet cmdlet, bool isLiteralPath)
         {
-            if (fileName == null)
-            {
-                throw PSTraceSource.NewArgumentNullException("fileName");
-            }
-            if (cmdlet == null)
-            {
-                throw PSTraceSource.NewArgumentNullException("cmdlet");
-            }
+            Dbg.Assert(fileName != null, "filename is mandatory");
+            Dbg.Assert(cmdlet != null, "cmdlet is mandatory");
             _path = fileName;
             _cmdlet = cmdlet;
             _isLiteralPath = isLiteralPath;
@@ -749,17 +749,10 @@ namespace Microsoft.PowerShell.Commands
             // if paging is not specified then keep the old V2 behavior
             if (skip == 0 && first == ulong.MaxValue)
             {
-                ulong item = 0;
                 while (!_deserializer.Done())
                 {
                     object result = _deserializer.Deserialize();
-                    if (item++ < skip)
-                        continue;
-                    if (first == 0)
-                        break;
-
                     _cmdlet.WriteObject(result);
-                    first--;
                 }
             }
             // else try to flatten the output if possible
@@ -772,35 +765,37 @@ namespace Microsoft.PowerShell.Commands
                     object result = _deserializer.Deserialize();
                     PSObject psObject = result as PSObject;
 
-                    if (psObject == null && skipped++ >= skip)
+                    if (psObject != null)
+                    {
+                        ICollection c = psObject.BaseObject as ICollection;
+                        if (c != null)
+                        {
+                            foreach (object o in c)
+                            {
+                                if (count >= first)
+                                    break;
+
+                                if (skipped++ >= skip)
+                                {
+                                    count++;
+                                    _cmdlet.WriteObject(o);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            if (skipped++ >= skip)
+                            {
+                                count++;
+                                _cmdlet.WriteObject(result);
+                            }
+                        }
+                    }
+                    else if (skipped++ >= skip)
                     {
                         count++;
                         _cmdlet.WriteObject(result);
                         continue;
-                    }
-
-                    ICollection c = psObject.BaseObject as ICollection;
-                    if (c != null)
-                    {
-                        foreach (object o in c)
-                        {
-                            if (count >= first)
-                                break;
-
-                            if (skipped++ >= skip)
-                            {
-                                count++;
-                                _cmdlet.WriteObject(o);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        if (skipped++ >= skip)
-                        {
-                            count++;
-                            _cmdlet.WriteObject(result);
-                        }
                     }
                 }
             }

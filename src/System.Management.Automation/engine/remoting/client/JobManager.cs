@@ -1,5 +1,5 @@
 ﻿/********************************************************************++
-Copyright (c) Microsoft Corporation.  All rights reserved.
+Copyright (c) Microsoft Corporation. All rights reserved.
 --********************************************************************/
 
 using System.Collections;
@@ -12,11 +12,6 @@ using System.Reflection;
 using System.Security;
 using System.Threading;
 using Dbg = System.Management.Automation.Diagnostics;
-
-#if CORECLR
-// Use stub for ThreadAbortException.
-using Microsoft.PowerShell.CoreClr.Stubs;
-#endif
 
 // Stops compiler from warning about unknown warnings
 #pragma warning disable 1634, 1691

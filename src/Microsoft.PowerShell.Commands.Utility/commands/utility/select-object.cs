@@ -1,5 +1,5 @@
 /********************************************************************++
-Copyright (c) Microsoft Corporation.  All rights reserved.
+Copyright (c) Microsoft Corporation. All rights reserved.
 --********************************************************************/
 
 using System;
@@ -9,11 +9,6 @@ using System.Management.Automation;
 using Microsoft.PowerShell.Commands.Internal.Format;
 using System.Management.Automation.Internal;
 using System.Diagnostics.CodeAnalysis;
-
-#if CORECLR
-// Use stubs for SystemException
-using Microsoft.PowerShell.CoreClr.Stubs;
-#endif
 
 namespace Microsoft.PowerShell.Commands
 {

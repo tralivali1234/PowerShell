@@ -1,5 +1,5 @@
 /********************************************************************++
-Copyright (c) Microsoft Corporation.  All rights reserved.
+Copyright (c) Microsoft Corporation. All rights reserved.
 --********************************************************************/
 
 using System.IO;
@@ -10,11 +10,6 @@ using Microsoft.PowerShell.Commands;
 using System.Collections.Generic;
 using System.Management.Automation.Language;
 using System.Management.Automation.Security;
-
-#if CORECLR
-// Use stub for SerializableAttribute
-using Microsoft.PowerShell.CoreClr.Stubs;
-#endif
 
 namespace System.Management.Automation
 {

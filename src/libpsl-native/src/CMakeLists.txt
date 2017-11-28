@@ -11,13 +11,17 @@ add_library(psl-native SHARED
   getlinkcount.cpp
   getfullyqualifiedname.cpp
   geterrorcategory.cpp
+  getinodedata.cpp
   isfile.cpp
   isdirectory.cpp
+  issamefilesystemitem.cpp
   issymlink.cpp
   isexecutable.cpp
   setdate.cpp
   createhardlink.cpp
   createsymlink.cpp
-  followsymlink.cpp)
+  followsymlink.cpp
+  createprocess.cpp
+  nativesyslog.cpp)
 
 target_include_directories(psl-native PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

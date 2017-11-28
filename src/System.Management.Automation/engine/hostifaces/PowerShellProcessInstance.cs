@@ -1,5 +1,5 @@
 ﻿/********************************************************************++
-Copyright (c) Microsoft Corporation.  All rights reserved.
+Copyright (c) Microsoft Corporation. All rights reserved.
 --********************************************************************/
 
 using System.ComponentModel;
@@ -37,11 +37,11 @@ namespace System.Management.Automation.Runspaces
         static PowerShellProcessInstance()
         {
 #if UNIX
-            s_PSExePath = Path.Combine(Utils.GetApplicationBase(Utils.DefaultPowerShellShellID),
-                            "powershell");
+            s_PSExePath = Path.Combine(Utils.DefaultPowerShellAppBase,
+                            "pwsh");
 #else
-            s_PSExePath = Path.Combine(Utils.GetApplicationBase(Utils.DefaultPowerShellShellID),
-                            "powershell.exe");
+            s_PSExePath = Path.Combine(Utils.DefaultPowerShellAppBase,
+                            "pwsh.exe");
 #endif
         }
 
@@ -79,7 +79,7 @@ namespace System.Management.Automation.Runspaces
 #if CORECLR
             string processArguments = " -s -NoLogo -NoProfile";
 #else
-            // Adding Version parameter to powershell.exe
+            // Adding Version parameter to powershell
             // Version parameter needs to go before all other parameters because the native layer looks for Version or
             // PSConsoleFile parameters before parsing other parameters.
             // The other parameters get parsed in the managed layer.
@@ -126,11 +126,7 @@ namespace System.Management.Automation.Runspaces
 
                 _startInfo.UserName = netCredential.UserName;
                 _startInfo.Domain = string.IsNullOrEmpty(netCredential.Domain) ? "." : netCredential.Domain;
-#if CORECLR
-                _startInfo.PasswordInClearText = ClrFacade.ConvertSecureStringToString(credential.Password);
-#else
                 _startInfo.Password = credential.Password;
-#endif
             }
 
             Process = new Process { StartInfo = _startInfo, EnableRaisingEvents = true };

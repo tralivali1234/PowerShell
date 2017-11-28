@@ -1,5 +1,5 @@
 /********************************************************************++
-Copyright (c) Microsoft Corporation.  All rights reserved.
+Copyright (c) Microsoft Corporation. All rights reserved.
 --********************************************************************/
 
 using System;
@@ -24,6 +24,14 @@ namespace Microsoft.PowerShell.Commands
         /// gets or protected sets the Content property
         /// </summary>
         public new string Content { get; private set; }
+
+        /// <summary>
+        /// Gets the Encoding that was used to decode the Content
+        /// </summary>
+        /// <value>
+        /// The Encoding used to decode the Content; otherwise, a null reference if the content is not text.
+        /// </value>
+        public Encoding Encoding { get; private set; }
 
         private WebCmdletElementCollection _inputFields;
 
@@ -217,14 +225,16 @@ namespace Microsoft.PowerShell.Commands
         /// <summary>
         /// Reads the response content from the web response.
         /// </summary>
-        private void InitializeContent()
+        protected void InitializeContent()
         {
             string contentType = ContentHelper.GetContentType(BaseResponse);
             if (ContentHelper.IsText(contentType))
             {
+                Encoding encoding = null;
                 // fill the Content buffer
                 string characterSet = WebResponseHelper.GetCharacterSet(BaseResponse);
-                this.Content = StreamHelper.DecodeStream(RawContentStream, characterSet);
+                this.Content = StreamHelper.DecodeStream(RawContentStream, characterSet, out encoding);
+                this.Encoding = encoding;
             }
             else
             {

@@ -1,6 +1,11 @@
 # This is a Pester test suite to validate the cmdlets in LocalAccounts module
 #
-# Copyright (c) Microsoft Corporation, 2015
+# Copyright (c) Microsoft Corporation. All rights reserved.
+
+# Module removed due to #4272
+# disabling tests
+
+return
 
 function IsWin10OrHigher
 {
@@ -60,7 +65,7 @@ try {
     Describe "Verify Expected LocalGroupMember Cmdlets are present" -Tags "CI" {
 
         It "Test command presence" {
-            $result = Get-Command -Module Microsoft.PowerShell.LocalAccounts | % Name
+            $result = Get-Command -Module Microsoft.PowerShell.LocalAccounts | ForEach-Object Name
 
             $result -contains "Add-LocalGroupMember" | Should Be $true
             $result -contains "Get-LocalGroupMember" | Should Be $true
@@ -114,7 +119,7 @@ try {
                 RemoveTestUsers -basename TestUser
             }
         }
-       
+
         It "Can add user to group using SID" {
             Add-LocalGroupMember -SID $group1sid -Member TestUser1
             $result = Get-LocalGroupMember TestGroup1
@@ -229,7 +234,7 @@ try {
             }
             VerifyFailingTest $sb "GroupNotFound,Microsoft.PowerShell.Commands.AddLocalGroupMemberCommand"
         }
-       
+
         It "Can respond to -ErrorAction Stop" {
             $sb = {
                 Add-LocalGroupMember TestGroup1 -Member @("TestUser1", "TestNonexistentUser1", "TestNonexistentUser2") -ErrorAction Stop -ErrorVariable OutputError | Out-Null
@@ -430,7 +435,7 @@ try {
             Remove-LocalGroupMember TestGroupRemove1 -Member TestUserRemove1
             $result = Get-LocalGroupMember TestGroupRemove1
 
-            $result -eq $null | Should Be $true
+            $result | Should Be $null
         }
     }
 
@@ -507,7 +512,7 @@ try {
             }
             VerifyFailingTest $sb "MemberNotFound,Microsoft.PowerShell.Commands.RemoveLocalGroupMemberCommand"
         }
-       
+
         It "Errors on remove group members by array of name" {
             $sb = {
                 Remove-LocalGroupMember TestGroupRemove2 -Member TestUserRemove2
@@ -520,21 +525,21 @@ try {
             Remove-LocalGroupMember TestGroupRemove1 -Member @("TestUserRemove1", "TestUserRemove2")
             $result = Get-LocalGroupMember TestGroupRemove1
 
-            $result -eq $null | Should Be $true
+            $result | Should Be $null
         }
 
         It "Can remove array of user SIDs from group" {
             Remove-LocalGroupMember TestGroupRemove1 -Member @($user1sid, $user2sid)
             $result = Get-LocalGroupMember TestGroupRemove1
 
-            $result -eq $null | Should Be $true
+            $result | Should Be $null
         }
 
         It "Can remove array of users names or SIDs from group" {
             Remove-LocalGroupMember TestGroupRemove1 -Member @($user1sid, "TestUserRemove2")
             $result = Get-LocalGroupMember TestGroupRemove1
 
-            $result -eq $null | Should Be $true
+            $result | Should Be $null
         }
 
         It "Can remove array of user names using pipeline" {
@@ -543,7 +548,7 @@ try {
             @($name1, $name2) | Remove-LocalGroupMember TestGroupRemove1
             $result = Get-LocalGroupMember TestGroupRemove1
 
-            $result -eq $null | Should Be $true
+            $result | Should Be $null
         }
 
         It "Errors on remove nonexistent user from group" {
@@ -569,7 +574,7 @@ try {
             VerifyFailingTest $sb "PrincipalNotFound,Microsoft.PowerShell.Commands.RemoveLocalGroupMemberCommand"
 
             $result = Get-LocalGroupMember TestGroupRemove2
-            $result -eq $null | Should Be $true
+            $result | Should Be $null
         }
 
         It "Errors on remove user from nonexistent group" {

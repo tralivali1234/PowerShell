@@ -1,5 +1,5 @@
 /********************************************************************++
-Copyright (c) Microsoft Corporation.  All rights reserved.
+Copyright (c) Microsoft Corporation. All rights reserved.
 --********************************************************************/
 
 using System;
@@ -10,15 +10,69 @@ using System.IO;
 using System.Text;
 using System.Collections;
 using System.Globalization;
+using System.Security;
+using System.Security.Authentication;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-#if !CORECLR
-using mshtml;
-#endif
 using Microsoft.Win32;
 
 namespace Microsoft.PowerShell.Commands
 {
+    /// <summary>
+    /// The valid values for the -Authentication parameter for Invoke-RestMethod and Invoke-WebRequest
+    /// </summary>
+    public enum WebAuthenticationType
+    {
+        /// <summary>
+        /// No authentication. Default.
+        /// </summary>
+        None,
+
+        /// <summary>
+        /// RFC-7617 Basic Authentication. Requires -Credential
+        /// </summary>
+        Basic,
+
+        /// <summary>
+        /// RFC-6750 OAuth 2.0 Bearer Authentication. Requires -Token
+        /// </summary>
+        Bearer,
+
+        /// <summary>
+        /// RFC-6750 OAuth 2.0 Bearer Authentication. Requires -Token
+        /// </summary>
+        OAuth,
+    }
+
+    // WebSslProtocol is used because not all SslProtocols are supported by HttpClientHandler.
+    // Also SslProtocols.Default is not the "default" for HttpClientHandler as SslProtocols.Ssl3 is not supported.
+    /// <summary>
+    /// The valid values for the -SslProtocol parameter for Invoke-RestMethod and Invoke-WebRequest
+    /// </summary>
+    [Flags]
+    public enum WebSslProtocol
+    {
+        /// <summary>
+        ///  No SSL protocol will be set and the system defaults will be used.
+        /// </summary>
+        Default = 0,
+
+        /// <summary>
+        /// Specifies the TLS 1.0 security protocol. The TLS protocol is defined in IETF RFC 2246.
+        /// </summary>
+        Tls = SslProtocols.Tls,
+
+        /// <summary>
+        ///  Specifies the TLS 1.1 security protocol. The TLS protocol is defined in IETF RFC 4346.
+        /// </summary>
+        Tls11 = SslProtocols.Tls11,
+
+        /// <summary>
+        /// Specifies the TLS 1.2 security protocol. The TLS protocol is defined in IETF RFC 5246
+        /// </summary>
+        Tls12 = SslProtocols.Tls12
+    }
+
     /// <summary>
     /// Base class for Invoke-RestMethod and Invoke-WebRequest commands.
     /// </summary>
@@ -29,10 +83,10 @@ namespace Microsoft.PowerShell.Commands
         #region URI
 
         /// <summary>
-        /// gets or sets the parameter UseBasicParsing
+        /// Deprecated. Gets or sets UseBasicParsing. This has no affect on the operation of the Cmdlet.
         /// </summary>
-        [Parameter]
-        public virtual SwitchParameter UseBasicParsing { get; set; }
+        [Parameter(DontShow = true)]
+        public virtual SwitchParameter UseBasicParsing { get; set; } = true;
 
         /// <summary>
         /// gets or sets the Uri property
@@ -60,6 +114,22 @@ namespace Microsoft.PowerShell.Commands
         #endregion
 
         #region Authorization and Credentials
+
+        /// <summary>
+        /// Gets or sets the AllowUnencryptedAuthentication property
+        /// </summary>
+        [Parameter]
+        public virtual SwitchParameter AllowUnencryptedAuthentication { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Authentication property used to determin the Authentication method for the web session.
+        /// Authentication does not work with UseDefaultCredentials.
+        /// Authentication over unencrypted sessions requires AllowUnencryptedAuthentication.
+        /// Basic: Requires Credential
+        /// OAuth/Bearer: Requires Token
+        /// </summary>
+        [Parameter]
+        public virtual WebAuthenticationType Authentication { get; set; } = WebAuthenticationType.None;
 
         /// <summary>
         /// gets or sets the Credential property
@@ -93,6 +163,18 @@ namespace Microsoft.PowerShell.Commands
         /// </summary>
         [Parameter]
         public virtual SwitchParameter SkipCertificateCheck { get; set; }
+
+        /// <summary>
+        /// Gets or sets the TLS/SSL protocol used by the Web Cmdlet
+        /// </summary>
+        [Parameter]
+        public virtual WebSslProtocol SslProtocol { get; set; } = WebSslProtocol.Default;
+
+        /// <summary>
+        /// Gets or sets the Token property. Token is required by Authentication OAuth and Bearer.
+        /// </summary>
+        [Parameter]
+        public virtual SecureString Token { get; set; }
 
         #endregion
 
@@ -274,6 +356,44 @@ namespace Microsoft.PowerShell.Commands
                 ThrowTerminatingError(error);
             }
 
+            // Authentication
+            if (UseDefaultCredentials && (Authentication != WebAuthenticationType.None))
+            {
+                ErrorRecord error = GetValidationError(WebCmdletStrings.AuthenticationConflict,
+                                                       "WebCmdletAuthenticationConflictException");
+                ThrowTerminatingError(error);
+            }
+            if ((Authentication != WebAuthenticationType.None) && (null != Token) && (null != Credential))
+            {
+                ErrorRecord error = GetValidationError(WebCmdletStrings.AuthenticationTokenConflict,
+                                                       "WebCmdletAuthenticationTokenConflictException");
+                ThrowTerminatingError(error);
+            }
+            if ((Authentication == WebAuthenticationType.Basic) && (null == Credential))
+            {
+                ErrorRecord error = GetValidationError(WebCmdletStrings.AuthenticationCredentialNotSupplied,
+                                                       "WebCmdletAuthenticationCredentialNotSuppliedException");
+                ThrowTerminatingError(error);
+            }
+            if ((Authentication == WebAuthenticationType.OAuth || Authentication == WebAuthenticationType.Bearer) && (null == Token))
+            {
+                ErrorRecord error = GetValidationError(WebCmdletStrings.AuthenticationTokenNotSupplied,
+                                                       "WebCmdletAuthenticationTokenNotSuppliedException");
+                ThrowTerminatingError(error);
+            }
+            if (!AllowUnencryptedAuthentication && (Authentication != WebAuthenticationType.None) && (Uri.Scheme != "https"))
+            {
+                ErrorRecord error = GetValidationError(WebCmdletStrings.AllowUnencryptedAuthenticationRequired,
+                                                       "WebCmdletAllowUnencryptedAuthenticationRequiredException");
+                ThrowTerminatingError(error);
+            }
+            if (!AllowUnencryptedAuthentication && (null != Credential || UseDefaultCredentials) && (Uri.Scheme != "https"))
+            {
+                ErrorRecord error = GetValidationError(WebCmdletStrings.AllowUnencryptedAuthenticationRequired,
+                                                       "WebCmdletAllowUnencryptedAuthenticationRequiredException");
+                ThrowTerminatingError(error);
+            }
+
             // credentials
             if (UseDefaultCredentials && (null != Credential))
             {
@@ -335,7 +455,7 @@ namespace Microsoft.PowerShell.Commands
                         {
                             if (Directory.Exists(providerPaths[0]))
                             {
-                                errorRecord = GetValidationError(WebCmdletStrings.DirecotryPathSpecified,
+                                errorRecord = GetValidationError(WebCmdletStrings.DirectoryPathSpecified,
                                                                  "WebCmdletInFileNotFilePathException", InFile);
                             }
                             _originalFilePath = InFile;
@@ -389,7 +509,7 @@ namespace Microsoft.PowerShell.Commands
             //
             // handle credentials
             //
-            if (null != Credential)
+            if (null != Credential && Authentication == WebAuthenticationType.None)
             {
                 // get the relevant NetworkCredential
                 NetworkCredential netCred = Credential.GetNetworkCredential();
@@ -397,6 +517,10 @@ namespace Microsoft.PowerShell.Commands
 
                 // supplying a credential overrides the UseDefaultCredentials setting
                 WebSession.UseDefaultCredentials = false;
+            }
+            else if ((null != Credential || null!= Token) && Authentication != WebAuthenticationType.None)
+            {
+                ProcessAuthentication();
             }
             else if (UseDefaultCredentials)
             {
@@ -492,81 +616,6 @@ namespace Microsoft.PowerShell.Commands
 
         #region Helper Methods
 
-        /// <summary>
-        /// Verifies that Internet Explorer is available, and that its first-run
-        /// configuration is complete.
-        /// </summary>
-        /// <param name="checkComObject">True if we should try to access IE's COM object. Not
-        /// needed if an HtmlDocument will be created shortly.</param>
-        protected bool VerifyInternetExplorerAvailable(bool checkComObject)
-        {
-            // TODO: Remove this code once the dependency on mshtml has been resolved.
-#if CORECLR
-            return false;
-#else
-            bool isInternetExplorerConfigurationComplete = false;
-            // Check for IE for both PS Full and PS Core on windows.
-            // The registry key DisableFirstRunCustomize can exits at one of the following path.
-            // IE uses the same descending order (as mentioned) to check for the presence of this key.
-            // If the value of DisableFirstRunCustomize key is set to greater than zero then Run first
-            // is disabled.
-            string[] disableFirstRunCustomizePaths = new string[] {
-                     @"HKEY_LOCAL_MACHINE\Software\Policies\Microsoft\Internet Explorer\Main",
-                     @"HKEY_CURRENT_USER\Software\Policies\Microsoft\Internet Explorer\Main",
-                     @"HKEY_CURRENT_USER\Software\Microsoft\Internet Explorer\Main",
-                     @"HKEY_LOCAL_MACHINE\Software\Microsoft\Internet Explorer\Main"  };
-
-            foreach (string currentRegPath in disableFirstRunCustomizePaths)
-            {
-                object val = Registry.GetValue(currentRegPath, "DisableFirstRunCustomize", string.Empty);
-                if (val != null && !string.Empty.Equals(val) && Convert.ToInt32(val, CultureInfo.InvariantCulture) > 0)
-                {
-                    isInternetExplorerConfigurationComplete = true;
-                    break;
-                }
-            }
-
-            if (!isInternetExplorerConfigurationComplete)
-            {
-                // Verify that if IE is installed, it has been through the RunOnce check.
-                // Otherwise, the call will hang waiting for users to go through First Run
-                // personalization.
-                using (RegistryKey key = Registry.CurrentUser.OpenSubKey("Software\\Microsoft\\Internet Explorer\\Main"))
-                {
-                    if (key != null)
-                    {
-                        foreach (string setting in key.GetValueNames())
-                        {
-                            if (setting.IndexOf("RunOnce", StringComparison.OrdinalIgnoreCase) > -1)
-                            {
-                                isInternetExplorerConfigurationComplete = true;
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-
-            if (isInternetExplorerConfigurationComplete && checkComObject)
-            {
-                try
-                {
-                    IHTMLDocument2 ieCheck = (IHTMLDocument2)new HTMLDocument();
-                    System.Runtime.InteropServices.Marshal.ReleaseComObject(ieCheck);
-                }
-                catch (System.Runtime.InteropServices.COMException)
-                {
-                    isInternetExplorerConfigurationComplete = false;
-                }
-            }
-
-            // Throw exception in PS Full only
-            if (!isInternetExplorerConfigurationComplete)
-                throw new NotSupportedException(WebCmdletStrings.IEDomNotSupported);
-            return isInternetExplorerConfigurationComplete;
-#endif
-        }
-
         private Uri PrepareUri(Uri uri)
         {
             uri = CheckProtocol(uri);
@@ -660,10 +709,38 @@ namespace Microsoft.PowerShell.Commands
         {
             return (ParameterSetName == "StandardMethod");
         }
-        
+
         private bool IsCustomMethodSet()
         {
             return (ParameterSetName == "CustomMethod");
+        }
+
+        private string GetBasicAuthorizationHeader()
+        {
+            string unencoded = String.Format("{0}:{1}", Credential.UserName, Credential.GetNetworkCredential().Password);
+            Byte[] bytes = Encoding.UTF8.GetBytes(unencoded);
+            return String.Format("Basic {0}", Convert.ToBase64String(bytes));
+        }
+
+        private string GetBearerAuthorizationHeader()
+        {
+            return String.Format("Bearer {0}", new NetworkCredential(String.Empty, Token).Password);
+        }
+
+        private void ProcessAuthentication()
+        {
+            if(Authentication == WebAuthenticationType.Basic)
+            {
+                WebSession.Headers["Authorization"] = GetBasicAuthorizationHeader();
+            }
+            else if (Authentication == WebAuthenticationType.Bearer || Authentication == WebAuthenticationType.OAuth)
+            {
+                WebSession.Headers["Authorization"] = GetBearerAuthorizationHeader();
+            }
+            else
+            {
+                Diagnostics.Assert(false, String.Format("Unrecognized Authentication value: {0}", Authentication));
+            }
         }
 
         #endregion Helper Methods

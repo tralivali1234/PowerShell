@@ -1,7 +1,5 @@
-﻿#if CORECLR
-
-/********************************************************************++
-Copyright (c) Microsoft Corporation.  All rights reserved.
+﻿/********************************************************************++
+Copyright (c) Microsoft Corporation. All rights reserved.
 --********************************************************************/
 
 using System;
@@ -45,17 +43,30 @@ namespace Microsoft.PowerShell.Commands
                     {
                         // determine the response type
                         RestReturnType returnType = CheckReturnType(response);
-                        // get the response encoding
-                        Encoding encoding = ContentHelper.GetEncoding(response);
+
+                        // Try to get the response encoding from the ContentType header.
+                        Encoding encoding = null;
+                        string charSet = response.Content.Headers.ContentType?.CharSet;
+                        if (!string.IsNullOrEmpty(charSet))
+                        {
+                            // NOTE: Don't use ContentHelper.GetEncoding; it returns a
+                            // default which bypasses checking for a meta charset value.
+                            StreamHelper.TryGetEncoding(charSet, out encoding);
+                        }
 
                         object obj = null;
                         Exception ex = null;
 
-                        string str = StreamHelper.DecodeStream(responseStream, encoding);
+                        string str = StreamHelper.DecodeStream(responseStream, ref encoding);
+                        // NOTE: Tests use this verbose output to verify the encoding.
+                        WriteVerbose(string.Format
+                        (
+                            System.Globalization.CultureInfo.InvariantCulture,
+                            "Content encoding: {0}",
+                            string.IsNullOrEmpty(encoding.HeaderName) ? encoding.EncodingName : encoding.HeaderName)
+                        );
                         bool convertSuccess = false;
 
-                        // On CoreCLR, we need to explicitly load Json.NET
-                        JsonObject.ImportJsonDotNetModule(this);
                         if (returnType == RestReturnType.Json)
                         {
                             convertSuccess = TryConvertToJson(str, out obj, ref ex) || TryConvertToXml(str, out obj, ref ex);
@@ -79,6 +90,12 @@ namespace Microsoft.PowerShell.Commands
                 if (ShouldSaveToOutFile)
                 {
                     StreamHelper.SaveStreamToFile(responseStream, QualifiedOutFile, this);
+                }
+
+                if (!String.IsNullOrEmpty(ResponseHeadersVariable))
+                {
+                    PSVariableIntrinsics vi = SessionState.PSVariable;
+                    vi.Set(ResponseHeadersVariable, WebResponseHelper.GetHeadersDictionary(response));
                 }
             }
         }
@@ -112,4 +129,3 @@ namespace Microsoft.PowerShell.Commands
         #endregion Helper Methods
     }
 }
-#endif

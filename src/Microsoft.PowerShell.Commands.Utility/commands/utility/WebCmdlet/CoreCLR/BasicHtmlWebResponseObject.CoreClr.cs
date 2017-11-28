@@ -1,7 +1,5 @@
-﻿#if CORECLR
-
-/********************************************************************++
-Copyright (c) Microsoft Corporation.  All rights reserved.
+﻿/********************************************************************++
+Copyright (c) Microsoft Corporation. All rights reserved.
 --********************************************************************/
 
 using System.Net.Http;
@@ -18,7 +16,7 @@ namespace Microsoft.PowerShell.Commands
         #region Constructors
 
         /// <summary>
-        /// Constructor for HtmlWebResponseObject
+        /// Constructor for BasicHtmlWebResponseObject
         /// </summary>
         /// <param name="response"></param>
         public BasicHtmlWebResponseObject(HttpResponseMessage response)
@@ -52,4 +50,3 @@ namespace Microsoft.PowerShell.Commands
         #endregion Methods
     }
 }
-#endif

@@ -1,5 +1,5 @@
 /********************************************************************++
-Copyright (c) Microsoft Corporation.  All rights reserved.
+Copyright (c) Microsoft Corporation. All rights reserved.
 --********************************************************************/
 
 using System.Collections;
@@ -8,11 +8,6 @@ using System.Threading;
 using System.Runtime.Serialization;
 using Dbg = System.Management.Automation.Diagnostics;
 using System.Management.Automation.Internal;
-
-#if CORECLR
-// Use stub for SerializableAttribute, SystemException, ThreadAbortException and ISerializable related types.
-using Microsoft.PowerShell.CoreClr.Stubs;
-#endif
 
 namespace System.Management.Automation.Runspaces
 {

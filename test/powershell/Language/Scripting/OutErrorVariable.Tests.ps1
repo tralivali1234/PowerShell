@@ -54,7 +54,7 @@
 
     It 'Test: <Name>' -TestCases $testdata {
         param ( $Name, $Command, $OutVariable, $PreSet, $Expected )
-        if($PreSet -ne $null)
+        if($null -ne $PreSet)
         {
             Set-Variable -Name $OutVariable -Value $PreSet
             & $Command -OutVariable +$OutVariable > $null
@@ -124,7 +124,7 @@ Describe "Test ErrorVariable only" -Tags "CI" {
 
     It '<Name>' -TestCases $testdata1 {
         param ( $Name, $Command, $ErrorVariable, $PreSet, $Expected )
-        if($PreSet -ne $null)
+        if($null -ne $PreSet)
         {
             Set-Variable -Name $ErrorVariable -Value $PreSet
             & $Command -ErrorVariable +$ErrorVariable 2> $null
@@ -134,7 +134,7 @@ Describe "Test ErrorVariable only" -Tags "CI" {
             & $Command -ErrorVariable $ErrorVariable 2> $null
 
         }
-        $a = (Get-Variable -ValueOnly $ErrorVariable) | % {$_.ToString()}
+        $a = (Get-Variable -ValueOnly $ErrorVariable) | ForEach-Object {$_.ToString()}
         $a | should be $Expected
     }
 
@@ -145,7 +145,7 @@ Describe "Test ErrorVariable only" -Tags "CI" {
         get-foo2 -errorVariable +a 2> $null
 
         $a.count | Should Be 3
-        $a| % {$_.ToString()} | Should Be @('a', 'b', 'foo')
+        $a| ForEach-Object {$_.ToString()} | Should Be @('a', 'b', 'foo')
     }
 
     It 'Nested ErrorVariable' {
@@ -235,7 +235,7 @@ Describe "Update both OutVariable and ErrorVariable" -Tags "CI" {
 
     It 'Update OutVariable and ErrorVariable' {
 
-        get-bar2 -OutVariable script:bar_out -errorVariable script:bar_err  2> $null > $null
+        get-bar2 -OutVariable script:bar_out -errorVariable script:bar_err 2> $null > $null
 
         $foo_out | Should be @("foo-output-0", "foo-output-1")
         $foo_err | Should be 'foo-error'

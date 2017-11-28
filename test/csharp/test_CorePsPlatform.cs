@@ -38,7 +38,7 @@ namespace PSTests
             }
         }
 
-        [Fact(Skip="Bad arguments for OS X")]
+        [Fact(Skip="Bad arguments for macOS")]
         public static void TestGetMachineName()
         {
             var startInfo = new ProcessStartInfo
@@ -57,11 +57,11 @@ namespace PSTests
                 // The process should return an exit code of 0 on success
                 Assert.Equal(0, process.ExitCode);
                 // It should be the same as what our platform code returns
-                Assert.Equal(hostname, System.Management.Automation.Environment.MachineName);
+                Assert.Equal(hostname, Environment.MachineName);
             }
         }
 
-        [Fact(Skip="Bad arguments for OS X")]
+        [Fact(Skip="Bad arguments for macOS")]
         public static void TestGetFQDN()
         {
             var startInfo = new ProcessStartInfo
@@ -84,7 +84,7 @@ namespace PSTests
             }
         }
 
-        [Fact(Skip="Bad arguments for OS X")]
+        [Fact(Skip="Bad arguments for macOS")]
         public static void TestGetDomainName()
         {
             var startInfo = new ProcessStartInfo

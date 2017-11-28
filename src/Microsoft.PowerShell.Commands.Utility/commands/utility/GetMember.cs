@@ -1,5 +1,5 @@
 /********************************************************************++
-Copyright (c) Microsoft Corporation.  All rights reserved.
+Copyright (c) Microsoft Corporation. All rights reserved.
 --********************************************************************/
 
 using System;
@@ -186,7 +186,7 @@ namespace Microsoft.PowerShell.Commands
             if (((View & PSMemberViewTypes.Extended) == 0) &&
                 (!typeof(PSMemberSet).ToString().Equals(typeName, StringComparison.OrdinalIgnoreCase)))
             {
-                // PSMemberSet is an internal memberset and its properties/methods are  populated differently.
+                // PSMemberSet is an internal memberset and its properties/methods are populated differently.
                 // PSMemberSet instance is created to represent PSExtended, PSAdapted, PSBase, PSObject hidden
                 // properties. We should honor extended properties for such case.
 
@@ -267,15 +267,14 @@ namespace Microsoft.PowerShell.Commands
 
 
         /// <summary>
-        /// This method implements the End method for get-member  command
+        /// This method implements the End method for get-member command
         /// </summary>
         protected override void EndProcessing()
         {
             if (_typesAlreadyDisplayed.Count == 0)
             {
-                ErrorDetails details = new ErrorDetails(this.GetType().GetTypeInfo().Assembly, "GetMember", "NoObjectSpecified");
                 ErrorRecord errorRecord = new ErrorRecord(
-                    new InvalidOperationException(details.Message),
+                    new InvalidOperationException(GetMember.NoObjectSpecified),
                     "NoObjectInGetMember",
                     ErrorCategory.CloseError,
                     null);

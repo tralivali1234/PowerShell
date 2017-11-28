@@ -2,31 +2,35 @@ Describe "SSH Remoting API Tests" -Tags "Feature" {
 
     Context "SSHConnectionInfo Class Tests" {
 
-        It "SSHConnectionInfo constructor should throw null argument exception for null HostName parameter" {
+        BeforeAll {
+            ## Skip the test if ssh is not present.
+            $skipTest = (Get-Command 'ssh' -CommandType Application -ErrorAction SilentlyContinue) -eq $null
+        }
 
-            try
-            {
-                [System.Management.Automation.Runspaces.SSHConnectionInfo]::new(
-                    "UserName",
-                    [System.Management.Automation.Internal.AutomationNull]::Value,
-                    [System.Management.Automation.Internal.AutomationNull]::Value)
-
-                throw "No Exception!"
-            }
-            catch
-            {
-                $_.FullyQualifiedErrorId | Should Be "PSArgumentNullException"
+        AfterEach {
+            if ($null -ne $rs) {
+                $rs.Dispose()
             }
         }
 
-        It "SSHConnectionInfo should throw file not found exception for invalid key file path" {
+        It "SSHConnectionInfo constructor should throw null argument exception for null HostName parameter" {
+
+            { [System.Management.Automation.Runspaces.SSHConnectionInfo]::new(
+                "UserName",
+                [System.Management.Automation.Internal.AutomationNull]::Value,
+                [System.Management.Automation.Internal.AutomationNull]::Value,
+                0) } | ShouldBeErrorId "PSArgumentNullException"
+        }
+
+        It "SSHConnectionInfo should throw file not found exception for invalid key file path" -Skip:$skipTest {
 
             try
             {
                 $sshConnectionInfo = [System.Management.Automation.Runspaces.SSHConnectionInfo]::new(
                     "UserName",
                     "localhost",
-                    "NoValidKeyFilePath")
+                    "NoValidKeyFilePath",
+                    22)
 
                 $rs = [runspacefactory]::CreateRunspace($sshConnectionInfo)
                 $rs.Open()
@@ -35,7 +39,33 @@ Describe "SSH Remoting API Tests" -Tags "Feature" {
             }
             catch
             {
-                $_.Exception.InnerException.InnerException | Should BeOfType System.IO.FileNotFoundException
+                $_.Exception.InnerException.InnerException | Should BeOfType "System.IO.FileNotFoundException"
+            }
+        }
+
+        It "SSHConnectionInfo should throw argument exception for invalid port (non 16bit uint)" {
+            try
+            {
+                $sshConnectionInfo = [System.Management.Automation.Runspaces.SSHConnectionInfo]::new(
+                    "UserName",
+                    "localhost",
+                    "ValidKeyFilePath",
+                    99999)
+
+                $rs = [runspacefactory]::CreateRunspace($sshConnectionInfo)
+                $rs.Open()
+
+                throw "No Exception!"
+            }
+            catch
+            {
+                $expectedArgumentException = $_.Exception
+                if ($null -ne $_.Exception.InnerException)
+                {
+                    $expectedArgumentException = $_.Exception.InnerException
+                }
+
+                $expectedArgumentException | Should BeOfType "System.ArgumentException"
             }
         }
     }

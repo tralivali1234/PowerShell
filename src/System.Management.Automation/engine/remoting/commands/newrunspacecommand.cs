@@ -1,5 +1,5 @@
 /********************************************************************++
-Copyright (c) Microsoft Corporation.  All rights reserved.
+Copyright (c) Microsoft Corporation. All rights reserved.
 --********************************************************************/
 
 using System;
@@ -39,7 +39,7 @@ namespace Microsoft.PowerShell.Commands
     ///
     /// Create a set of Runspaces using the Secure Socket Layer by specifying the URI form.
     /// This assumes that an shell by the name of E12 exists on the remote server.
-    ///     $serverURIs = 1..8 | %{ "SSL://server${_}:443/E12" }
+    ///     $serverURIs = 1..8 | ForEach-Object { "SSL://server${_}:443/E12" }
     ///     $rs = New-PSSession -URI $serverURIs
     ///
     /// Create a runspace by connecting to port 8081 on servers s1, s2 and s3
@@ -1078,7 +1078,8 @@ namespace Microsoft.PowerShell.Commands
                 var sshConnectionInfo = new SSHConnectionInfo(
                     this.UserName,
                     computerName,
-                    this.KeyFilePath);
+                    this.KeyFilePath,
+                    this.Port);
                 var typeTable = TypeTable.LoadDefaultTypeFiles();
                 remoteRunspaces.Add(RunspaceFactory.CreateRunspace(sshConnectionInfo, this.Host, typeTable) as RemoteRunspace);
             }
@@ -1095,7 +1096,8 @@ namespace Microsoft.PowerShell.Commands
                 var sshConnectionInfo = new SSHConnectionInfo(
                     sshConnection.UserName,
                     sshConnection.ComputerName,
-                    sshConnection.KeyFilePath);
+                    sshConnection.KeyFilePath,
+                    sshConnection.Port);
                 var typeTable = TypeTable.LoadDefaultTypeFiles();
                 remoteRunspaces.Add(RunspaceFactory.CreateRunspace(sshConnectionInfo, this.Host, typeTable) as RemoteRunspace);
             }
@@ -1306,7 +1308,7 @@ namespace Microsoft.PowerShell.Commands
         // callbacks for two reasons:
         //  a) To ensure callbacks are made in list order (first added, first called).
         //  b) To ensure all callbacks are fired by manually invoking callbacks and handling
-        //     any exceptions thrown on this thread. (ThrottleManager will hang if it doesn't
+        //     any exceptions thrown on this thread. (ThrottleManager will not respond if it doesn't
         //     get a start/stop complete callback).
         private List<EventHandler<OperationStateEventArgs>> _internalCallbacks = new List<EventHandler<OperationStateEventArgs>>();
         internal override event EventHandler<OperationStateEventArgs> OperationComplete
@@ -1399,7 +1401,7 @@ namespace Microsoft.PowerShell.Commands
             }
             foreach (var callbackDelegate in copyCallbacks)
             {
-                // Ensure all callbacks get called to prevent ThrottleManager hang.
+                // Ensure all callbacks get called to prevent ThrottleManager from not responding.
                 try
                 {
                     callbackDelegate.SafeInvoke(this, operationStateEventArgs);

@@ -1,5 +1,5 @@
 /********************************************************************++
-Copyright (c) Microsoft Corporation.  All rights reserved.
+Copyright (c) Microsoft Corporation. All rights reserved.
 --********************************************************************/
 
 using System.Collections.Generic;
@@ -7,6 +7,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Management.Automation.Language;
 using System.Management.Automation.Runspaces;
+using System.Reflection;
 using System.Runtime.ExceptionServices;
 using Microsoft.PowerShell.Commands;
 
@@ -224,10 +225,10 @@ namespace System.Management.Automation
                                 // Manifest module (.psd1)
                                 Module.SetVersion(ModuleIntrinsics.GetManifestModuleVersion(Module.Path));
                             }
-                            else if (Module.Path.EndsWith(StringLiterals.DependentWorkflowAssemblyExtension, StringComparison.OrdinalIgnoreCase))
+                            else if (Module.Path.EndsWith(StringLiterals.PowerShellILAssemblyExtension, StringComparison.OrdinalIgnoreCase))
                             {
                                 // Binary module (.dll)
-                                Module.SetVersion(ClrFacade.GetAssemblyName(Module.Path).Version);
+                                Module.SetVersion(AssemblyName.GetAssemblyName(Module.Path).Version);
                             }
                         }
 

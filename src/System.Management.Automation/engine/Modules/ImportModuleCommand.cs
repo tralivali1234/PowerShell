@@ -1,5 +1,5 @@
 /********************************************************************++
-Copyright (c) Microsoft Corporation.  All rights reserved.
+Copyright (c) Microsoft Corporation. All rights reserved.
 --********************************************************************/
 
 using System;
@@ -23,11 +23,8 @@ using System.Management.Automation.Language;
 using Parser = System.Management.Automation.Language.Parser;
 using ScriptBlock = System.Management.Automation.ScriptBlock;
 using Token = System.Management.Automation.Language.Token;
+#if LEGACYTELEMETRY
 using Microsoft.PowerShell.Telemetry.Internal;
-
-#if CORECLR
-// Use stub for SecurityZone.
-using Microsoft.PowerShell.CoreClr.Stubs;
 #endif
 
 //
@@ -989,14 +986,28 @@ namespace Microsoft.PowerShell.Commands
                 // import the proxy module just as any other local module
                 //
                 object[] oldArgumentList = this.ArgumentList;
+                Version originalBaseMinimumVersion = BaseMinimumVersion;
+                Version originalBaseMaximumVersion = BaseMaximumVersion;
+                Version originalBaseRequiredVersion = BaseRequiredVersion;
                 try
                 {
                     this.ArgumentList = new object[] { psSession };
+
+                    // The correct module version has already been imported from the remote session and created locally.
+                    // The locally created module always has a version of 1.0 regardless of the actual module version
+                    // imported from the remote session, and version checking is no longer needed and will not work while
+                    // importing this created local module.
+                    BaseMinimumVersion = null;
+                    BaseMaximumVersion = null;
+                    BaseRequiredVersion = null;
                     ImportModule_LocallyViaName(importModuleOptions, wildcardEscapedPsd1Path);
                 }
                 finally
                 {
                     this.ArgumentList = oldArgumentList;
+                    BaseMinimumVersion = originalBaseMinimumVersion;
+                    BaseMaximumVersion = originalBaseMaximumVersion;
+                    BaseRequiredVersion = originalBaseRequiredVersion;
                 }
 
                 //
@@ -1020,7 +1031,7 @@ namespace Microsoft.PowerShell.Commands
                         -Recurse `
                         -ErrorAction SilentlyContinue
 
-                    if ($previousOnRemoveScript -ne $null)
+                    if ($null -ne $previousOnRemoveScript)
                     {
                         & $previousOnRemoveScript $args
                     }
@@ -1307,7 +1318,9 @@ namespace Microsoft.PowerShell.Commands
                     fullPath,
                     file.RawFileData);
 
+#if !UNIX
                 AlternateDataStreamUtilities.SetZoneOfOrigin(fullPath, SecurityZone.Intranet);
+#endif
             }
 
             return relativePathsToCreatedFiles;
@@ -1510,7 +1523,7 @@ namespace Microsoft.PowerShell.Commands
                             -Recurse `
                             -ErrorAction SilentlyContinue
 
-                        if ($previousOnRemoveScript -ne $null)
+                        if ($null -ne $previousOnRemoveScript)
                         {
                             & $previousOnRemoveScript $args
                         }
@@ -1720,7 +1733,9 @@ namespace Microsoft.PowerShell.Commands
                     {
                         SetModuleBaseForEngineModules(foundModule.Name, this.Context);
 
+#if LEGACYTELEMETRY
                         TelemetryAPI.ReportModuleLoad(foundModule);
+#endif
                     }
                 }
             }
@@ -1768,11 +1783,11 @@ namespace Microsoft.PowerShell.Commands
                 {
                     if (m.Name.Equals(moduleName, StringComparison.OrdinalIgnoreCase))
                     {
-                        m.SetModuleBase(Utils.GetApplicationBase(Utils.DefaultPowerShellShellID));
+                        m.SetModuleBase(Utils.DefaultPowerShellAppBase);
                         // Also set  ModuleBase for nested modules of Engine modules
                         foreach (var nestedModule in m.NestedModules)
                         {
-                            nestedModule.SetModuleBase(Utils.GetApplicationBase(Utils.DefaultPowerShellShellID));
+                            nestedModule.SetModuleBase(Utils.DefaultPowerShellAppBase);
                         }
                     }
                 }
@@ -1781,11 +1796,11 @@ namespace Microsoft.PowerShell.Commands
                 {
                     if (m.Name.Equals(moduleName, StringComparison.OrdinalIgnoreCase))
                     {
-                        m.SetModuleBase(Utils.GetApplicationBase(Utils.DefaultPowerShellShellID));
+                        m.SetModuleBase(Utils.DefaultPowerShellAppBase);
                         // Also set  ModuleBase for nested modules of Engine modules
                         foreach (var nestedModule in m.NestedModules)
                         {
-                            nestedModule.SetModuleBase(Utils.GetApplicationBase(Utils.DefaultPowerShellShellID));
+                            nestedModule.SetModuleBase(Utils.DefaultPowerShellAppBase);
                         }
                     }
                 }

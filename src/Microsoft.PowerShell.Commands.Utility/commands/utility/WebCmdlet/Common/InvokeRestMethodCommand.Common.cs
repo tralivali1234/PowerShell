@@ -1,11 +1,13 @@
 ﻿/********************************************************************++
-Copyright (c) Microsoft Corporation.  All rights reserved.
+Copyright (c) Microsoft Corporation. All rights reserved.
 --********************************************************************/
 
 using System;
 using System.Management.Automation;
 using System.IO;
 using System.Xml;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.PowerShell.Commands
 {
@@ -36,6 +38,36 @@ namespace Microsoft.PowerShell.Commands
             get { return base.CustomMethod; }
             set { base.CustomMethod = value; }
         }
+
+        /// <summary>
+        /// enable automatic following of rel links
+        /// </summary>
+        [Parameter]
+        [Alias("FL")]
+        public SwitchParameter FollowRelLink
+        {
+            get { return base._followRelLink; }
+            set { base._followRelLink = value; }
+        }
+
+        /// <summary>
+        /// gets or sets the maximum number of rel links to follow
+        /// </summary>
+        [Parameter]
+        [Alias("ML")]
+        [ValidateRange(1, Int32.MaxValue)]
+        public int MaximumFollowRelLink
+        {
+            get { return base._maximumFollowRelLink; }
+            set { base._maximumFollowRelLink = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the ResponseHeadersVariable property.
+        /// </summary>
+        [Parameter]
+        [Alias("RHV")]
+        public string ResponseHeadersVariable { get; set; }
 
         #endregion Parameters
 
@@ -110,6 +142,7 @@ namespace Microsoft.PowerShell.Commands
             xrs.IgnoreProcessingInstructions = true;
             xrs.MaxCharactersFromEntities = 1024;
             xrs.DtdProcessing = DtdProcessing.Ignore;
+            xrs.XmlResolver = null;
 
             return xrs;
         }
@@ -137,15 +170,27 @@ namespace Microsoft.PowerShell.Commands
 
         private bool TryConvertToJson(string json, out object obj, ref Exception exRef)
         {
+            bool converted = false;
             try
             {
                 ErrorRecord error;
                 obj = JsonObject.ConvertFromJson(json, out error);
 
+                if (null == obj)
+                {
+                    // This ensures that a null returned by ConvertFromJson() is the actual JSON null literal. 
+                    // if not, the ArgumentException will be caught.
+                    JToken.Parse(json);
+                }
+
                 if (error != null)
                 {
                     exRef = error.Exception;
                     obj = null;
+                }
+                else
+                {
+                    converted = true;
                 }
             }
             catch (ArgumentException ex)
@@ -158,7 +203,13 @@ namespace Microsoft.PowerShell.Commands
                 exRef = ex;
                 obj = null;
             }
-            return (null != obj);
+            catch (JsonException ex)
+            {
+                var msg = string.Format(System.Globalization.CultureInfo.CurrentCulture, WebCmdletStrings.JsonDeserializationFailed, ex.Message);
+                exRef = new ArgumentException(msg, ex);
+                obj = null;
+            }
+            return converted;
         }
 
         #endregion

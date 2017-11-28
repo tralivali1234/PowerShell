@@ -1,5 +1,770 @@
 # Changelog
 
+## v6.0.0-rc - 2017-11-16
+
+### Breaking changes
+
+- Fix `-Verbose` to not override `$ErrorActionPreference`. (#5113)
+- Fix `Get-Item -LiteralPath a*b` to return error if `a*b` doesn't actually exist. (#5197)
+- Remove `AllScope` from most default aliases to reduce overhead on creating new scopes. (#5268)
+- Change `$OutputEncoding` default to be `UTF8` without `BOM` rather than `ASCII`. (#5369)
+- Add error on legacy credential over non-HTTPS for Web Cmdlets. (#5402) (Thanks @markekraus!)
+- Fix single value JSON `null` in `Invoke-RestMethod`. (#5338) (Thanks @markekraus!)
+- Add `PSTypeName` Support for `Import-Csv` and `ConvertFrom-Csv`. (#5389) (Thanks @markekraus!)
+
+### Engine updates and fixes
+
+- Add char range overload to the `..` operator, so `'a'..'z'` returns characters from 'a' to 'z'. (#5026) (Thanks @IISResetMe!)
+- Remove `CommandFactory` because it serves no real purpose. (#5266)
+- Change to not insert line breaks at console window width to output (except for tables). (#5193)
+- Use `Ast` for context in parameter binding and fix to glob the native command argument only when it's not quoted. (#5188)
+- Fix dynamic class assembly name. (#5292)
+- Update powershell to use `2.0.4-servicing` dotnet core runtime. (#5295)
+- Fix `ExecutionContext.LoadAssembly` to load with name when file cannot be found. (#5161)
+- Speed up the check for suspicious content in script texts. (#5302)
+- Use native `os_log` APIs on macOS for PowerShell Core logging. (#5310)
+- Redirect `ETW` logging to `Syslog` on Linux. (#5144)
+- Improve how we pass the array literal to native commands. (#5301)
+- Make `SemanticVersion` compatible with `SemVer 2.0`. (#5037) (Thanks @iSazonov!)
+- Revert refactoring changes that broke remoting to Windows PowerShell 5.1. (#5321)
+- Port some fixes in `Job` for an issue that causes PowerShell to not respond. (#5258)
+- Multiple improvements by `CodeRush` static analysis. (#5132) (Thanks @Himura2la!)
+- Fix the Runspace cleanup issue that causes PowerShell to not respond on exit. (#5356)
+- Update PowerShell to depend on new version of `psrp` and `libmi` nuget packages on Unix platforms. (#5469)
+
+### General cmdlet updates and fixes
+
+- Add `-AsHashtable` to `ConvertFrom-Json` to return a `Hashtable` instead. (#5043) (Thanks @bergmeister!)
+- Fix `Import-module` to not report a loaded module was not found. (#5238)
+- Fix performance issues in `Add-Type`. (#5243) (Thanks @iSazonov!)
+- Fix `PSUserAgent` generation for Web Cmdlets on Windows 7. (#5256) (Thanks @markekraus!)
+- Remove `DCOM` support from `*-Computer` cmdlets. (#5277)
+- Add multiple link header support to Web Cmdlets. (#5265) (Thanks @markekraus!)
+- Use wider columns for process id and user. (#5303)
+- Add `Remove-Alias` Command. (#5143) (Thanks @PowershellNinja!)
+- Update `installpsh-suse.sh` to work with the `tar.gz` package. (#5309)
+- Add `Jobject` serialization support to `ConvertTo-Json`. (#5141)
+- Display full help with 'help' function. (#5195) (Thanks @rkeithhill!)
+- Fix `help` function to not pipe to `more` if objects are returned instead of help text. (#5395)
+- Fix `Unblock-File` to not write an error if the file is already unblocked. (#5362) (Thanks @iSazonov!)
+- Clean up FullCLR code from Web Cmdlets. (#5376) (Thanks @markekraus!)
+- Exclude cmdlets that are not supported on Unix platforms. (#5083)
+- Make `Import-Csv` support `CR`, `LF` and `CRLF` as line delimiters. (#5363) (Thanks @iSazonov!)
+- Fix spelling in Web Cmdlet errors. (#5427) (Thanks @markekraus!)
+- Add `SslProtocol` support to Web Cmdlets. (#5329) (Thanks @markekraus!)
+
+### Build and Packaging Improvements
+
+- Use `RCEdit` to embed icon and version information into `pwsh.exe`. (#5178)
+- Update Docker file for Nano Server 1709 release. (#5252)
+- Change VSCode build task to use `pwsh`. (#5255)
+- Refactor building and packaging scripts for signing in release build workflow. (#5300)
+- Always build with `-CrossGen` in CI to verify a fix in `CrossGen` tool. (#5315)
+- Separate `Install-PowerShellRemoting.ps1` from `psrp.windows` nuget package. (#5330)
+- Include symbols folder an embedded zip when packaging symbols. (#5333)
+- Add Uniform Type Identifier conforming with Apple standards using a reverse DNS style prefix. (#5323)
+- Update `Wix` toolset download link to newer version 3.11 (#5339) (Thanks @bergmeister!)
+- Re-enable macOS launcher after fixing an issue that blocked macOS package generation. (#5291) (Thanks @thezim!)
+- Set expected binaries and variable name for folder for symbols build. (#5357)
+- Rename and update PowerShell `ETW` manifest to remove the Windows PowerShell dependency. (#5360)
+- Add ability to produce `tar.gz` package for Raspbian. (#5387)
+- Update `Find-Dotnet` to find dotnet with the compatible SDK. (#5341) (Thanks @rkeithhill!)
+- Add signing manifest and script to update it with production values. (#5397)
+- Add `install-powershell.ps1` to install PowerShell Core on windows. (#5383)
+- Make `-Name` a dynamic parameter in `Start-PSPackage`. (#5415)
+- Support `[package]` tag in PR CI and fix nightly build on macOS. (#5410)
+- Enhance `install-powershell.ps1` to work on Linux and macOS. (#5411)
+- Move the `RCEdit` step to the build phase rather than the packaging phase. (#5404)
+- Allow packaging from a zip package to allow for signing. (#5418)
+- Add automation to validate PowerShell Core packages using Docker containers. (#5401)
+- Fix the `brew update` issue in bootstrap script. (#5400)
+- Enable `install-powershell.ps1` to update the current running PowerShell Core. (#5429)
+- Add standard set of VSCode workspace setting files. (#5457) (Thanks @rkeithhill!)
+- Add support for installing PowerShell Core on Amazon Linux via `install-powershell.sh`. (#5461) (Thanks @DarwinJS!)
+- Get `PowerShellGet` and `PackageManagement` from the PowerShell Gallery. (#5452)
+- Fix `Start-PSBuild` on `WSL` if repository was already built on Windows. (#5346) (Thanks @bergmeister!)
+- Fix build in VSCode and use an improved version of `tasks.json` from @rkeithhill. (#5453)
+- Add scripts for signing packages in the release build workflow. (#5463)
+
+### Documentation and Help Content
+
+- Fix the codebase to use the consistent copyright string. (#5210)
+- Add documentation about how to create `libpsl` and `psrp.windows` nuget packages. (#5278)
+- Add help strings in PowerShell banner. (#5275) (Thanks @iSazonov!)
+- Change all links in `README.md` to absolute as they are being used in other places outside of GitHub. (#5354)
+- Update instructions to build on VSCode based on `pwsh`. (#5368)
+- Update `FAQ.md` about how to use PowerShell Core nuget packages. (#5366)
+- Correct the Fedora documentation (#5384) (Thanks @offthewoll!)
+- Add instructions about how to create the `PowerShell.Core.Instrumentation` nuget package. (#5396)
+- Updated PowerShell to use the latest help package. (#5454)
+
+### Compliance Work
+
+[Compliance](https://github.com/PowerShell/PowerShell/blob/master/docs/maintainers/issue-management.md#miscellaneous-labels)
+work is required for Microsoft to continue to sign and release packages from the project as official Microsoft packages.
+
+- Replace the word `hang` with something more appropriate and add rules about other terms. (#5213, #5297, #5358)
+- Use simplified names for compliance folders (#5388)
+- Add compliance label description (#5355)
+- Set `requestedExecutionLevel` to `asInvoker` for `pwsh.exe` on Windows. (#5285)
+- Add `HighEntropyVA` to building pwsh. (#5455)
+
+## v6.0.0-beta.9 - 2017-10-24
+
+### Breaking changes
+
+- Fix `ValueFromRemainingArguments` to have consistent behavior between script and C# cmdlets. (#2038) (Thanks @dlwyatt)
+- Remove parameters `-importsystemmodules` and `-psconsoleFile` from `powershell.exe`. (#4995)
+- Removed code to show a GUI prompt for credentials as PowerShell Core prompts in console. (#4995)
+- Remove `-ComputerName` from `Get/Set/Remove-Service`. (#5094)
+- Rename the executable name from `powershell` to `pwsh`. (#5101)
+- Remove `RunspaceConfiguration` support. (#4942)
+- Remove `-ComputerName` support since .NET Core `Process.GetProcesses(computer)` returns local processes. (#4960)
+- Make `-NoTypeInformation` the default on `Export-Csv` and `ConvertTo-Csv`. (#5164) (Thanks @markekraus)
+- Unify cmdlets with parameter `-Encoding` to be of type `System.Text.Encoding`. (#5080)
+
+### Engine updates and fixes
+
+- Fix PowerShell to update the `PATH` environment variable only if `PATH` exists. (#5021)
+- Enable support of folders and files with colon in name on Unix. (#4959)
+- Fix detection of whether `-LiteralPath` was used to suppress wildcard expansion for navigation cmdlets. (#5038)
+- Enable using filesystem from a UNC location. (#4998)
+- Escape trailing backslash when dealing with native command arguments. (#4965)
+- Change location of `ModuleAnalysisCache` so it isn't shared with Windows PowerShell. (#5133)
+- Put command discovery before scripts for Unix. (#5116)
+
+### General cmdlet updates and fixes
+
+- Correct comma position in `SecureStringCommands.resx`. (#5033) (Thanks @markekraus)
+- User Agent of Web Cmdlets now reports the OS platform (#4937) (Thanks @LDSpits)
+- Add the positional parameter attribute to `-InputObject` for `Set-Service`. (#5017) (Thanks @travisty-)
+- Add `ValidateNotNullOrEmpty` attribute to `-UFormat` for `Get-Date`. (#5055) (Thanks @DdWr)
+- Add `-NoNewLine` switch for `Out-String`. (#5056) (Thanks @raghav710)
+- Improve progress messages written by Web Cmdlets. (#5078) (Thanks @markekraus)
+- Add verb descriptions and alias prefixes for `Get-Verb`. (#4746) (Thanks @Tadas)
+- Fix `Get-Content -Raw` to not miss the last line feed character. (#5076)
+- Add authentication parameters to Web Cmdlets. (#5052) (Thanks @markekraus)
+    - Add `-Authentication` that provides three options: Basic, OAuth, and Bearer.
+    - Add `-Token` to get the bearer token for OAuth and Bearer options.
+    - Add `-AllowUnencryptedAuthentication` to bypass authentication that is provided for any transport scheme other than HTTPS.
+- Fix `MatchInfoContext` clone implementation (#5121) (Thanks @dee-see)
+- Exclude `PSHostProcess` cmdlets from Unix platforms. (#5105)
+- Fix `Add-Member` to fetch resource string correctly. (#5114)
+- Enable `Import-Module` to be case insensitive. (#5097)
+- Add exports for `syslog` APIs in `libpsl-native`. (#5149)
+- Fix `Get-ChildItem` to not ignore `-Depth` parameter when using with `-Include` or `-Exclude`. (#4985) (Thanks @Windos)
+- Added properties `UserName`, `Description`, `DelayedAutoStart`, `BinaryPathName` and `StartupType` to the `ServiceController` objects returned by `Get-Service`. (#4907) (Thanks @joandrsn)
+
+### Build and Packaging Improvements
+
+- Treat `.rtf` files as binary so EOL don't get changed. (#5020)
+- Improve the output of `tools/installpsh-osx.sh` and update Travis-CI to use Ruby 2.3.3. (#5065)
+- Improve `Start-PSBootstrap` to locate dotnet SDK before installing it. (#5059) (Thanks @PetSerAl)
+- Fix the prerequisite check of the MSI package. (#5070)
+- Support creating `tar.gz` package for Linux and macOS. (#5085)
+- Add release builds that produce symbols for compliance scans. (#5086)
+- Update existing Docker files for the Linux package changes. (#5102)
+- Add compiler switches and replace dangerous function with safer ones. (#5089)
+- Add macOS launcher. (#5138) (Thanks @thezim)
+- Replace `httpbin.org/response-headers` Tests with WebListener. (#5058) (Thanks @markekraus)
+- Update `appimage.sh` to reflect the new name `pwsh`. (#5172)
+- Update the man help file used in packaging. (#5173)
+- Update to use `pwsh` in macOS launcher. (#5174) (Thanks @thezim)
+- Add code to send web hook for Travis-CI daily build. (#5183)
+- Add `global.json` to pick correct SDK version. (#5118) (Thanks @rkeithhill)
+- Update packaging to only package PowerShell binaries when packaging symbols. (#5145)
+- Update Docker files and related due to the name change. (#5156)
+
+### Code Cleanup
+
+- Clean up Json cmdlets. (#5001) (Thanks @iSazonov)
+- Remove code guarded by `RELATIONSHIP_SUPPORTED` and `SUPPORTS_IMULTIVALUEPROPERTYCMDLETPROVIDER`, which has never been used. (#5066)
+- Remove PSMI code that has never been used. (#5075)
+- Remove unreachable code for `Stop-Job`. (#5091) (Thanks @travisty-)
+- Removed font and codepage handling code that is only applicable to Windows PowerShell. (#4995)
+
+### Test
+
+- Fix a race condition between `WebListener` and Web Cmdlets tests. (#5035) (Thanks @markekraus)
+- Add warning to `Start-PSPester` if Pester module is not found (#5069) (Thanks @DdWr)
+- Add tests for DSC configuration compilation on Windows. (#5011)
+- Test fixes and code coverage automation fixes. (#5046)
+
+### Documentation and Help Content
+
+- Update Pi demo instructions about installing libunwind8. (#4974)
+- Add links on best practice guidelines in coding guideline. (#4983) (Thanks @iSazonov)
+- Reformat command line help for `powershell -help` (#4989) (Thanks @iSazonov)
+- Change logo in readme to current black icon. (#5030)
+- Fix RPM package name in `README.md`. (#5044)
+- Update `docs/building/linux.md` to reflect the current status of powershell build. (#5068) (Thanks @dee-see)
+- Add black version of `.icns` file for macOS. (#5073) (Thanks @thezim)
+- Update Arch Linux installation instructions. (#5048) (Thanks @kylesferrazza)
+- Add submodule reminder to `testing-guidelines.md`. (#5061) (Thanks @DdWr)
+- Update instructions in `docs/building/internals.md` for building from source. (#5072) (Thanks @kylesferrazza)
+- Add UserVoice link to Issue Template. (#5100) (Thanks @markekraus)
+- Add `Get-WebListenerUrl` Based Examples to WebListener `README.md`. (#4981) (Thanks @markekraus)
+- Add document about how to create cmdlet with dotnet CLI. (#5117) (Thanks @rkeithhill)
+- Update the help text for PowerShell executable with the new name `pwsh`. (#5182)
+- Add new forward links for PowerShell 6.0.0 help content. (#4978)
+- Fix VSCode `launch.json` to point to `pwsh`. (#5189)
+- Add example of how to create .NET Core cmdlet with Visual Studio. (#5096)
+
+## v6.0.0-beta.8 - 2017-10-05
+
+### Breaking changes
+
+* Changed `New-Service` to return error when given unsupported `-StartupType` and fixed `Set-Service` icon failing test. (#4802)
+* Allow `*` to be used in registry path for `Remove-Item`. (#4866)
+* Remove unsupported `-ShowWindow` switch from `Get-Help`. (#4903)
+* Fix incorrect position of a parameter which resulted in the args passed as input instead of as args for `InvokeScript()`. (#4963)
+
+### Engine updates and fixes
+
+* Make calls to `void CodeMethod` work. (#4850) (Thanks @powercode)
+* Get `PSVersion` and `GitCommitId` from the `ProductVersion` attribute of assembly (#4863) (Thanks @iSazonov)
+* Fix `powershell -version` and built-in help for `powershell.exe` to align with other native tools. (#4958 & #4931) (Thanks @iSazonov)
+* Load assemblies with `Assembly.LoadFrom` before `Assembly.Load` when the file path is given. (#4196)
+* Add a generic file watcher function in `HelpersCommon.psm1`. (#4775)
+* Update old links and fix broken links in `docs/host-powershell/README.md`. (#4877)
+* Fix when importing remote modules using version filters (and added tests). (#4900)
+* Enable transcription of native commands on non-Windows platforms. (#4871)
+* Add a new line to `CommandNotFoundException` error string. (#4934 & #4991)
+* Fix bug where PowerShell would exit with an error within an SSH remoting connection on Linux. (#4993)
+* Fix issues with expression redirected to file. (#4847)
+
+### General cmdlet updates and fixes
+
+* Added `Remove-Service` to Management module. (#4858) (Thanks @joandrsn)
+* Added functionality to set credentials on `Set-Service` command. (#4844) (Thanks @joandrsn)
+* Fix `Select-String` to exclude directories (as opposed to individual files) discovered from `-Path`. (#4829) (Thanks @iSazonov)
+* `Get-Date` now supports more argument completion scenarios by adding `ArgumentCompletionsAttribute`. (#4835) (Thanks @iSazonov)
+* Exclude `-ComObject` parameter of `New-Object` on unsupported (currently non-Windows) platforms. (#4922) (Thanks @iSazonov)
+* Updated default `ModuleVersion` in `New-ModuleManifest` to `0.0.1` to align with SemVer. (#4842) (Thanks @LDSpits)
+* Add Multipart support to web cmdlets. (#4782) (Thanks @markekraus)
+* Add `-ResponseHeadersVariable` to `Invoke-RestMethod` to enable the capture of response headers. (#4888) (Thanks @markekraus)
+* Initialize web cmdlets headers dictionary only once. (#4853) (Thanks @markekraus)
+* Change web cmdlets `UserAgent` from `WindowsPowerShell` to `PowerShell`. (#4914) (Thanks @markekraus)
+
+### Build and Packaging Improvements
+
+* Make the build output the WiX compilation log if it failed. (#4831) (Thanks @bergmeister)
+* Use a simple file based check in the MSI for the VC++ 2015 redistributables. (#4745) (Thanks @bergmeister)
+* New icon for PowerShell Core. (#4848)
+* Build Powershell Core using the generic RID `linux-x64`. (#4841)
+* Create generic Linux-x64 packages that are portable to all supported RPM Linux distros (and more similar for Debian based distros). (#4902 & #4994)
+* Suppress the output of building test tools in `Compress-TestContent`. (#4957)
+* Remove unnecessary error messages from output. (#4954)
+* Update Travis CI script so that PRs can fail due to Pester tests. (#4830)
+* Move release build definition into PowerShell. (#4884)
+* Fix credential scan issues. (#4927 & #4935)
+* Enable security flags in native compiler. (#4933)
+* Add VS 2017 solution file for `powershell-win-core`. (#4748)
+
+### Code Cleanup
+
+* Remove remainder of `Utility.Activities` (Workflow code). (#4880)
+* Remove `Microsoft.PowerShell.CoreCLR.AssemblyLoadContext.dll`. (#4868)
+* Enable auto EOL on Git repo side, fix some character encoding issues. (#4912)
+* Updated EOL for all files to be LF in the repository. (#4943 & #4956)
+* Removed leading whitespace. (#4991)
+
+### DSC Language
+
+* Update version of `PSDesiredStateConfiguration` in project files to fix complication of MOF files with the `Configuration` keyword. (#4979)
+
+### Test
+
+* Replace httpbin.org tests with `WebListener`. (Thanks @markekraus)
+    * headers (#4799)
+    * user-agent (#4798)
+    * redirect (#4852)
+    * encoding (#4869)
+    * delay (#4905)
+    * gzip & enable deflate (#4948)
+    * related changes and fixes (#4920)
+* Port tests for constrained language mode. (#4816)
+* Enable `Select-String` test from a network path. (#4921) (Thanks @iSazonov)
+* Reformat `Measure-Object` test. (#4972) (Thanks @iSazonov)
+* Mitigate intermittent failures in access denied tests. (#4788)
+* Fix tests that incorrectly use `ShouldBeErrorId`. (#4793)
+* Fix a test issue that causes tests to be skipped in Travis CI run (#4891)
+* Skip web cmdlet certificate authentication tests on CentOS and Mac. (#4822)
+* Validate product resource strings against resx files. (#4811 & #4861)
+* Add source files for coverage run. (#4925)
+* Add the UTC offset correctly in tests for CDXML cmdlets. (#4867)
+* Be sure to change `PSDefaultParameterValue` in the global scope. (#4977 & #4892)
+* Reduce output of Pester for CI. (#4855)
+* Add tests for
+    * `Get-Content` (#4723) (Thanks @sarithsutha)
+    * Remoting and Jobs (#4928)
+    * `Get-Help` (#4895)
+    * `Get-Command -ShowCommandInfo` (#4906)
+    * `Get-Content -Tail` (#4790)
+    * `Get-Module` over remoting (#4787)
+    * `Start/Stop/Suspend/Resume/Restart-Service` cmdlets (#4774)
+    * WSMan Config provider tests (#4756)
+    * CDXML CIM `DateTime` test (#4796)
+
+### Documentation and Graphics
+
+* Sort `.spelling` (Thanks @markekraus)
+* Improve the guideline for performance consideration. (#4824)
+* Add setup steps for MacOS to use PSRP over SSH. (#4872)
+* Instructions to demo PowerShell Core on Raspbian. (#4882)
+* Added instructions to get permission to use PowerShell image assets. (#4938)
+* Added demo for using Windows PowerShell modules. (#4886)
+
+## v6.0.0-beta.7 - 2017-09-13
+
+### Breaking change
+
+* Fix `Get-Content -Delimiter` to not include the delimiter in the array elements returned (#3706) (Thanks @mklement0)
+* Rename `$IsOSX` to `$IsMacOS` (#4757)
+
+### Engine updates and fixes
+
+* Use stricter rules when unwrapping a PSObject that wraps a COM object (#4614)
+* Remove appended Windows PowerShell `PSModulePath` on Windows. (#4656)
+* Ensure `GetNetworkCredential()` returns null if PSCredential has null or empty user name (#4697)
+* Push locals of automatic variables to 'DottedScopes' when dotting script cmdlets (#4709)
+* Fix `using module` when module has non-terminating errors handled with `SilentlyContinue` (#4711) (Thanks @iSazonov)
+* Enable use of 'Singleline,Multiline' option in split operator (#4721) (Thanks @iSazonov)
+* Fix error message in `ValidateSetAttribute.ValidateElement()` (#4722) (Thanks @iSazonov)
+
+### General cmdlet updates and fixes
+
+* Add Meta, Charset, and Transitional parameters to `ConvertTo-HTML` (#4184) (Thanks @ergo3114)
+* Prevent `Test-ModuleManifest` from loading unnecessary modules (#4541)
+* Remove AlternateStream code and `-Stream` from provider cmdlets on non-Windows (#4567)
+* Add explicit ContentType detection to `Invoke-RestMethod` (#4692)
+* Fix an error on `Enter-PSSession` exit (#4693)
+* Add `-WhatIf` switch to `Start-Process` cmdlet (#4735) (Thanks @sarithsutha)
+* Remove double spaces in .cs, .ps1, and .resx files (#4741 & #4743) (Thanks @korygill)
+* Replace 'Windows PowerShell' with 'PowerShell' in resx files (#4758) (Thanks @iSazonov)
+
+### Build and Packaging Improvements
+
+* Refactor MSBuild project files to get PowerShell version from git tag (#4182) (Thanks @iSazonov)
+* Create a single package for each Windows supported architecture (x86 and amd64) (#4540)
+* Set the default windows RID to win7-<arch> (#4701)
+* Enable cross-compiling for Raspberry-PI arm32 (#4742)
+* Fix macOS brew reinstall command (#4627) (Thanks @TheNewStellW)
+* Improvements to the Travis-CI script (#4689, #4731, #4807)
+* Update OpenSUSE docker image to 42.2 (#4737)
+* Confirm `Start-PSPackage` produces a package (#4795)
+
+### Code Cleanup
+
+* Remove Workflow code (#4777)
+* Clean up CORECLR preprocessor directives in TraceSource (#4684)
+
+### Test
+
+* Add test WebListener module and tests for Web Cmdlet Certificate Authentication (#4622) (Thanks @markekraus)
+* Move WebCmdlets HTTPS tests to WebListener (#4733) (Thanks @markekraus)
+* Replace httpbin.org/get tests With WebListener (#4738) (Thanks @markekraus)
+* Use `-PassThru` on Pester tests to reliably catch failures (#4644)
+* Display the same number of tests regardless of platform (#4728)
+* Improve comparison of code coverage values for a file (#4764)
+* Silence PSSessionConfiguration test warning messages in the log (#4794)
+* Add tests for
+    * `Get-Service` (#4773)
+    * `Set-Service` and `New-Service` (#4785)
+    * `Trace-Command` (#4288)
+    * `StaticParameter` (#4779)
+    * `Test-Wsman` (#4771)
+    * `New-Object -ComObject` (#4776)
+    * ProxyCommand APIs (#4791)
+* Disable tests
+    * 'VC++ Redistributable'(#4673 & #4729)
+    * "Test 01. Standard Property test - all properties (<property>)" due to missing CsPhysicallyInstalledMemory (#4763)
+    * `New-Service` failing test (#4806)
+
+### Documentation
+
+* Update WritingPesterTests.md to recommend ShouldBeErrorId (#4637)
+* Clarify the Pull Request process, roles, and responsibilities (#4710)
+* Add absolute URLs in the issue template and pull request template (#4718) (Thanks @chucklu)
+* Add new approved Build and Deploy verbs (#4725)
+* Update using-vscode.md to use the new exe path (#4736)
+* Update coding guidelines to make it more concrete and useful in a review process (#4754)
+
+## v6.0.0-beta.6 - 2017-08-24
+
+### Breaking change
+
+* Make invalid argument error messages for -File and -Command consistent and make exit codes consistent with Unix standards (#4573)
+
+### Engine updates and fixes
+
+* Make resource loading to work with PowerShell SxS installation (#4139)
+* Add missing assemblies to TPA list to make Pwrshplughin.dll work (#4502)
+* Make sure running `powershell` starts instance of the current version of PowerShell. (#4481)
+* Make sure we only use Unicode output by default on Nano and IoT systems (#4074)
+* Enable `powershell -WindowStyle` to work on Windows. (#4573)
+* Enable enumeration of COM collections. (#4553)
+
+### General cmdlet updates and fixes
+
+* Fix Web CmdLets `-SkipHeaderValidation` to work with non-standard User-Agent headers. (#4479 & #4512) (Thanks @markekraus)
+* Add Certificate authentication support for Web CmdLets. (#4646) (Thanks @markekraus)
+* Add support for content headers to Web CmdLets. (#4494 & #4640) (Thanks @markekraus)
+* Add support for converting enums to string (#4318) (Thanks @KirkMunro)
+* Ignore casing when binding PSReadline KeyHandler functions (#4300) (Thanks @oising)
+* Fix `Unblock-File` for the case of a read-only file. (#4395) (Thanks @iSazonov)
+* Use supported API to set Central Access Policy ID (CAPID) in SACL. (#4496)
+* Make `Start-Trace` support paths that require escaping in the underlying APIs (#3863)
+* Removing `#if CORECLR` enabled, `Enable-PSRemoting` and `Disable-PSRemoting` (#2671)
+* Enable WSManCredSSP cmdlets and add tests. (#4336)
+* Use .NET Core's implementation for ShellExecute. (#4523)
+* Fix SSH Remoting handling of KeyFileParameter when the path must be quoted. (#4529)
+* Make Web CmdLets use HTML meta charset attribute value, if present (#4338)
+* Move to .NET Core 2.0 final (#4603)
+
+### Build/test and code cleanup
+
+* Add Amazon Linux Docker image and enable related tests. (#4393) (Thanks @DarwinJS)
+* Make MSI verify pre-requisites are installed. (#4602) (Thank @bergmeister)
+* Fixed formatting issues in build files. (#4630) (Thanks @iSazonov)
+* Make sure `install-powershell.sh` installs latest powershell on macOS, even if an old version is cached in brew. (#4509) (Thanks @richardszalay for reporting.)
+* Fixes install scripts issue for macOS. (#4631) (Thanks @DarwinJS)
+* Many stability improvements to our nightly code coverage automation. (#4313 & #4550)
+* Remove hash validation from nanoserver-insider Docker file, due to frequent changes. (#4498)
+* Update to make Travis-CI daily build badge more reliable. (#4522)
+* Remove unused build files, build code, and product code. (#4532, #4580, #4590, #4589, #4588, #4587, #4586, #4583, #4582, #4581)
+* Add additional acceptance tests for PowerShellGet. (#4531)
+* Only publish a NuGet of the full PowerShell core package on daily builds and not merge. (#4517)
+* Update nanoserver-insider Docker file due to breaking changes in the base image. (#4555)
+* Cleanup engine tests (#4551)
+* Fix intermittent failures in filesystem tests (#4566)
+* Add tests for
+    * `New-WinEvent`. (#4384)
+    * tab completion.  (#4560)
+    * various types. (#4503)
+    * CDXML CmdLets. (#4537)
+* Only allow packaging of powershell, if it was built from a repo at the root of the file system named powershell. (#4569 & #4600)
+* Update `Format-Hex` test cases to use -TestCase instead of foreach loops. (#3800)
+* Added functionality to get code coverage for a single file locally. (#4556)
+
+### Documentation
+
+* Added Ilya (@iSazonov) as a Maintainer. (#4365)
+* Grammar fix to the Pull Request Guide. (#4322)
+* Add homebrew for macOS to install documentation. (#3838)
+* Added a CodeOwner file. (#4565 & #4597)
+
+### Cleanup `#if CORECLR` code
+
+PowerShell 6.0 will be exclusively built on top of CoreCLR,
+so we are removing a large amount of code that's built only for FullCLR.
+To read more about this, check out [this blog post](https://blogs.msdn.microsoft.com/powershell/2017/07/14/powershell-6-0-roadmap-coreclr-backwards-compatibility-and-more/).
+
+## v6.0.0-beta.5 - 2017-08-02
+
+### Breaking changes
+
+* Remove the `*-Counter` cmdlets in `Microsoft.PowerShell.Diagnostics` due to the use of unsupported APIs until a better solution is found. (#4303)
+* Remove the `Microsoft.PowerShell.LocalAccounts` due to the use of unsupported APIs until a better solution is found. (#4302)
+
+### Engine updates and fixes
+
+* Fix the issue where PowerShell Core wasn't working on Windows 7 or Windows Server 2008 R2/2012 (non-R2). (#4463)
+* `ValidateSetAttribute` enhancement: support set values to be dynamically generated from a custom `ValidateSetValueGenerator`. (#3784) (Thanks to @iSazonov!)
+* Disable breaking into debugger on Ctrl+Break when running non-interactively. (#4283) (Thanks to @mwrock!)
+* Give error instead of crashing if WSMan client library is not available. (#4387)
+* Allow passing `$true`/`$false` as a parameter to scripts using `powershell.exe -File`. (#4178)
+* Enable `DataRow`/`DataRowView` adapters in PowerShell Core to fix an issue with `DataTable` usage. (#4258)
+* Fix an issue where PowerShell class static methods were being shared across `Runspace`s/`SessionState`s. (#4209)
+* Fix array expression to not return null or throw error. (#4296)
+* Fixes a CIM deserialization bug where corrupted CIM classes were instantiating non-CIM types. (#4234)
+* Improve error message when `HelpMessage` property of `ParameterAttribute` is set to empty string. (#4334)
+* Make `ShellExecuteEx` run in a STA thread. (#4362)
+
+### General cmdlet updates and fixes
+
+* Add `-SkipHeaderValidation` switch to `Invoke-WebRequest` and `Invoke-RestMethod` to support adding headers without validating the header value. (#4085)
+* Add support for `Invoke-Item -Path <folder>`. (#4262)
+* Fix `ConvertTo-Html` output when using a single column header. (#4276)
+* Fix output of `Length` for `FileInfo` when using `Format-List`. (#4437)
+* Fix an issue in implicit remoting where restricted sessions couldn't use `Get-FormatData –PowerShellVersion`. (#4222)
+* Fix an issue where `Register-PSSessionConfiguration` fails if `SessionConfig` folder doesn't exist. (#4271)
+
+### Installer updates
+
+* Create script to install latest PowerShell from Microsoft package repositories (or Homebrew) on non-Windows platforms. (#3608) (Thanks to @DarwinJS!)
+* Enable MSI upgrades rather than a side-by-side install. (#4259)
+* Add a checkbox to open PowerShell after the Windows MSI installer has finished. (#4203) (Thanks to @bergmeister!)
+* Add Amazon Linux compatibility to `install-powershell.sh`. (#4360) (Thanks to @DarwinJS!)
+* Add ability to package PowerShell Core as a NuGet package. (#4363)
+
+### Build/test and code cleanup
+
+* Add build check for MFC for Visual C++ during Windows builds.
+  This fixes a long-standing (and very frustrating!) issue with missing build dependencies! (#4185) (Thanks to @KirkMunro!)
+* Move building Windows PSRP binary out of `Start-PSBuild`.
+  Now `Start-PSBuild` doesn't build PSRP binary on windows. Instead, we consume the PSRP binary from a NuGet package. (#4335)
+* Add tests for built-in type accelerators. (#4230) (Thanks to @dchristian3188!)
+* Increase code coverage of `Get-ChildItem` on file system. (#4342) (Thanks to @jeffbi!)
+* Increase test coverage for `Rename-Item` and `Move-Item`. (#4329) (Thanks to @jeffbi!)
+* Add test coverage for Registry provider. (#4354) (Thanks to @jeffbi!)
+* Fix warnings and errors thrown by PSScriptAnalyzer. (#4261) (Thanks to @bergmeister!)
+* Fix regressions that cause implicit remoting tests to fail. (#4326)
+* Disable legacy UTC and SQM Windows telemetry by enclosing the code in '#if LEGACYTELEMETRY'. (#4190)
+
+### Cleanup `#if CORECLR` code
+
+PowerShell 6.0 will be exclusively built on top of CoreCLR,
+so we are removing a large amount of code that's built only for FullCLR.
+To read more about this, check out [this blog post](https://blogs.msdn.microsoft.com/powershell/2017/07/14/powershell-6-0-roadmap-coreclr-backwards-compatibility-and-more/).
+
+## v6.0.0-beta.4 - 2017-07-12
+
+## Windows PowerShell backwards compatibility
+
+In the `beta.4` release, we've introduced a change to add the Windows PowerShell `PSModulePath` to the default `PSModulePath` in PowerShell Core on Windows. (#4132)
+
+Along with the introduction of .NET Standard 2.0 in `6.0.0-beta.1` and a GAC probing fix in `6.0.0-beta.3`,
+**this change will enable a large number of your existing Windows PowerShell modules/scripts to "just work" inside of PowerShell Core on Windows**.
+(Note: We have also fixed the CDXML modules on Windows that were regressed in `6.0.0-beta.2` as part of #4144).
+
+So that we can further enable this backwards compatibility,
+we ask that you tell us more about what modules or scripts do and don't work in Issue #4062.
+This feedback will also help us determine if `PSModulePath` should include the Windows PowerShell values by default in the long run.
+
+For more information on this, we invite you to read [this blog post explaining PowerShell Core and .NET Standard in more detail](https://blogs.msdn.microsoft.com/powershell/?p=13355).
+
+### Engine updates and fixes
+
+- Add Windows PowerShell `PSModulePath` by default on Windows. (#4132)
+- Move PowerShell to `2.0.0-preview3-25426-01` and using the .NET CLI version `2.0.0-preview2-006502`. (#4144)
+- Performance improvement in PSReadline by minimizing writing ANSI escape sequences. (#4110)
+- Implement Unicode escape parsing so that users can use Unicode characters as arguments, strings or variable names. (#3958) (Thanks to @rkeithhill!)
+- Script names or full paths can have commas. (#4136) (Thanks to @TimCurwick!)
+- Added `semver` as a type accelerator for `System.Management.Automation.SemanticVersion`. (#4142) (Thanks to @oising!)
+- Close `eventLogSession` and `EventLogReader` to unlock an ETL log. (#4034) (Thanks to @iSazonov!)
+
+### General cmdlet updates and fixes
+
+- `Move-Item` cmdlet honors `-Include`, `-Exclude`, and `-Filter` parameters. (#3878)
+- Add a parameter to `Get-ChildItem` called `-FollowSymlink` that traverses symlinks on demand, with checks for link loops. (#4020)
+- Change `New-ModuleManifest` encoding to UTF8NoBOM on non-Windows platforms. (#3940)
+- `Get-AuthenticodeSignature` cmdlets can now get file signature timestamp. (#4061)
+- Add tab completion for `Export-Counter` `-FileFormat` parameter. (#3856)
+- Fixed `Import-Module` on non-Windows platforms so that users can import modules with `NestedModules` and `RootModules`. (#4010)
+- Close `FileStream` opened by `Get-FileHash`. (#4175) (Thanks to @rkeithhill!)
+
+### Remoting
+
+- Fixed PowerShell not responding when the SSH client abruptly terminates. (#4123)
+
+### Documentation
+
+- Added recommended settings for VS Code. (#4054) (Thanks to @iSazonov!)
+
+## v6.0.0-beta.3 - 2017-06-20
+
+### Breaking changes
+
+- Remove the `BuildVersion` property from `$PSVersionTable`.
+ This property was strongly tied to the Windows build version.
+ Instead, we recommend that you use `GitCommitId` to retrieve the exact build version of PowerShell Core.
+ (#3877) (Thanks to @iSazonov!)
+- Change positional parameter for `powershell.exe` from `-Command` to `-File`.
+ This fixes the usage of `#!` (aka as a shebang) in PowerShell scripts that are being executed from non-PowerShell shells on non-Windows platforms.
+ This also means that you can now do things like `powershell foo.ps1` or `powershell fooScript` without specifying `-File`.
+ However, this change now requires that you explicitly specify `-c` or `-Command` when trying to do things like `powershell.exe Get-Command`.
+ (#4019)
+- Remove `ClrVersion` property from `$PSVersionTable`.
+ (This property is largely irrelevant for .NET Core,
+ and was only preserved in .NET Core for specific legacy purposes that are inapplicable to PowerShell.)
+ (#4027)
+
+### Engine updates and fixes
+
+- Add support to probe and load assemblies from GAC on Windows platform.
+ This means that you can now load Windows PowerShell modules with assembly dependencies which reside in the GAC.
+ If you're interested in running your traditional Windows PowerShell scripts and cmdlets using the power of .NET Standard 2.0,
+ try adding your Windows PowerShell module directories to your PowerShell Core `$PSModulePath`.
+ (E.g. `$env:PSModulePath += ';C:\Program Files\WindowsPowerShell\Modules;C:\WINDOWS\system32\WindowsPowerShell\v1.0\Modules'`)
+ Even if the module isn't owned by the PowerShell Team, please tell us what works and what doesn't by leaving a comment in [issue #4062][issue-4062]! (#3981)
+- Enhance type inference in tab completion based on runtime variable values. (#2744) (Thanks to @powercode!)
+ This enables tab completion in situations like:
+ ```powershell
+ $p = Get-Process
+ $p | Foreach-Object Prio<tab>
+ ```
+- Add `GitCommitId` to PowerShell Core banner.
+ Now you don't have to run `$PSVersionTable` as soon as you start PowerShell to get the version! (#3916) (Thanks to @iSazonov!)
+- Fix a bug in tab completion to make `native.exe --<tab>` call into native completer. (#3633) (Thanks to @powercode!)
+- Fix PowerShell Core to allow use of long paths that are more than 260 characters. (#3960)
+- Fix ConsoleHost to honour `NoEcho` on Unix platforms. (#3801)
+- Fix transcription to not stop when a Runspace is closed during the transcription. (#3896)
+
+[issue-4062]: https://github.com/PowerShell/PowerShell/issues/4062
+
+### General cmdlet updates and fixes
+
+- Enable `Send-MailMessage` in PowerShell Core. (#3869)
+- Fix `Get-Help` to support case insensitive pattern matching on Unix platforms. (#3852)
+- Fix tab completion on `Get-Help` for `about_*` topics. (#4014)
+- Fix PSReadline to work in Windows Server Core container image. (#3937)
+- Fix `Import-Module` to honour `ScriptsToProcess` when `-Version` is specified. (#3897)
+- Strip authorization header on redirects with web cmdlets. (#3885)
+- `Start-Sleep`: add the alias `ms` to the parameter `-Milliseconds`. (#4039) (Thanks to @Tadas!)
+
+### Developer experience
+
+- Make hosting PowerShell Core in your own .NET applications much easier by refactoring PowerShell Core to use the default CoreCLR loader. (#3903)
+- Update `Add-Type` to support `CSharpVersion7`. (#3933) (Thanks to @iSazonov)
+
+## v6.0.0-beta.2 - 2017-06-01
+
+### Support backgrounding of pipelines with ampersand (`&`) (#3360)
+
+- Putting `&` at the end of a pipeline will cause the pipeline to be run as a PowerShell job.
+- When a pipeline is backgrounded, a job object is returned.
+- Once the pipeline is running as a job, all of the standard `*-Job` cmdlets can be used to manage the job.
+- Variables (ignoring process-specific variables) used in the pipeline are automatically copied to the job so `Copy-Item $foo $bar &` just works.
+- The job is also run in the current directory instead of the user's home directory.
+- For more information about PowerShell jobs, see [about_Jobs](https://msdn.microsoft.com/en-us/powershell/reference/6/about/about_jobs).
+
+### Engine updates and fixes
+
+- Crossgen more of the .NET Core assemblies to improve PowerShell Core startup time. (#3787)
+- Enable comparison between a `SemanticVersion` instance and a `Version` instance that is constructed only with `Major` and `Minor` version values.
+  This will fix some cases where PowerShell Core was failing to import older Windows PowerShell modules. (#3793) (Thanks to @mklement0!)
+
+### General cmdlet updates and fixes
+
+- Support Link header pagination in web cmdlets (#3828)
+    - For `Invoke-WebRequest`, when the response includes a Link header we create a RelationLink property as a Dictionary representing the URLs and `rel` attributes and ensure the URLs are absolute to make it easier for the developer to use.
+    - For `Invoke-RestMethod`, when the response includes a Link header we expose a `-FollowRelLink` switch to automatically follow `next` `rel` links until they no longer exist or once we hit the optional `-MaximumFollowRelLink` parameter value.
+- Update `Get-ChildItem` to be more in line with the way that the *nix `ls -R` and the Windows `DIR /S` native commands handle symbolic links to directories during a recursive search.
+  Now, `Get-ChildItem` returns the symbolic links it encountered during the search, but it won't search the directories those links target. (#3780)
+- Fix `Get-ChildItem` to continue enumeration after throwing an error in the middle of a set of items.
+  This fixes some issues where inaccessible directories or files would halt execution of `Get-ChildItem`. (#3806)
+- Fix `ConvertFrom-Json` to deserialize an array of strings from the pipeline that together construct a complete JSON string.
+  This fixes some cases where newlines would break JSON parsing. (#3823)
+- Enable `Get-TimeZone` for macOS/Linux. (#3735)
+- Change to not expose unsupported aliases and cmdlets on macOS/Linux. (#3595) (Thanks to @iSazonov!)
+- Fix `Invoke-Item` to accept a file path that includes spaces on macOS/Linux. (#3850)
+- Fix an issue where PSReadline was not rendering multi-line prompts correctly on macOS/Linux. (#3867)
+- Fix an issue where PSReadline was not working on Nano Server. (#3815)
+
+## v6.0.0-beta.1 - 2017-05-08
+
+### Move to .NET Core 2.0 (.NET Standard 2.0 support)
+
+PowerShell Core has moved to using .NET Core 2.0 so that we can leverage all the benefits of .NET Standard 2.0. (#3556)
+To learn more about .NET Standard 2.0, there's some great starter content [on Youtube](https://www.youtube.com/playlist?list=PLRAdsfhKI4OWx321A_pr-7HhRNk7wOLLY),
+on [the .NET blog](https://blogs.msdn.microsoft.com/dotnet/2016/09/26/introducing-net-standard/),
+and [on GitHub](https://github.com/dotnet/standard/blob/master/docs/faq.md).
+We'll also have more content soon in our [repository documentation](https://github.com/PowerShell/PowerShell/tree/master/docs) (which will eventually make its way to [official documentation](https://github.com/powershell/powershell-docs)).
+In a nutshell, .NET Standard 2.0 allows us to have universal, portable modules between Windows PowerShell (which uses the full .NET Framework) and PowerShell Core (which uses .NET Core).
+Many modules and cmdlets that didn't work in the past may now work on .NET Core, so import your favorite modules and tell us what does and doesn't work in our GitHub Issues!
+
+### Telemetry
+
+- For the first beta of PowerShell Core 6.0, telemetry has been to the console host to report two values (#3620):
+    - the OS platform (`$PSVersionTable.OSDescription`)
+    - the exact version of PowerShell (`$PSVersionTable.GitCommitId`)
+
+If you want to opt-out of this telemetry, simply delete `$PSHome\DELETE_ME_TO_DISABLE_CONSOLEHOST_TELEMETRY`.
+Even before the first run of Powershell, deleting this file will bypass all telemetry.
+In the future, we plan on also enabling a configuration value for whatever is approved as part of [RFC0015](https://github.com/PowerShell/PowerShell-RFC/blob/master/1-Draft/RFC0015-PowerShell-StartupConfig.md).
+We also plan on exposing this telemetry data (as well as whatever insights we leverage from the telemetry) in [our community dashboard](https://blogs.msdn.microsoft.com/powershell/2017/01/31/powershell-open-source-community-dashboard/).
+
+If you have any questions or comments about our telemetry, please file an issue.
+
+### Engine updates and fixes
+
+- Add support for native command globbing on Unix platforms. (#3643)
+    - This means you can now use wildcards with native binaries/commands (e.g. `ls *.txt`).
+- Fix PowerShell Core to find help content from `$PSHome` instead of the Windows PowerShell base directory. (#3528)
+    - This should fix issues where about_* topics couldn't be found on Unix platforms.
+- Add the `OS` entry to `$PSVersionTable`. (#3654)
+- Arrange the display of `$PSVersionTable` entries in the following way: (#3562) (Thanks to @iSazonov!)
+    - `PSVersion`
+    - `PSEdition`
+    - alphabetical order for rest entries based on the keys
+- Make PowerShell Core more resilient when being used with an account that doesn't have some key environment variables. (#3437)
+- Update PowerShell Core to accept the `-i` switch to indicate an interactive shell. (#3558)
+    - This will help when using PowerShell as a default shell on Unix platforms.
+- Relax the PowerShell `SemanticVersion` constructors to not require 'minor' and 'patch' portions of a semantic version name. (#3696)
+- Improve performance to security checks when group policies are in effect for ExecutionPolicy. (#2588) (Thanks to @powercode)
+- Fix code in PowerShell to use `IntPtr(-1)` for `INVALID_HANDLE_VALUE` instead of `IntPtr.Zero`. (#3544) (Thanks to @0xfeeddeadbeef)
+
+### General cmdlet updates and fixes
+
+- Change the default encoding and OEM encoding used in PowerShell Core to be compatible with Windows PowerShell. (#3467) (Thanks to @iSazonov!)
+- Fix a bug in `Import-Module` to avoid incorrect cyclic dependency detection. (#3594)
+- Fix `New-ModuleManifest` to correctly check if a URI string is well formed. (#3631)
+
+### Filesystem-specific updates and fixes
+
+- Use operating system calls to determine whether two paths refer to the same file in file system operations. (#3441)
+    - This will fix issues where case-sensitive file paths were being treated as case-insensitive on Unix platforms.
+- Fix `New-Item` to allow creating symbolic links to file/directory targets and even a non-existent target. (#3509)
+- Change the behavior of `Remove-Item` on a symbolic link to only removing the link itself. (#3637)
+- Use better error message when `New-Item` fails to create a symbolic link because the specified link path points to an existing item. (#3703)
+- Change `Get-ChildItem` to list the content of a link to a directory on Unix platforms. (#3697)
+- Fix `Rename-Item` to allow Unix globbing patterns in paths. (#3661)
+
+### Interactive fixes
+
+- Add Hashtable tab completion for `-Property` of `Select-Object`. (#3625) (Thanks to @powercode)
+- Fix tab completion with `@{<tab>` to avoid crash in PSReadline. (#3626) (Thanks to @powercode)
+- Use `<id> - <name>` as `ToolTip` and `ListItemText` when tab completing process ID. (#3664) (Thanks to @powercode)
+
+### Remoting fixes
+
+- Update PowerShell SSH remoting to handle multi-line error messages from OpenSSH client. (#3612)
+- Add `-Port` parameter to `New-PSSession` to create PowerShell SSH remote sessions on non-standard (non-22) ports. (#3499) (Thanks to @Lee303)
+
+### API Updates
+
+- Add the public property `ValidRootDrives` to `ValidateDriveAttribute` to make it easy to discover the attribute state via `ParameterMetadata` or `PSVariable` objects. (#3510) (Thanks to @indented-automation!)
+- Improve error messages for `ValidateCountAttribute`. (#3656) (Thanks to @iSazonov)
+- Update `ValidatePatternAttribute`, `ValidateSetAttribute` and `ValidateScriptAttribute` to allow users to more easily specify customized error messages. (#2728) (Thanks to @powercode)
+
+## v6.0.0-alpha.18 - 2017-04-05
+
+### Progress Bar
+
+We made a number of fixes to the progress bar rendering and the `ProgressRecord` object that improved cmdlet performance and fixed some rendering bugs on non-Windows platforms.
+
+- Fix a bug that caused the progress bar to drift on Unix platforms. (#3289)
+- Improve the performance of writing progress records. (#2822) (Thanks to @iSazonov!)
+- Fix the progress bar rendering on Unix platforms. (#3362) (#3453)
+- Reuse `ProgressRecord` in Web Cmdlets to reduce the GC overhead. (#3411) (Thanks to @iSazonov!)
+
+### Cmdlet updates
+
+- Use `ShellExecute` with `Start-Process`, `Invoke-Item`, and `Get-Help -Online` so that those cmdlets use standard shell associations to open a file/URI.
+  This means you `Get-Help -Online` will always use your default browser, and `Start-Process`/`Invoke-Item` can open any file or path with a handler.
+  (Note: there are still some problems with STA threads.) (#3281, partially fixes #2969)
+- Add `-Extension` and `-LeafBase` switches to `Split-Path` so that you can split paths between the filename extension and the rest of the filename. (#2721) (Thanks to @powercode!)
+- Implement `Format-Hex` in C# along with some behavioral changes to multiple parameters and the pipeline. (#3320) (Thanks to @MiaRomero!)
+- Add `-NoProxy` to web cmdlets so that they ignore the system-wide proxy setting. (#3447) (Thanks to @TheFlyingCorpse!)
+- Fix `Out-Default -Transcript` to properly revert out of the `TranscribeOnly` state, so that further output can be displayed on Console. (#3436) (Thanks to @PetSerAl!)
+- Fix `Get-Help` to not return multiple instances of the same help file. (#3410)
+
+### Interactive fixes
+
+- Enable argument auto-completion for `-ExcludeProperty` and `-ExpandProperty` of `Select-Object`. (#3443) (Thanks to @iSazonov!)
+- Fix a tab completion bug that prevented `Import-Module -n<tab>` from working. (#1345)
+
+### Cross-platform fixes
+
+- Ignore the `-ExecutionPolicy` switch when running PowerShell on non-Windows platforms because script signing is not currently supported. (#3481)
+- Standardize the casing of the `PSModulePath` environment variable. (#3255)
+
+### JEA fixes
+
+- Fix the JEA transcription to include the endpoint configuration name in the transcript header. (#2890)
+- Fix `Get-Help` in a JEA session. (#2988)
+
 ## v6.0.0-alpha.17 - 2017-03-08
 
 - Update PSRP client libraries for Linux and Mac.
@@ -122,7 +887,7 @@
 
 - Add '-Title' to 'Get-Credential' and unify the prompt experience
 - Update dependency list for PowerShell Core on Linux and OS X
-- Fix 'powershell -Command -' to not hang and to not ignore the last command
+- Fix 'powershell -Command -' to not stop responding and to not ignore the last command
 - Fix binary operator tab completion
 - Enable 'ConvertTo-Html' in PowerShell Core
 - Remove most Maximum* capacity variables
