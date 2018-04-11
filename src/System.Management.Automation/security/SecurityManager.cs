@@ -1,6 +1,5 @@
-/********************************************************************++
-Copyright (c) Microsoft Corporation. All rights reserved.
---********************************************************************/
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 
 using Dbg = System.Management.Automation;
 using System;
@@ -48,7 +47,7 @@ namespace Microsoft.PowerShell
     /// Unrestricted - No files must be signed.  If a file originates from the
     ///    internet, Monad provides a warning prompt to alert the user.  To
     ///    suppress this warning message, right-click on the file in File Explorer,
-    ///    select "Properties," and then "Unblock."
+    ///    select "Properties," and then "Unblock."  Requires Shell.
     /// Bypass - No files must be signed, and internet origin is not verified
     ///
     /// </summary>
@@ -136,10 +135,6 @@ namespace Microsoft.PowerShell
             if (!IsSupportedExtension(fi.Extension))
                 return true;
 
-            // Product binaries are always trusted
-            if (SecuritySupport.IsProductBinary(path))
-                return true;
-
             // Get the execution policy
             _executionPolicy = SecuritySupport.GetExecutionPolicy(_shellId);
 
@@ -189,6 +184,11 @@ namespace Microsoft.PowerShell
 #endif
             if (_executionPolicy == ExecutionPolicy.Unrestricted)
             {
+                // Product binaries are always trusted
+                // This avoids signature and security zone checks
+                if (SecuritySupport.IsProductBinary(path))
+                    return true;
+
                 // We need to give the "Remote File" warning
                 // if the file originated from the internet
                 if (!IsLocalFile(fi.FullName))
@@ -595,7 +595,6 @@ namespace Microsoft.PowerShell
                     allowRun = true;
                     break;
 
-
                 case CommandTypes.Function:
                 case CommandTypes.Filter:
                 case CommandTypes.Workflow:
@@ -702,7 +701,6 @@ namespace Microsoft.PowerShell
 
                     break;
 
-
                 //
                 // if the publisher is not trusted, we prompt and
                 // ask the user if s/he wants to allow it to run
@@ -758,7 +756,6 @@ namespace Microsoft.PowerShell
             string alwaysRun = Authenticode.Choice_AlwaysRun;
             string alwaysRunHelp = Authenticode.Choice_AlwaysRun_Help;
 
-
             choices.Add(new ChoiceDescription(neverRun, neverRunHelp));
             choices.Add(new ChoiceDescription(doNotRun, doNotRunHelp));
             choices.Add(new ChoiceDescription(runOnce, runOnceHelp));
@@ -778,7 +775,6 @@ namespace Microsoft.PowerShell
             string suspend = Authenticode.Choice_Suspend;
             string suspendHelp = Authenticode.Choice_Suspend_Help;
 
-
             choices.Add(new ChoiceDescription(doNotRun, doNotRunHelp));
             choices.Add(new ChoiceDescription(runOnce, runOnceHelp));
             choices.Add(new ChoiceDescription(suspend, suspendHelp));
@@ -787,5 +783,4 @@ namespace Microsoft.PowerShell
         }
     }
 }
-
 

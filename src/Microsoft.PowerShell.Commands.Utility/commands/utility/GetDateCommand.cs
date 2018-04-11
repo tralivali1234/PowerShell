@@ -1,6 +1,5 @@
-/********************************************************************++
-Copyright (c) Microsoft Corporation. All rights reserved.
---********************************************************************/
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 
 using System;
 using System.Globalization;
@@ -42,7 +41,6 @@ namespace Microsoft.PowerShell.Commands
         private DateTime _date;
         private bool _dateSpecified;
 
-
         /// <summary>
         /// Allows the user to override the year
         /// </summary>
@@ -62,7 +60,6 @@ namespace Microsoft.PowerShell.Commands
         }
         private int _year;
         private bool _yearSpecified;
-
 
         /// <summary>
         /// Allows the user to override the month
@@ -84,7 +81,6 @@ namespace Microsoft.PowerShell.Commands
         private int _month;
         private bool _monthSpecified;
 
-
         /// <summary>
         /// Allows the user to override the day
         /// </summary>
@@ -104,7 +100,6 @@ namespace Microsoft.PowerShell.Commands
         }
         private int _day;
         private bool _daySpecified;
-
 
         /// <summary>
         /// Allows the user to override the hour
@@ -126,7 +121,6 @@ namespace Microsoft.PowerShell.Commands
         private int _hour;
         private bool _hourSpecified;
 
-
         /// <summary>
         /// Allows the user to override the minute
         /// </summary>
@@ -146,7 +140,6 @@ namespace Microsoft.PowerShell.Commands
         }
         private int _minute;
         private bool _minuteSpecified;
-
 
         /// <summary>
         /// Allows the user to override the second
@@ -194,14 +187,12 @@ namespace Microsoft.PowerShell.Commands
         [Parameter]
         public DisplayHintType DisplayHint { get; set; } = DisplayHintType.DateTime;
 
-
         /// <summary>
         /// Unix format string
         /// </summary>
         [Parameter(ParameterSetName = "UFormat")]
         [ValidateNotNullOrEmpty]
         public string UFormat { get; set; }
-
 
         /// <summary>
         /// Unix format string
@@ -323,13 +314,13 @@ namespace Microsoft.PowerShell.Commands
             }
         } // EndProcessing
 
+        private static readonly DateTime epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
         /// <summary>
         /// This is more an implementation of the UNIX strftime
         /// </summary>
         private string UFormatDateString(DateTime dateTime)
         {
-            DateTime epoch = DateTime.Parse("January 1, 1970", System.Globalization.CultureInfo.InvariantCulture);
             int offset = 0;
             StringBuilder sb = new StringBuilder();
 
@@ -370,9 +361,7 @@ namespace Microsoft.PowerShell.Commands
                             break;
 
                         case 'c':
-                            sb.Append("{0:ddd} {0:MMM} ");
-                            sb.Append(StringUtil.Format("{0,2} ", dateTime.Day));
-                            sb.Append("{0:HH}:{0:mm}:{0:ss} {0:yyyy}");
+                            sb.Append("{0:ddd} {0:dd} {0:MMM} {0:yyyy} {0:HH}:{0:mm}:{0:ss}");
                             break;
 
                         case 'D':
@@ -396,15 +385,15 @@ namespace Microsoft.PowerShell.Commands
                             break;
 
                         case 'j':
-                            sb.Append(dateTime.DayOfYear);
+                            sb.Append(StringUtil.Format("{0:000}", dateTime.DayOfYear));
                             break;
 
                         case 'k':
-                            sb.Append("{0:HH}");
+                            sb.Append(StringUtil.Format("{0,2:0}", dateTime.Hour));
                             break;
 
                         case 'l':
-                            sb.Append("{0:hh}");
+                            sb.Append("{0,2:%h}");
                             break;
 
                         case 'M':
@@ -436,7 +425,7 @@ namespace Microsoft.PowerShell.Commands
                             break;
 
                         case 's':
-                            sb.Append(dateTime.Subtract(epoch).TotalSeconds);
+                            sb.Append(StringUtil.Format("{0:0}", dateTime.ToUniversalTime().Subtract(epoch).TotalSeconds));
                             break;
 
                         case 'T':
@@ -460,7 +449,34 @@ namespace Microsoft.PowerShell.Commands
                             break;
 
                         case 'V':
-                            sb.Append((dateTime.DayOfYear / 7) + 1);
+                            // .Net Core doesn't implement ISO 8601.
+                            // So we use workaround from https://blogs.msdn.microsoft.com/shawnste/2006/01/24/iso-8601-week-of-year-format-in-microsoft-net/
+                            // with corrections from comments
+
+                            // Culture doesn't matter since we specify start day of week
+                            var calender = CultureInfo.InvariantCulture.Calendar;
+                            var day = calender.GetDayOfWeek(dateTime);
+                            var normalizedDatetime = dateTime;
+
+                            switch (day)
+                            {
+                                case DayOfWeek.Monday:
+                                case DayOfWeek.Tuesday:
+                                case DayOfWeek.Wednesday:
+                                    normalizedDatetime = dateTime.AddDays(3);
+                                    break;
+
+                                case DayOfWeek.Friday:
+                                case DayOfWeek.Saturday:
+                                case DayOfWeek.Sunday:
+                                    normalizedDatetime = dateTime.AddDays(-3);
+                                    break;
+                            }
+
+                            // FirstFourDayWeek and DayOfWeek.Monday is from ISO 8601
+                            sb.Append(StringUtil.Format("{0:00}",calender.GetWeekOfYear(normalizedDatetime,
+                                                                                        CalendarWeekRule.FirstFourDayWeek,
+                                                                                        DayOfWeek.Monday)));
                             break;
 
                         case 'G':
@@ -538,5 +554,4 @@ namespace Microsoft.PowerShell.Commands
 
     #endregion
 } // namespace Microsoft.PowerShell.Commands
-
 

@@ -1,6 +1,5 @@
-/********************************************************************++
-Copyright (c) Microsoft Corporation. All rights reserved.
---********************************************************************/
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 
 using System;
 using System.Collections.Specialized;
@@ -119,7 +118,6 @@ namespace Microsoft.PowerShell.Commands.Internal.Format
             }
         }
 
-
         private bool ProcessObject(PSObject so)
         {
             object o = _formatObjectDeserializer.Deserialize(so);
@@ -214,7 +212,6 @@ namespace Microsoft.PowerShell.Commands.Internal.Format
             }
         }
 
-
         /// <summary>
         /// enum describing the state for the output finite state machine
         /// </summary>
@@ -241,13 +238,11 @@ namespace Microsoft.PowerShell.Commands.Internal.Format
         /// </summary>
         private FormattingState _currentFormattingState = FormattingState.Reset;
 
-
         /// <summary>
         /// instance of a command wrapper to execute the
         /// default formatter when needed
         /// </summary>
         private CommandWrapper _command;
-
 
         /// <summary>
         /// enumeration to drive the preprocessing stage
@@ -471,7 +466,6 @@ namespace Microsoft.PowerShell.Commands.Internal.Format
             //Console.WriteLine("ProcessGroupStart");
             GroupOutputContext goc = (GroupOutputContext)c;
 
-
             if (goc.Data.groupingEntry != null)
             {
                 _lo.WriteLine("");
@@ -613,7 +607,6 @@ namespace Microsoft.PowerShell.Commands.Internal.Format
             }
         }
 
-
         /// <summary>
         /// retrieve the active FormatOutputContext on the stack
         /// by walking up to the top of the stack
@@ -633,7 +626,6 @@ namespace Microsoft.PowerShell.Commands.Internal.Format
                 return null;
             }
         }
-
 
         /// <summary>
         /// context manager instance to guide the message traversal
@@ -752,6 +744,42 @@ namespace Microsoft.PowerShell.Commands.Internal.Format
         }
 
         /// <summary>
+        /// In cases like implicit remoting, there is no console so reading the console width results in an exception. 
+        /// Instead of handling exception every time we cache this value to increase performance. 
+        /// </summary>
+        static private bool _noConsole = false;
+
+        /// <summary>
+        /// Tables and Wides need to use spaces for padding to maintain table look even if console window is resized.
+        /// For all other output, we use int.MaxValue if the user didn't explicitly specify a width.
+        /// If we detect that int.MaxValue is used, first we try to get the current console window width.
+        /// However, if we can't read that (for example, implicit remoting has no console window), we default
+        /// to something reasonable: 120 columns.
+        /// </summary>
+        static private int GetConsoleWindowWidth(int columnNumber)
+        {
+            const int defaultConsoleWidth = 120;
+
+            if (columnNumber == int.MaxValue)
+            {
+                if (_noConsole)
+                {
+                    return defaultConsoleWidth;
+                }
+                try
+                {
+                    return Console.WindowWidth;
+                }
+                catch
+                {
+                    _noConsole = true;
+                    return defaultConsoleWidth;
+                }
+            }
+            return columnNumber;
+        }
+
+        /// <summary>
         /// base class for all the formatting hints
         /// </summary>
         private abstract class FormattingHint
@@ -791,7 +819,6 @@ namespace Microsoft.PowerShell.Commands.Internal.Format
         }
 
         private FormatObjectDeserializer _formatObjectDeserializer;
-
 
         /// <summary>
         /// context for the outer scope of the format sequence
@@ -862,7 +889,6 @@ namespace Microsoft.PowerShell.Commands.Internal.Format
             /// </summary>
             internal GroupStartData Data { get; } = null;
 
-
             protected OutCommandInner InnerCommand { get; }
         }
 
@@ -920,23 +946,7 @@ namespace Microsoft.PowerShell.Commands.Internal.Format
                     columnWidthsHint = tableHint.columnWidths;
                 }
 
-                int columnsOnTheScreen = this.InnerCommand._lo.ColumnNumber;
-                // Tables need to use spaces for padding to maintain table look even if console window is resized.
-                // For all other output, we use int.MaxValue if the user didn't explicitly specify a width.
-                // If we detect that int.MaxValue is used, first we try to get the current console window width.
-                // However, if we can't read that (for example, implicit remoting has no console window), we default
-                // to something reasonable: 120 columns.
-                if (columnsOnTheScreen == int.MaxValue)
-                {
-                    try
-                    {
-                        columnsOnTheScreen = Console.WindowWidth;
-                    }
-                    catch
-                    {
-                        columnsOnTheScreen = 120;
-                    }
-                }
+                int columnsOnTheScreen = GetConsoleWindowWidth(this.InnerCommand._lo.ColumnNumber);
 
                 int columns = this.CurrentTableHeaderInfo.tableColumnInfoList.Count;
                 if (columns == 0)
@@ -1082,7 +1092,6 @@ namespace Microsoft.PowerShell.Commands.Internal.Format
                 return retVal;
             }
 
-
             /// <summary>
             /// write the headers
             /// </summary>
@@ -1143,10 +1152,12 @@ namespace Microsoft.PowerShell.Commands.Internal.Format
                 // get the header info and the view hint
                 WideFormattingHint hint = this.InnerCommand.RetrieveFormattingHint() as WideFormattingHint;
 
+                int columnsOnTheScreen = GetConsoleWindowWidth(this.InnerCommand._lo.ColumnNumber);
+
                 // give a preference to the hint, if there
                 if (hint != null && hint.maxWidth > 0)
                 {
-                    itemsPerRow = TableWriter.ComputeWideViewBestItemsPerRowFit(hint.maxWidth, this.InnerCommand._lo.ColumnNumber);
+                    itemsPerRow = TableWriter.ComputeWideViewBestItemsPerRowFit(hint.maxWidth, columnsOnTheScreen);
                 }
                 else if (this.CurrentWideHeaderInfo.columns > 0)
                 {
@@ -1166,7 +1177,7 @@ namespace Microsoft.PowerShell.Commands.Internal.Format
                     alignment[k] = TextAlignment.Left;
                 }
 
-                this.Writer.Initialize(0, this.InnerCommand._lo.ColumnNumber, columnWidths, alignment, false);
+                this.Writer.Initialize(0, columnsOnTheScreen, columnWidths, alignment, false);
             }
 
             /// <summary>
@@ -1227,7 +1238,6 @@ namespace Microsoft.PowerShell.Commands.Internal.Format
                 this.Writer.GenerateRow(values, this.InnerCommand._lo, false, null, InnerCommand._lo.DisplayCells);
                 _buffer.Reset();
             }
-
 
             /// <summary>
             /// helper class to accumulate the display values so that when the end
@@ -1319,7 +1329,6 @@ namespace Microsoft.PowerShell.Commands.Internal.Format
                 _writer.Initialize(this.InnerCommand._lo,
                                     this.InnerCommand._lo.ColumnNumber);
             }
-
 
             /// <summary>
             /// write a row into the list

@@ -1,5 +1,299 @@
 # Changelog
 
+## v6.1.0-preview.1 - 2018-03-23
+
+### Breaking Changes
+
+- Throw terminating error in `New-TemporaryFile` and make it not rely on the presence of the `TEMP` environment variable (#6182) (Thanks @bergmeister!)
+- Remove the unnecessary `AddTypeCommandBase` class from `Add-Type` (#5407) (Thanks @iSazonov!)
+- Remove unsupported members from the enum `Language` in `Add-Type` (#5829) (Thanks @iSazonov!)
+- Fix range operator to work better with character ranges (#5732) (Thanks @iSazonov!)
+
+### Engine Updates and Fixes
+
+- Fix `ValidateSet` with generator in a module (#5702)
+- Update `SAL` annotation and fix warnings (#5617)
+- Add `ForEach` and `Where` methods to `PSCustomobject` (#5756) (Thanks @iSazonov!)
+- Add `Count` and `Length` properties to `PSCustomobject` (#5745) (Thanks @iSazonov!)
+- Make minor fixes in compiler to properly handle void type expression (#5764)
+- Logging: Fix the escaped characters when generating `.resx` file from PowerShell `ETW` manifest. (#5892)
+- Remove `PSv2` only code from `Types_Ps1Xml.cs` and `HostUtilities.cs` (#5907) (Thanks @iSazonov!)
+- Enable passing arrays to `pwsh -EncodedArguments` on debug builds. (#5836)
+- Logging: Handle path that contains spaces in `RegisterManifest.ps1` (#5859) (Thanks @tandasat!)
+- Add `-settingsfile` to `pwsh` to support loading a custom powershell config file. (#5920)
+- Return better error for `pwsh -WindowStyle` on unsupported platforms. (#5975) (Thanks @thezim!)
+- Enable conversions from `PSMethod` to `Delegate` (#5287) (Thanks @powercode!)
+- Minor code clean-up changes in tab completion code (#5737) (Thanks @kwkam!)
+- Add lambda support to `-replace` operator (#6029) (Thanks @IISResetMe!)
+- Fix retrieval of environment variables on Windows in cases where variable names differ only by case. (#6320)
+- Fix the `NullRefException` when using `-PipelineVariable` with `DynamicParam` block (#6433)
+- Add `NullReference` checks to two code paths related to `PseudoParameterBinder` (#5738) (Thanks @kwkam!)
+- Fix `PropertyOnlyAdapter` to allow calling base methods (#6394)
+- Improve table view for `Certs` and `Signatures` by adding `EnhancedKeyUsageList` and `StatusMessage` (#6123)
+- Fix the filtering of analytic events on Unix platforms. (#6086)
+- Update copyright and license headers (#6134)
+- Set pipeline thread stack size to 10MB (#6224) (Thanks @iSazonov!)
+
+### General Cmdlet Updates and Fixes
+
+- Fix the `NullRefException` in `Enter-PSHostProcess` (#5995)
+- Merge and Sort `BasicHtmlWebResponseObject` and `ContentHelper` in Web Cmdlets (#5720) (Thanks @markekraus!)
+- Encoding for `New-ModuleManifest` on all platforms should be `UTF-8 NoBOM` (#5923)
+- Make `Set-Location` use path with wildcard characters as literal if it exists (#5839)
+- Combine Web Cmdlets partial class files (#5612) (Thanks @markekraus!)
+- Change `Microsoft.PowerShell.Commands.SetDateCommand.SystemTime` to `struct`. (#6006) (Thanks @stknohg!)
+- Add Simplified `multipart/form-data` support to Web Cmdlets through `-Form` parameter (#5972) (Thanks @markekraus!)
+- Make a relative redirect URI absolute when `Authorization` header present (#6325) (Thanks @markekraus!)
+- Make relation-link handling in Web Cmdlets case-insensitive (#6338)
+- Make `Get-ChildItem -LiteralPath` accept `Include` or `Exclude` filter (#5462)
+- Stop `ConvertTo-Json` when `Ctrl+c` is hit (#6392)
+- Make `Resolve-Path -Relative` return useful path when `$PWD` and `-Path` is on different drive (#5740) (Thanks @kwkam!)
+- Correct the `%c`, `%l`, `%k`, `%s` and `%j` formats in `Get-Date -UFormat` (#4805) (Thanks @iSazonov!)
+- Add standard deviation implementation on `Measure-Object` (#6238) (Thanks @CloudyDino!)
+- Make `Get-ChildItem <PATH>/* -file` include `<Path>` as search directory (#5431)
+- Enable setting `PSSession` Name when using `SSHTransport` and add `Transport` property (#5954)
+- Add `Path` alias to `-FilePath` parameters and others for several commands (#5817) (Thanks @KevinMarquette!)
+- Add the parameter `-Password` to `Get-PfxCertificate` (#6113) (Thanks @maybe-hello-world!)
+- Don't add trailing spaces to last column when using `Format-Table` (#5568)
+- Fix table alignment and padding. (#6230)
+- Add `-SkipHeaderValidation` Support to `ContentType` on Web Cmdlets (#6018) (Thanks @markekraus!)
+- Add common aliases for all `write-*` commands default message parameter (#5816) (Thanks @KevinMarquette!)
+- Make `UTF-8` the default encoding for `application/json` (#6109) (Thanks @markekraus!)
+- Enable `$env:PAGER` to work correctly if arguments are used (#6144)
+
+### Test
+
+- Convert Web Cmdlets test to `one-true-brace-style` formatting (#5716) (Thanks @markekraus!)
+- Add a test for `IValidateSetValuesGenerator` in a module (#5830) (Thanks @iSazonov!)
+- Fix function to test for docker OS due to change to use `linuxkit` for macOS (#5843)
+- Replace `HttpListener` tests with `WebListener` (#5806, #5840, #5872) (Thanks @markekraus!)
+- Stop `HttpListener` from running in Web Cmdlets tests (#5921) (Thanks @markekraus!)
+- Fix `PSVersion` in `PSSessionConfiguration` tests (#5554) (Thanks @iSazonov!)
+- Update test framework to support Pester v4 (#6064)
+- Update tests to use Pester v4 Syntax. (#6294, #6257, #6306, #6304, #6298)
+- Add negative tests for `Copy-Item` over remote sessions (#6231)
+- Markdown test: Use strict in JavaScript (#6328)
+- Add tests for `Get-Process` about the `-Module` and `-FileVersion` parameters (#6272)
+- Add test for the `OsLocalDateTime` property of `Get-ComputerInfo`. (#6253)
+- Change `Get-FileHash` tests to use raw bytes (#6430)
+- Remove `runas.exe` from tests as we have tags to control this behavior (#6432)
+- Refactor the `Get-Content` tests to use `-TestCases`. (#6082)
+- Use `RequireAdminOnWindows` tag in `Set-Date` tests (#6034) (Thanks @stknohg!)
+- Remove `-TimeOutSec` from non timeout related tests (#6055) (Thanks @markekraus!)
+- Add verbosity and more accurate timeout implementation for `Start-WebListener` (#6013) (Thanks @markekraus!)
+- Skip tests that use `ExecutionPolicy` cmdlets on Unix (#6021)
+- Change Web Cmdlet tests to use `127.0.0.1` instead of `Localhost` (#6069) (Thanks @markekraus!)
+- Fix `Start-PSPester` to include or exclude `RequireSudoOnUnix` tag smartly on Unix (#6241)
+- Fix the terse output on Windows for test runs without admin privilege (#6252)
+- Add `RequireSudoOnUnix` tag for `Get-Help` tests. (#6223)
+- Add tests for `*-Item` Cmdlets in function provider (#6172)
+- Support running tests in root privilege on Linux. (#6145)
+
+### Build and Packaging Improvements
+
+- Add option to add explorer shell context menu in Windows installer (#5774) (Thanks @bergmeister!)
+- Make the explorer shell context menu registry entries platform specific to allow side by side of `x86` and `x64`. (#5824) (Thanks @bergmeister!)
+- Fix start menu folder clash of shortcut when `x86` and `x64` are both installed by appending ` (x86)` for `x86` installation. (#5826) (Thanks @bergmeister!)
+- Reduce image file sizes using lossless compression with `imgbot` (#5808) (Thanks @bergmeister!)
+- Windows installer: Allow `Launch PowerShell` checkbox to be toggled using the space bar. (#5792) (Thanks @bergmeister!)
+- Fix release packaging build (#6459)
+- Fail `AppVeyor` Build if `MSI` does not build (#5755) (Thanks @bergmeister!)
+- Cleanup temporarily created `WiX` files after compilation to be able to have a clean re-build (#5757) (Thanks @bergmeister!)
+- Fix `install-powershell.ps1` for running during window setup (#5727)
+- Start using `Travis-CI` cache (#6003)
+- Fix build, packaging and installation scripts for `SLES` (#5918) (Thanks @tomconte!)
+- Update recommended `WiX` toolset link to be generic to `WiX 3.x` but mention that latest version of 3.11 has to be taken (#5926) (Thanks @bergmeister!)
+- Add service point manager call in `Install-PowerShell.ps1` to force `TLS1.2`. (#6310) (Thanks @DarqueWarrior!)
+- Add `-Restore` when build `win-arm` and `win-arm64` (#6353)
+- Make sure package verification failure fails the `AppVeyor` build (#6337)
+- Specify the runtime when running `dotnet restore` in `Start-PSBuild` (#6345)
+- Rename `log` and `logerror` to `Write-Log [$message] [-error]` (#6333)
+- Make Linux packages use correct version scheme for preview releases (#6318)
+- Add support for Debian in `installpsh-debian.sh` (#6314) (Thanks @Pawamoy!)
+- MSI: Make preview builds to install Side by side with release builds (#6301)
+- Add `TLS1.2` workaround for code coverage script (#6299)
+- Cleanup after Powershell install for `CentOS` and `Fedora` Docker images (#6264) (Thanks @strawgate!)
+- MSI: Update the environment variable PATH with proper value (#6441)
+- MSI: Remove the version from the product name (#6415)
+- Support non-GitHub commits in the change log generation script (#6389)
+- Fix secret and JavaScript compliance issues (#6408)
+- Remove `AppVeyor` specific cmdlet from `Start-NativeExecution` (#6263)
+- Restore modules from the `NuGet` package cache by using `dotnet restore` (#6111)
+- CI Build: Use `TRAVIS_PULL_REQUEST_SHA` to accurately get the commit message (#6024)
+- Use `TLS1.2` on Windows during `Start-PSBootstrap` (#6235) (Thanks @CallmeJoeBob!)
+- Use `TLS1.2` in `Start-PSBootStrap` without breaking `HTTPS` (#6236) (Thanks @markekraus!)
+- Add options to enable `PSRemoting` and register Windows Event Logging Manifest to MSI installer (#5999) (Thanks @bergmeister!)
+
+### Documentation and Help Content
+
+- Separate macOS from Linux install instructions. (#5823) (Thanks @thezim!)
+- Show usage (short) help if command line parameter is wrong (#5780) (Thanks @iSazonov!)
+- Add the breaking changes doc for 6.0.0 release. (#5620) (Thanks @maertendMSFT!)
+- Remove DockerFile for Fedora 25 and add DockerFile for Fedora 27 (#5984) (Thanks @seemethere!)
+- Add a missing step to prepare the build environment on Mac. (#5901) (Thanks @zackJKnight!)
+- Update `BREAKINGCHANGES.md` to include WebCmdlets breaking changes (#5852) (Thanks @markekraus!)
+- Fix typos in `BREAKINGCHANGES.md` (#5913) (Thanks @brianbunke!)
+- Update `macos.md` to use `brew cask upgrade` for upgrading powershell (#5875) (Thanks @timothywlewis!)
+- Add verification step to macOS install docs (#5860) (Thanks @rpalo!)
+- Fix links in macOS install docs (#5861) (Thanks @kanjibates!)
+- Update docs with test guidelines with the `RequireSudoOnUnix` tag. (#6274)
+- Add `Alpine` Linux support (#6367) (Thanks @kasper3!)
+- Update to Governance doc to reflect current working model (#6323)
+- Add guidance on adding copyright and license header to new source files (#6140)
+- Fix the command to build type catalog in `internals.md` (#6084) (Thanks @ppadmavilasom!)
+- Fix `Pull Request Process` dead link (#6066) (Thanks @IISResetMe!)
+- Update processes to allow for coordinated vulnerability disclosure (#6042)
+- Rework Windows Start menu folder name (#5891) (Thanks @Stanzilla!)
+- Update `Raspbian` installation instructions to create `symlink` for `pwsh` (#6122)
+- Fix various places that still refer to old versions of `pwsh` (#6179) (Thanks @bergmeister!)
+- Correct a Linux installation typo (#6219) (Thanks @mababio!)
+- Change synopsis of `install-powershell.ps1` to reflect that it works cross-platform (#5465) (Thanks @bergmeister!)
+
+## v6.0.2 - 2018-03-15
+
+### Engine updates and fixes
+
+- Update PowerShell to use `2.0.6` dotnet core runtime and packages (#6403)
+    - This change addresses this vulnerability: [Microsoft Security Advisory `CVE-2018-0875`: Hash Collision can cause Denial of Service](https://github.com/PowerShell/Announcements/issues/4)
+
+### Build and Packaging Improvements
+
+- Add Ubuntu build without `AppImage` (#6380)
+- Add scripts to set and or update the release tag in `VSTS` (#6107)
+- Fix `DSC` Configuration compilation (#6225)
+- Fix errors in `Start-PSBootStrap` during release builds (#6159)
+- Fix spelling failures in `CI` (#6191)
+- Use PowerShell `windowsservercore` Docker image for release builds (#6226)
+- Use `ADD` instead of `Invoke-WebRequest` in `nanoserver` Docker file (#6255)
+- When doing daily/test build in a non-release branch use the branch name as the preview name (#6355)
+- Add Environment Variable override of telemetry (#6063) (Thanks @diddledan!)
+- Build: Remove two unneeded lines from `Invoke-AppveyorFinish` (#6344)
+- MSI: Refactor `New-MsiPackage` into `packaging.psm1`
+  and various fixes to enable patching
+  (#5871, #6221, #6254, #6303, #6356, #6208, #6334, #6379, #6094, #6192)
+- MSI: Use `HKLM` instead of `HKCU` registry keys since the current installation scope is per-machine. (#5915) (Thanks @bergmeister!)
+
+## v6.0.1 - 2018-01-25
+
+### Engine updates and fixes
+
+- Update PowerShell to use `2.0.5` dotnet core runtime and packages. (#5903, #5961) (Thanks @iSazonov!)
+
+### Build and Packaging Improvements
+
+- Re-release of `v6.0.0` as `v6.0.1` due to issues upgrading from pre-release versions
+
+### Test
+
+- Update regular expression to validate `GitCommitId` in `$PSVersionTable` to not require a pre-release tag (#5893)
+
+## v6.0.0 - 2018-01-10
+
+### Breaking changes
+
+- Remove `sc` alias which conflicts with `sc.exe` (#5827)
+- Separate group policy settings and enable policy controlled logging in PowerShell Core (#5791)
+
+### Engine updates and fixes
+
+- Handle `DLLImport` failure of `libpsrpclient` in PowerShell Remoting on Unix platforms (#5622)
+
+### Test
+
+- Replace `lee.io` Tests with `WebListener` (#5709) (Thanks @markekraus!)
+- Update the docker based release package tests due to the removal of `Pester` module and other issues (#5692)
+- Replace Remaining `HttpBin.org` Tests with `WebListener` (#5665) (Thanks @markekraus!)
+
+### Build and Packaging Improvements
+
+- Update x86 and x64 `MSI` packages to not overwrite each other (#5812) (Thanks @bergmeister!)
+- Update `Restore-PSPester` to include the fix for nested describe errors (#5771)
+- Automate the generation of release change log draft (#5712)
+
+### Documentation and Help Content
+
+- Updated help Uri to point to latest help content for `Microsoft.PowerShell.Core` module (#5820)
+- Update the installation doc for `Raspberry-Pi` about supported devices (#5773)
+- Fix a typo and a Markdown linting error in the Pull Request Template (#5807) (Thanks @markekraus!)
+- Update submodule documentation for pester removal (#5786) (Thanks @bergmeister!)
+- Change `Github` to `GitHub` in `CONTRIBUTING.md` (#5697) (Thanks @stuntguy3000!)
+- Fix incorrect release date on the changelog (#5698) (Thanks @SwarfegaGit!)
+- Add instructions to deploy `win-arm` build on Windows IoT (#5682)
+
+## v6.0.0-rc.2 - 2017-12-14
+
+### Breaking changes
+
+- Skip null-element check for collections with a value-type element type (#5432)
+- Make `AllSigned` execution policy require modules under `$PSHome` to be signed (#5511)
+
+### Engine updates and fixes
+
+- Update PowerShell to use `2.0.4` dotnet core runtime. (#5677)
+- Remove references to the old executable `powershell` or `powershell.exe` (#5408)
+
+### General cmdlet updates and fixes
+
+- Remove unnecessary check for `Paths.count > 0`, in the `*-FileCatalog` CmdLets (#5596)
+- Use explicit `libpsl-native` binary name for `dllimport`. (#5580)
+
+### Build and Packaging Improvements
+
+- Fix `Get-EnvironmentInformation` to properly check for CoreCLR (#5592) (Thanks @markekraus!)
+- Make Travis CI use `libcurl+openssl+gssapi` (#5629) (Thanks @markekraus!)
+- Disambiguate icon for daily builds on Windows (#5467) (Thanks @bergmeister!)
+- Fix `Import-CliXml` tests which still use `powershell` instead of `pwsh` and make sure it fails if it regresses (#5521) (Thanks @markekraus!)
+- Update port number used for WebCmdlets tests which broke due to a change in AppVeyor (#5520) (Thanks @markekraus!)
+- Clean up use of `Runspaceconfiguration` from comments and xUnit test code (#5569) (Thanks @Bhaal22!)
+- Replace `HttpListener` Response Tests with WebListener (#5540, #5605) (Thanks @markekraus!)
+- Fix the path to `powershell_xxx.inc` in Start-Build (#5538) (Thanks @iSazonov!)
+- Remove Pester as a module include with the PowerShell Packages.
+  You should be able to add it by running `Install-Module Pester`. (#5623, #5631)
+- Refactor `New-UnixPackaging` into functions to make the large function more readable. (#5625)
+- Make the experience better when `Start-PSPester` doesn't find Pester (#5673)
+- Update packaging and release build scripts to produce zip packages for `win-arm` and `win-arm64` (#5664)
+- Enable `Install-Debian` to work with VSTS Hosted Linux Preview (#5659)
+- Add `linux-arm` tarball package to release build (#5652, #5660)
+- Enable building for `win-arm` and `win-arm64` (#5524)
+- Make macOS package require 10.12 or newer (#5649, #5654)
+- Update signing subjects to something meaningful (#5650)
+- Make `New-UnixPackage` more readable (#5625)
+- Update `PowerShellGet` tests to validate the new install location of `AllUsers` scope. (#5633)
+- Increase reliability of flaky test that fails intermittently in CI (#5641)
+- Exclude markdown files from `Pester` folder from the Markdown meta test (#5636)
+- Run tests for Windows installer only on Windows (#5619)
+- Suppress the expected errors from `Select-Xml` tests (#5591)
+- Add retry logic to prerequisite URL and output URL on failure so you can more easily troubleshoot (#5601, #5570)
+- Make sure submodule are initialized when running Mac release build (#5496)
+- Remove duplicate files in Windows packages in a folder called `signed` (#5527)
+- Add PowerShell VSCode style settings (#5529) (Thanks @bergmeister)
+- Add Travis CI matrix for improved job tagging (#5547)
+- Remove community docker files from official docker image validation (#5508)
+
+### Documentation and Help Content
+
+- XML documentation fix for `CompletionResult` (#5550) (Thanks @bergmeister!)
+- Change synopsis of `install-powershell.ps1` to reflect that it works cross-platform (#5465) (Thanks @bergmeister!)
+- Add more helpful message for `AmbiguousParameterSet` exception (#5537) (Thanks @kvprasoon!)
+- Update the contribution guideline to note that updating the changelog is required. (#5586)
+- Updated doc to build arm/arm64 versions of `psrp.windows` and `PowerShell.Core.Instrumentation.dll` libraries (#5668)
+- Update Contribution guidelines with work in progress guidance (#5655)
+- Update code coverage tests to get GitCommitId using the ProductVersion from Assembly (#5651)
+- Remove requirement to updating changelog update in PR (#5644, #5586)
+- Minor refactoring of the release build scripts (#5632)
+- Update PowerShell executable name in `using-vscode.md` (#5593)
+- Fix xUnit test for PS (#4780)
+- Update install link and instructions for R-Pi (#5495)
+
+### Compliance Work
+
+[Compliance](https://github.com/PowerShell/PowerShell/blob/master/docs/maintainers/issue-management.md#miscellaneous-labels)
+work is required for Microsoft to continue to sign and release packages from the project as official Microsoft packages.
+
+- Remove `PerformWSManPluginReportCompletion`, which was not used, from `pwrshplugin.dll` (#5498) (Thanks @bergmeister!)
+- Remove exclusion for hang and add context exception for remaining instances (#5595)
+- Replace `strlen` with `strnlen` in native code (#5510)
+
 ## v6.0.0-rc - 2017-11-16
 
 ### Breaking changes
@@ -19,7 +313,7 @@
 - Change to not insert line breaks at console window width to output (except for tables). (#5193)
 - Use `Ast` for context in parameter binding and fix to glob the native command argument only when it's not quoted. (#5188)
 - Fix dynamic class assembly name. (#5292)
-- Update powershell to use `2.0.4-servicing` dotnet core runtime. (#5295)
+- Update PowerShell to use `2.0.4-servicing` dotnet core runtime. (#5295)
 - Fix `ExecutionContext.LoadAssembly` to load with name when file cannot be found. (#5161)
 - Speed up the check for suspicious content in script texts. (#5302)
 - Use native `os_log` APIs on macOS for PowerShell Core logging. (#5310)
@@ -394,7 +688,7 @@ work is required for Microsoft to continue to sign and release packages from the
 
 ### Breaking change
 
-* Make invalid argument error messages for -File and -Command consistent and make exit codes consistent with Unix standards (#4573)
+* Make invalid argument error messages for `-File` and `-Command` consistent and make exit codes consistent with Unix standards (#4573)
 
 ### Engine updates and fixes
 

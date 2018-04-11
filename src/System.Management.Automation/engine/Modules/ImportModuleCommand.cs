@@ -1,6 +1,5 @@
-/********************************************************************++
-Copyright (c) Microsoft Corporation. All rights reserved.
---********************************************************************/
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 
 using System;
 using System.Collections;
@@ -532,11 +531,6 @@ namespace Microsoft.PowerShell.Commands
         {
             try
             {
-                if (name.Equals("PSWorkflow", StringComparison.OrdinalIgnoreCase) && Utils.IsRunningFromSysWOW64())
-                {
-                    throw new NotSupportedException(AutomationExceptions.WorkflowDoesNotSupportWOW64);
-                }
-
                 bool found = false;
                 PSModuleInfo foundModule = null;
 
