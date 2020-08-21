@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
 using System;
@@ -15,7 +15,7 @@ namespace Microsoft.PowerShell.Commands
         {
             if (address == null)
             {
-                throw new ArgumentNullException("address");
+                throw new ArgumentNullException(nameof(address));
             }
 
             _proxyAddress = address;
@@ -24,6 +24,7 @@ namespace Microsoft.PowerShell.Commands
         public ICredentials Credentials
         {
             get { return _credentials; }
+
             set { _credentials = value; }
         }
 
@@ -38,6 +39,7 @@ namespace Microsoft.PowerShell.Commands
             {
                 return _credentials == CredentialCache.DefaultCredentials;
             }
+
             set
             {
                 _credentials = value ? CredentialCache.DefaultCredentials : null;
@@ -48,7 +50,7 @@ namespace Microsoft.PowerShell.Commands
         {
             if (destination == null)
             {
-                throw new ArgumentNullException("destination");
+                throw new ArgumentNullException(nameof(destination));
             }
 
             if (destination.IsLoopback)
@@ -57,7 +59,6 @@ namespace Microsoft.PowerShell.Commands
             }
 
             return _proxyAddress;
-
         }
 
         public bool IsBypassed(Uri host)

@@ -1,6 +1,6 @@
-# Copyright (c) Microsoft Corporation. All rights reserved.
+# Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
-Describe "ComparisonOperator" -tag "CI" {
+Describe "ComparisonOperator" -Tag "CI" {
 
     It "Should be <result> for <lhs> <operator> <rhs>" -TestCases @(
         @{lhs = 1; operator = "-lt"; rhs = 2; result = $true},
@@ -58,7 +58,7 @@ Describe "ComparisonOperator" -tag "CI" {
         @{operator = "-isnot"; type = "[foo]"; expectedError='TypeNotFound,Microsoft.PowerShell.Commands.InvokeExpressionCommand'}
     ) {
         param($operator, $type, $expectedError)
-        { Invoke-Expression "'Hello' $operator $type" } | ShouldBeErrorId $expectedError
+        { Invoke-Expression "'Hello' $operator $type" } | Should -Throw -ErrorId $expectedError
     }
 
     It "Should succeed in comparing type: <lhs> <operator> <rhs>" -TestCases @(
@@ -84,7 +84,7 @@ Describe "ComparisonOperator" -tag "CI" {
     }
 }
 
-Describe "Bytewise Operator" -tag "CI" {
+Describe "Bytewise Operator" -Tag "CI" {
 
     It "Test -bor on enum with [byte] as underlying type" {
         $result = [System.Security.AccessControl.AceFlags]::ObjectInherit -bxor `

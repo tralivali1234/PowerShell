@@ -1,26 +1,24 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
 using System;
-using System.IO;
-using System.Reflection;
-using System.ComponentModel;
-using System.Runtime.InteropServices;
-using System.Runtime.CompilerServices;
-using System.Management.Automation;
-using System.Management.Automation.Provider;
-using System.Xml;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using Microsoft.Win32;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.IO;
+using System.Management.Automation;
+using System.Management.Automation.Provider;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Security;
 using System.Threading;
-#if CORECLR
-using System.Xml.XPath;
-#endif
+using System.Xml;
+
+using Microsoft.Win32;
 
 using Dbg = System.Management.Automation;
 
@@ -52,15 +50,16 @@ namespace Microsoft.WSMan.Management
         public string Role
         {
             get { return role; }
+
             set { role = value; }
         }
+
         private string role;
         #endregion
 
         #region Utilities
 
         /// <summary>
-        ///
         /// </summary>
         /// <returns>
         /// Returns a session object upon successful creation..otherwise
@@ -96,10 +95,10 @@ namespace Microsoft.WSMan.Management
     /// Disables CredSSP authentication on the client. CredSSP authentication
     /// enables an application to delegate the user's credentials from the client to
     /// the server, hence allowing the user to perform management operations that
-    /// access a second hop
+    /// access a second hop.
     /// </summary>
 
-    [Cmdlet(VerbsLifecycle.Disable, "WSManCredSSP", HelpUri = "https://go.microsoft.com/fwlink/?LinkId=141438")]
+    [Cmdlet(VerbsLifecycle.Disable, "WSManCredSSP", HelpUri = "https://go.microsoft.com/fwlink/?LinkId=2096628")]
     [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Cred")]
     [SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly", MessageId = "SSP")]
     public class DisableWSManCredSSPCommand : WSManCredSSPCommandBase, IDisposable
@@ -114,7 +113,7 @@ namespace Microsoft.WSMan.Management
         {
             WSManHelper helper = new WSManHelper(this);
             IWSManSession m_SessionObj = CreateWSManSession();
-            if (null == m_SessionObj)
+            if (m_SessionObj == null)
             {
                 return;
             }
@@ -139,6 +138,7 @@ namespace Microsoft.WSMan.Management
                     WriteError(er);
                     return;
                 }
+
                 m_SessionObj.Put(helper.CredSSP_RUri, inputXml, 0);
 
                 if (Thread.CurrentThread.GetApartmentState() == ApartmentState.STA)
@@ -166,7 +166,7 @@ namespace Microsoft.WSMan.Management
             }
             finally
             {
-                if (!String.IsNullOrEmpty(m_SessionObj.Error))
+                if (!string.IsNullOrEmpty(m_SessionObj.Error))
                 {
                     helper.AssertError(m_SessionObj.Error, true, null);
                 }
@@ -180,7 +180,7 @@ namespace Microsoft.WSMan.Management
         {
             WSManHelper helper = new WSManHelper(this);
             IWSManSession m_SessionObj = CreateWSManSession();
-            if (null == m_SessionObj)
+            if (m_SessionObj == null)
             {
                 return;
             }
@@ -215,7 +215,7 @@ namespace Microsoft.WSMan.Management
             }
             finally
             {
-                if (!String.IsNullOrEmpty(m_SessionObj.Error))
+                if (!string.IsNullOrEmpty(m_SessionObj.Error))
                 {
                     helper.AssertError(m_SessionObj.Error, true, null);
                 }
@@ -244,6 +244,7 @@ namespace Microsoft.WSMan.Management
                     DeleteDelegateSettings(applicationname, Registry.CurrentUser, key, GPO);
                 }
             }
+
             KeyHandle = System.IntPtr.Zero;
         }
 
@@ -255,7 +256,6 @@ namespace Microsoft.WSMan.Management
             bool otherkeys = false;
             try
             {
-
                 string Registry_Path_Credentials_Delegation = Registry_Path + @"\CredentialsDelegation";
                 RegistryKey Allow_Fresh_Credential_Key = rootKey.OpenSubKey(Registry_Path_Credentials_Delegation + @"\" + helper.Key_Allow_Fresh_Credentials, true);
                 if (Allow_Fresh_Credential_Key != null)
@@ -275,8 +275,10 @@ namespace Microsoft.WSMan.Management
                                     otherkeys = true;
                                 }
                             }
+
                             Allow_Fresh_Credential_Key.DeleteValue(value);
                         }
+
                         foreach (string keyvalue in KeyCollection)
                         {
                             Allow_Fresh_Credential_Key.SetValue(Convert.ToString(i + 1, CultureInfo.InvariantCulture), keyvalue, RegistryValueKind.String);
@@ -284,6 +286,7 @@ namespace Microsoft.WSMan.Management
                         }
                     }
                 }
+
                 if (!otherkeys)
                 {
                     rKey = rootKey.OpenSubKey(Registry_Path_Credentials_Delegation, true);
@@ -294,17 +297,20 @@ namespace Microsoft.WSMan.Management
                         {
                             rKey.DeleteValue(helper.Key_Allow_Fresh_Credentials, false);
                         }
+
                         object regval2 = rKey.GetValue(helper.Key_Concatenate_Defaults_AllowFresh);
                         if (regval2 != null)
                         {
                             rKey.DeleteValue(helper.Key_Concatenate_Defaults_AllowFresh, false);
                         }
+
                         if (rKey.OpenSubKey(helper.Key_Allow_Fresh_Credentials) != null)
                         {
                             rKey.DeleteSubKeyTree(helper.Key_Allow_Fresh_Credentials);
                         }
                     }
                 }
+
                 GPO.Save(true, true, new Guid("35378EAC-683F-11D2-A89A-00C04FBBCFA2"), new Guid("6AD20875-336C-4e22-968F-C709ACB15814"));
             }
             catch (InvalidOperationException ex)
@@ -330,20 +336,11 @@ namespace Microsoft.WSMan.Management
         }
         #endregion private
         /// <summary>
-        /// begin processing method.
+        /// Begin processing method.
         /// </summary>
         protected override void BeginProcessing()
         {
-#if !CORECLR
-            if (Environment.OSVersion.Version.Major < 6)
-            {
-                //OS is XP/Win2k3. Throw error.
-                WSManHelper helper = new WSManHelper(this);
-                string message = helper.FormatResourceMsgFromResourcetext("CmdletNotAvailable");
-                throw new InvalidOperationException(message);
-            }
-#endif
-            //If not running elevated, then throw an "elevation required" error message.
+            // If not running elevated, then throw an "elevation required" error message.
             WSManHelper.ThrowIfNotAdministrator();
 
             if (Role.Equals(Client, StringComparison.OrdinalIgnoreCase))
@@ -355,22 +352,22 @@ namespace Microsoft.WSMan.Management
             {
                 DisableServerSideSettings();
             }
-        }//End BeginProcessing()
+        }
 
         #region IDisposable Members
 
         /// <summary>
-        /// public dispose method
+        /// Public dispose method.
         /// </summary>
         public
         void
         Dispose()
         {
-            //CleanUp();
+            // CleanUp();
             GC.SuppressFinalize(this);
         }
         /// <summary>
-        /// public dispose method
+        /// Public dispose method.
         /// </summary>
         public
         void
@@ -381,7 +378,7 @@ namespace Microsoft.WSMan.Management
         }
 
         #endregion IDisposable Members
-    }//End Class
+    }
     #endregion DisableWsManCredSSP
 
     #region EnableCredSSP
@@ -396,33 +393,27 @@ namespace Microsoft.WSMan.Management
     /// 1. Enables WSMan local configuration on client to enable CredSSP
     /// 2. Sets CredSSP policy AllowFreshCredentials to wsman/Delegate. This policy
     /// allows delegating explicit credentials to a server when server
-    /// authentication is achieved via a trusted X509 certificate or Kerberos
+    /// authentication is achieved via a trusted X509 certificate or Kerberos.
     /// </summary>
-    [Cmdlet(VerbsLifecycle.Enable, "WSManCredSSP", HelpUri = "https://go.microsoft.com/fwlink/?LinkId=141442")]
+    [Cmdlet(VerbsLifecycle.Enable, "WSManCredSSP", HelpUri = "https://go.microsoft.com/fwlink/?LinkId=2096719")]
     [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Cred")]
     [SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly", MessageId = "SSP")]
     public class EnableWSManCredSSPCommand : WSManCredSSPCommandBase, IDisposable/*, IDynamicParameters*/
     {
-        #region Private Data
-
-        //private const string DelegateComputerParam = "DelegateComputer";
-        //private String[] delegatecomputer;
-        //private RuntimeDefinedParameterDictionary dynamicParameters = new RuntimeDefinedParameterDictionary();
-
-        #endregion
-
         /// <summary>
-        /// delegate parameter
+        /// Delegate parameter.
         /// </summary>
         [Parameter(Position = 1)]
         [ValidateNotNullOrEmpty]
         [SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays")]
-        public String[] DelegateComputer
+        public string[] DelegateComputer
         {
             get { return delegatecomputer; }
+
             set { delegatecomputer = value; }
         }
-        private String[] delegatecomputer;
+
+        private string[] delegatecomputer;
 
         /// <summary>
         /// Property that sets force parameter.
@@ -431,11 +422,13 @@ namespace Microsoft.WSMan.Management
         public SwitchParameter Force
         {
             get { return force; }
+
             set { force = value; }
         }
+
         private bool force = false;
 
-        //helper variable
+        // helper variable
         private WSManHelper helper;
 
         // The application name MUST be "wsman" as wsman got approval from security
@@ -449,17 +442,9 @@ namespace Microsoft.WSMan.Management
         /// </summary>
         protected override void BeginProcessing()
         {
-            //If not running elevated, then throw an "elevation required" error message.
+            // If not running elevated, then throw an "elevation required" error message.
             WSManHelper.ThrowIfNotAdministrator();
             helper = new WSManHelper(this);
-#if !CORECLR
-            if (Environment.OSVersion.Version.Major < 6)
-            {
-                //OS is XP/Win2k3. Throw error.
-                string message = helper.FormatResourceMsgFromResourcetext("CmdletNotAvailable");
-                throw new InvalidOperationException(message);
-            }
-#endif
 
             // DelegateComputer cannot be specified when Role is other than client
             if ((delegatecomputer != null) && !Role.Equals(Client, StringComparison.OrdinalIgnoreCase))
@@ -493,70 +478,32 @@ namespace Microsoft.WSMan.Management
             {
                 EnableServerSideSettings();
             }
-        }//End BeginProcessing()
-
-        /*
-        /// <summary>
-        /// This method returns DynamicParameters used for Enable-WSManCredSSP cmdlet. Enable-WSManCredSSP
-        /// supports -DelegateComputer parameter when -Role is client.
-        /// </summary>
-        /// <returns>
-        /// An object representing the dynamic parameters for the cmdlet or null if there
-        /// are none.
-        /// </returns>
-        object IDynamicParameters.GetDynamicParameters()
-        {
-            // return null if the role is not client.
-            if (!Role.Equals(ClientRole, StringComparison.OrdinalIgnoreCase))
-            {
-                return dynamicParameters;
-            }
-
-            // Construct attributes for the DelegateComputer parameter
-            Collection<Attribute> delegateComputerAttributeCollection = new Collection<Attribute>();
-            ParameterAttribute paramAttribute = new ParameterAttribute();
-            paramAttribute.Mandatory = true;
-            paramAttribute.Position = 1;
-            ValidateNotNullOrEmptyAttribute notNullAttribute = new ValidateNotNullOrEmptyAttribute();
-            delegateComputerAttributeCollection.Add(paramAttribute);
-            delegateComputerAttributeCollection.Add(notNullAttribute);
-
-            // Construct the parameter and return.
-            RuntimeDefinedParameter delegateComputer = new RuntimeDefinedParameter(
-                DelegateComputerParam,
-                typeof(string[]),
-                delegateComputerAttributeCollection);
-            dynamicParameters.Add(DelegateComputerParam, delegateComputer);
-
-            return dynamicParameters;
-
-        } // GetDynamicParameters*/
+        }
 
         #endregion
 
         /// <summary>
-        ///
         /// </summary>
         /// <exception cref="InvalidOperationException">
         /// </exception>
         private void EnableClientSideSettings()
         {
-            String query = helper.GetResourceMsgFromResourcetext("CredSSPContinueQuery");
-            String caption = helper.GetResourceMsgFromResourcetext("CredSSPContinueCaption");
+            string query = helper.GetResourceMsgFromResourcetext("CredSSPContinueQuery");
+            string caption = helper.GetResourceMsgFromResourcetext("CredSSPContinueCaption");
             if (!force && !ShouldContinue(query, caption))
             {
                 return;
             }
 
             IWSManSession m_SessionObj = CreateWSManSession();
-            if (null == m_SessionObj)
+            if (m_SessionObj == null)
             {
                 return;
             }
 
             try
             {
-                //get the credssp node to check if wsman is configured on this machine
+                // get the credssp node to check if wsman is configured on this machine
                 string result = m_SessionObj.Get(helper.CredSSP_RUri, 0);
                 XmlNode node = helper.GetXmlNode(result, helper.CredSSP_SNode, helper.CredSSP_XMLNmsp);
 
@@ -567,15 +514,12 @@ namespace Microsoft.WSMan.Management
                     WriteError(er);
                     return;
                 }
-                // Extract delegateComputer information from dynamic parameters collection
-                //RuntimeDefinedParameter delegateComputerParameter = dynamicParameters[DelegateComputerParam];
-                //delegatecomputer = (string[])delegateComputerParameter.Value;
 
                 string newxmlcontent = @"<cfg:Auth xmlns:cfg=""http://schemas.microsoft.com/wbem/wsman/1/config/client/auth""><cfg:CredSSP>true</cfg:CredSSP></cfg:Auth>";
                 try
                 {
                     XmlDocument xmldoc = new XmlDocument();
-                    //push the xml string with credssp enabled
+                    // push the xml string with credssp enabled
                     xmldoc.LoadXml(m_SessionObj.Put(helper.CredSSP_RUri, newxmlcontent, 0));
 
                     // set the Registry using GroupPolicyObject
@@ -608,7 +552,7 @@ namespace Microsoft.WSMan.Management
             }
             finally
             {
-                if (!String.IsNullOrEmpty(m_SessionObj.Error))
+                if (!string.IsNullOrEmpty(m_SessionObj.Error))
                 {
                     helper.AssertError(m_SessionObj.Error, true, delegatecomputer);
                 }
@@ -622,22 +566,22 @@ namespace Microsoft.WSMan.Management
 
         private void EnableServerSideSettings()
         {
-            String query = helper.GetResourceMsgFromResourcetext("CredSSPServerContinueQuery");
-            String caption = helper.GetResourceMsgFromResourcetext("CredSSPContinueCaption");
+            string query = helper.GetResourceMsgFromResourcetext("CredSSPServerContinueQuery");
+            string caption = helper.GetResourceMsgFromResourcetext("CredSSPContinueCaption");
             if (!force && !ShouldContinue(query, caption))
             {
                 return;
             }
 
             IWSManSession m_SessionObj = CreateWSManSession();
-            if (null == m_SessionObj)
+            if (m_SessionObj == null)
             {
                 return;
             }
 
             try
             {
-                //get the credssp node to check if wsman is configured on this machine
+                // get the credssp node to check if wsman is configured on this machine
                 string result = m_SessionObj.Get(helper.Service_CredSSP_Uri, 0);
                 XmlNode node = helper.GetXmlNode(result,
                     helper.CredSSP_SNode,
@@ -657,7 +601,7 @@ namespace Microsoft.WSMan.Management
                     string newxmlcontent = string.Format(CultureInfo.InvariantCulture,
                         @"<cfg:Auth xmlns:cfg=""{0}""><cfg:CredSSP>true</cfg:CredSSP></cfg:Auth>",
                         helper.Service_CredSSP_XMLNmsp);
-                    //push the xml string with credssp enabled
+                    // push the xml string with credssp enabled
                     xmldoc.LoadXml(m_SessionObj.Put(helper.Service_CredSSP_Uri, newxmlcontent, 0));
                     WriteObject(xmldoc.FirstChild);
                 }
@@ -668,7 +612,7 @@ namespace Microsoft.WSMan.Management
             }
             finally
             {
-                if (!String.IsNullOrEmpty(m_SessionObj.Error))
+                if (!string.IsNullOrEmpty(m_SessionObj.Error))
                 {
                     helper.AssertError(m_SessionObj.Error, true, delegatecomputer);
                 }
@@ -681,7 +625,6 @@ namespace Microsoft.WSMan.Management
         }
 
         /// <summary>
-        ///
         /// </summary>
         private void UpdateCurrentUserRegistrySettings()
         {
@@ -698,15 +641,14 @@ namespace Microsoft.WSMan.Management
                 {
                     string key = GPOpath + "\\" + keyname + "\\" + @"Software\Policies\Microsoft\Windows";
                     UpdateGPORegistrySettings(applicationname, this.delegatecomputer, Registry.CurrentUser, key);
-
                 }
             }
-            //saving gpo settings
+            // saving gpo settings
             GPO.Save(true, true, new Guid("35378EAC-683F-11D2-A89A-00C04FBBCFA2"), new Guid("7A9206BD-33AF-47af-B832-D4128730E990"));
         }
 
         /// <summary>
-        /// Updates the grouppolicy registry settings
+        /// Updates the grouppolicy registry settings.
         /// </summary>
         /// <param name="applicationname"></param>
         /// <param name="delegatestring"></param>
@@ -714,33 +656,21 @@ namespace Microsoft.WSMan.Management
         /// <param name="Registry_Path"></param>
         private void UpdateGPORegistrySettings(string applicationname, string[] delegatestring, RegistryKey rootKey, string Registry_Path)
         {
-            //RegistryKey rootKey = Registry.LocalMachine;
+            // RegistryKey rootKey = Registry.LocalMachine;
             RegistryKey Credential_Delegation_Key;
             RegistryKey Allow_Fresh_Credential_Key;
             int i = 0;
             try
             {
                 string Registry_Path_Credentials_Delegation = Registry_Path + @"\CredentialsDelegation";
-                //open the registry key.If key is not present,create a new one
-                Credential_Delegation_Key = rootKey.OpenSubKey(Registry_Path_Credentials_Delegation, true);
-                if (Credential_Delegation_Key == null)
-                    Credential_Delegation_Key = rootKey.CreateSubKey(Registry_Path_Credentials_Delegation
-#if !CORECLR
-                        , RegistryKeyPermissionCheck.ReadWriteSubTree
-#endif
-                        );
+                // open the registry key.If key is not present,create a new one
+                Credential_Delegation_Key = rootKey.OpenSubKey(Registry_Path_Credentials_Delegation, true) ?? rootKey.CreateSubKey(Registry_Path_Credentials_Delegation, RegistryKeyPermissionCheck.ReadWriteSubTree);
 
                 Credential_Delegation_Key.SetValue(helper.Key_Allow_Fresh_Credentials, 1, RegistryValueKind.DWord);
                 Credential_Delegation_Key.SetValue(helper.Key_Concatenate_Defaults_AllowFresh, 1, RegistryValueKind.DWord);
 
                 // add the delegate value
-                Allow_Fresh_Credential_Key = rootKey.OpenSubKey(Registry_Path_Credentials_Delegation + @"\" + helper.Key_Allow_Fresh_Credentials, true);
-                if (Allow_Fresh_Credential_Key == null)
-                    Allow_Fresh_Credential_Key = rootKey.CreateSubKey(Registry_Path_Credentials_Delegation + @"\" + helper.Key_Allow_Fresh_Credentials
-#if !CORECLR
-                        , RegistryKeyPermissionCheck.ReadWriteSubTree
-#endif
-                        );
+                Allow_Fresh_Credential_Key = rootKey.OpenSubKey(Registry_Path_Credentials_Delegation + @"\" + helper.Key_Allow_Fresh_Credentials, true) ?? rootKey.CreateSubKey(Registry_Path_Credentials_Delegation + @"\" + helper.Key_Allow_Fresh_Credentials, RegistryKeyPermissionCheck.ReadWriteSubTree);
 
                 if (Allow_Fresh_Credential_Key != null)
                 {
@@ -767,23 +697,21 @@ namespace Microsoft.WSMan.Management
                 ErrorRecord er = new ErrorRecord(ex, "ArgumentException", ErrorCategory.InvalidOperation, null);
                 WriteError(er);
             }
-
         }
 
         #region IDisposable Members
 
         /// <summary>
-        /// public dispose method
+        /// Public dispose method.
         /// </summary>
         public
         void
         Dispose()
         {
-            //CleanUp();
             GC.SuppressFinalize(this);
         }
         /// <summary>
-        /// public dispose method
+        /// Public dispose method.
         /// </summary>
         public
         void
@@ -794,7 +722,7 @@ namespace Microsoft.WSMan.Management
         }
 
         #endregion IDisposable Members
-    }//End Class
+    }
     #endregion EnableCredSSP
 
     #region Get-CredSSP
@@ -810,17 +738,17 @@ namespace Microsoft.WSMan.Management
     /// 2. Gets the configuration information for the CredSSP policy
     /// AllowFreshCredentials . This policy allows delegating explicit credentials
     /// to a server when server authentication is achieved via a trusted X509
-    /// certificate or Kerberos
+    /// certificate or Kerberos.
     /// </summary>
     [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Cred")]
     [SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly", MessageId = "SSP")]
-    [Cmdlet(VerbsCommon.Get, "WSManCredSSP", HelpUri = "https://go.microsoft.com/fwlink/?LinkId=141443")]
+    [Cmdlet(VerbsCommon.Get, "WSManCredSSP", HelpUri = "https://go.microsoft.com/fwlink/?LinkId=2096838")]
     public class GetWSManCredSSPCommand : PSCmdlet, IDisposable
     {
-        # region private
-        WSManHelper helper = null;
+        #region private
+        private WSManHelper helper = null;
         /// <summary>
-        /// method to get the values.
+        /// Method to get the values.
         /// </summary>
         private string GetDelegateSettings(string applicationname)
         {
@@ -852,6 +780,7 @@ namespace Microsoft.WSMan.Management
                                     }
                                 }
                             }
+
                             if (result.EndsWith(listvalue, StringComparison.OrdinalIgnoreCase))
                             {
                                 result = result.Remove(result.Length - 1);
@@ -875,29 +804,20 @@ namespace Microsoft.WSMan.Management
                 ErrorRecord er = new ErrorRecord(ex, "ObjectDisposedException", ErrorCategory.PermissionDenied, null);
                 WriteError(er);
             }
-             return result;
-        }
-        # endregion private
 
-        # region overrides
+            return result;
+        }
+        #endregion private
+
+        #region overrides
         /// <summary>
         /// Method to begin processing.
         /// </summary>
         protected override void BeginProcessing()
         {
-            //If not running elevated, then throw an "elevation required" error message.
+            // If not running elevated, then throw an "elevation required" error message.
             WSManHelper.ThrowIfNotAdministrator();
-
             helper = new WSManHelper(this);
-#if !CORECLR
-            if (Environment.OSVersion.Version.Major < 6)
-            {
-                //OS is XP/Win2k3. Throw error.
-                string message = helper.FormatResourceMsgFromResourcetext("CmdletNotAvailable");
-                throw new InvalidOperationException(message);
-            }
-#endif
-
             IWSManSession m_SessionObj = null;
             try
             {
@@ -967,7 +887,7 @@ namespace Microsoft.WSMan.Management
             }
             finally
             {
-                if (!String.IsNullOrEmpty(m_SessionObj.Error))
+                if (!string.IsNullOrEmpty(m_SessionObj.Error))
                 {
                     helper.AssertError(m_SessionObj.Error, true, null);
                 }
@@ -982,17 +902,16 @@ namespace Microsoft.WSMan.Management
         #region IDisposable Members
 
         /// <summary>
-        /// public dispose method
+        /// Public dispose method.
         /// </summary>
         public
         void
         Dispose()
         {
-            //CleanUp();
             GC.SuppressFinalize(this);
         }
         /// <summary>
-        /// public dispose method
+        /// Public dispose method.
         /// </summary>
         public
         void
@@ -1003,7 +922,6 @@ namespace Microsoft.WSMan.Management
         }
 
         #endregion IDisposable Members
-
     }
 
     #endregion

@@ -1,4 +1,4 @@
-# Copyright (c) Microsoft Corporation. All rights reserved.
+# Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 Describe "Tests for hashtable to PSCustomObject conversion" -Tags "CI" {
     BeforeAll {
@@ -35,7 +35,7 @@ Describe "Tests for hashtable to PSCustomObject conversion" -Tags "CI" {
 
     It 'Type Validation: <Name>' -TestCases:$testdata {
         param ($Name, $Cmd, $ExpectedType)
-        Invoke-expression $Cmd -OutVariable a
+        Invoke-Expression $Cmd -OutVariable a
         $a = Get-Variable -Name a -ValueOnly
         $a | Should -BeOfType $ExpectedType
     }
@@ -43,11 +43,11 @@ Describe "Tests for hashtable to PSCustomObject conversion" -Tags "CI" {
     It 'Hashtable conversion to PSCustomObject retains insertion order of hashtable keys when passed a hashliteral' {
 
         $x = [pscustomobject]@{one=1;two=2}
-        $x | Should -BeOfType "System.Management.automation.psobject"
+        $x | Should -BeOfType System.Management.automation.psobject
 
         $p = 0
         # Checks if the first property is One
-        $x.psobject.Properties | foreach-object  `
+        $x.psobject.Properties | ForEach-Object  `
                                 {
                                     if ($p -eq 0)
                                     {
@@ -60,11 +60,11 @@ Describe "Tests for hashtable to PSCustomObject conversion" -Tags "CI" {
     It 'Conversion of Ordered hashtable to PSCustomObject should succeed' {
 
        $x = [pscustomobject][ordered]@{one=1;two=2}
-       $x | Should -BeOfType "System.Management.automation.psobject"
+       $x | Should -BeOfType System.Management.automation.psobject
 
        $p = 0
        # Checks if the first property is One
-       $x.psobject.Properties | foreach-object  `
+       $x.psobject.Properties | ForEach-Object  `
                                 {
                                     if ($p -eq 0)
                                     {
@@ -99,20 +99,14 @@ Describe "Tests for hashtable to PSCustomObject conversion" -Tags "CI" {
 
     It '<Name>' -TestCases:$testData1 {
         param ($Name, $Cmd, $ErrorID, $InnerException)
-        try
-        {
-            Invoke-Expression $Cmd
-            Throw "Exception expected, execution should not have reached here"
-        } catch {
+        $e = { Invoke-Expression $Cmd } | Should -Throw -PassThru
 
-           if($InnerException)
-           {
-                $_.Exception.InnerException.ErrorRecord.FullyQualifiedErrorId | Should -BeExactly $ErrorID
-           }
-           else {
-                $_.FullyQualifiedErrorId | Should -BeExactly $ErrorID
-           }
-       }
+        if($InnerException)
+        {
+            $e.Exception.InnerException.ErrorRecord.FullyQualifiedErrorId | Should -BeExactly $ErrorID
+        } else {
+            $e.FullyQualifiedErrorId | Should -BeExactly $ErrorID
+        }
     }
 
     It  'Creating an object of an existing type from hashtable should succeed' {
@@ -139,20 +133,12 @@ Describe "Tests for hashtable to PSCustomObject conversion" -Tags "CI" {
 	    $obj.PSTypeNames[0] | Should -BeExactly 'System.Object'
     }
     It "new-object should fail to create object for System.Management.Automation.PSCustomObject" {
-
-        $errorObj = $null
         $obj = $null
-		$ht = @{one=1;two=2}
-        try
-        {
-            $obj = New-Object System.Management.Automation.PSCustomObject -property $ht
-        }
-        catch
-        {
-            $errorObj = $_
-        }
+        $ht = @{one=1;two=2}
+
+        { $obj = New-Object System.Management.Automation.PSCustomObject -Property $ht } |
+            Should -Throw -ErrorId "CannotFindAppropriateCtor,Microsoft.PowerShell.Commands.NewObjectCommand"
         $obj | Should -BeNullOrEmpty
-        $errorObj.FullyQualifiedErrorId | Should -BeExactly "CannotFindAppropriateCtor,Microsoft.PowerShell.Commands.NewObjectCommand"
     }
 }
 

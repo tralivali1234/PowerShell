@@ -1,8 +1,8 @@
-# Copyright (c) Microsoft Corporation. All rights reserved.
+# Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 try {
     #skip all tests on non-windows platform
-    $defaultParamValues = $PSdefaultParameterValues.Clone()
+    $defaultParamValues = $PSDefaultParameterValues.Clone()
     $PSDefaultParameterValues["it:skip"] = !$IsWindows
 
 Describe "Basic Registry Provider Tests" -Tags @("CI", "RequireAdminOnWindows") {
@@ -60,7 +60,7 @@ Describe "Basic Registry Provider Tests" -Tags @("CI", "RequireAdminOnWindows") 
         }
 
         It "Verify Get-Item on inaccessible path" {
-            { Get-Item HKLM:\SAM\SAM -ErrorAction Stop } | ShouldBeErrorId "System.Security.SecurityException,Microsoft.PowerShell.Commands.GetItemCommand"
+            { Get-Item HKLM:\SAM\SAM -ErrorAction Stop } | Should -Throw -ErrorId "System.Security.SecurityException,Microsoft.PowerShell.Commands.GetItemCommand"
         }
 
         It "Verify Get-ChildItem" {
@@ -97,7 +97,7 @@ Describe "Basic Registry Provider Tests" -Tags @("CI", "RequireAdminOnWindows") 
 
         It "Verify Rename-Item" {
             $existBefore = Test-Path $testKey
-            $renamedKey = Rename-Item -path $testKey -NewName "RenamedKey" -PassThru
+            $renamedKey = Rename-Item -Path $testKey -NewName "RenamedKey" -PassThru
             $existAfter = Test-Path $testKey
             $existBefore | Should -BeTrue
             $existAfter | Should -BeFalse
@@ -260,13 +260,13 @@ Describe "Extended Registry Provider Tests" -Tags @("Feature", "RequireAdminOnWi
         }
 
         It "Verify Confirm can be bypassed" {
-            $result = New-ItemProperty -Path $testKey -Name $testPropertyName -Value $testPropertyValue -force -Confirm:$false
+            $result = New-ItemProperty -Path $testKey -Name $testPropertyName -Value $testPropertyValue -Force -Confirm:$false
             $result."$testPropertyName" | Should -Be $testPropertyValue
             $result.PSChildName | Should -BeExactly $testKey
         }
 
         It "Verify WhatIf" {
-            $result = New-ItemProperty -Path $testKey -Name $testPropertyName -Value $testPropertyValue -whatif
+            $result = New-ItemProperty -Path $testKey -Name $testPropertyName -Value $testPropertyValue -WhatIf
             $result | Should -BeNullOrEmpty
         }
     }

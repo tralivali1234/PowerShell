@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 /********************************************************************++
 
@@ -30,7 +30,7 @@ using WORD = System.UInt16;
 namespace Microsoft.PowerShell
 {
     /// <summary>
-    /// Custom culture
+    /// Custom culture.
     /// </summary>
     internal class VistaCultureInfo : CultureInfo
     {
@@ -40,7 +40,7 @@ namespace Microsoft.PowerShell
         private object _syncObject = new object();
 
         /// <summary>
-        /// Constructs a CultureInfo that keeps track of fallbacks
+        /// Constructs a CultureInfo that keeps track of fallbacks.
         /// </summary>
         /// <param name="name">Name of the culture to construct.</param>
         /// <param name="fallbacks">
@@ -66,7 +66,7 @@ namespace Microsoft.PowerShell
                 // This is required because there is difference in the parent hierarchy
                 // between CLR and Windows for Chinese. Ex: Native windows has
                 // zh-CN->zh-Hans->neutral whereas CLR has zh-CN->zh-CHS->zh-Hans->neutral
-                if ((null != base.Parent) && (!string.IsNullOrEmpty(base.Parent.Name)))
+                if ((base.Parent != null) && (!string.IsNullOrEmpty(base.Parent.Name)))
                 {
                     return ImmediateParent;
                 }
@@ -76,7 +76,7 @@ namespace Microsoft.PowerShell
                 // returns fallback cultures (specified by the user)
                 // and also adds neutral culture where appropriate.
                 // Ex: ja-jp ja en-us en
-                while ((null != _fallbacks) && (_fallbacks.Length > 0))
+                while ((_fallbacks != null) && (_fallbacks.Length > 0))
                 {
                     string fallback = _fallbacks[0];
                     string[] fallbacksForParent = null;
@@ -99,7 +99,7 @@ namespace Microsoft.PowerShell
                     }
                 }
 
-                //no fallbacks..just return base parent
+                // no fallbacks..just return base parent
                 return base.Parent;
             }
         }
@@ -112,17 +112,17 @@ namespace Microsoft.PowerShell
         {
             get
             {
-                if (null == _parentCI)
+                if (_parentCI == null)
                 {
                     lock (_syncObject)
                     {
-                        if (null == _parentCI)
+                        if (_parentCI == null)
                         {
                             string parentCulture = base.Parent.Name;
                             // remove the parentCulture from the m_fallbacks list.
                             // ie., remove duplicates from the parent hierarchy.
                             string[] fallbacksForTheParent = null;
-                            if (null != _fallbacks)
+                            if (_fallbacks != null)
                             {
                                 fallbacksForTheParent = new string[_fallbacks.Length];
                                 int currentIndex = 0;
@@ -142,6 +142,7 @@ namespace Microsoft.PowerShell
                                     Array.Resize<string>(ref fallbacksForTheParent, currentIndex);
                                 }
                             }
+
                             _parentCI = new VistaCultureInfo(parentCulture, fallbacksForTheParent);
                         }
                     }
@@ -154,7 +155,7 @@ namespace Microsoft.PowerShell
         /// <summary>
         /// Clones the custom CultureInfo retaining the fallbacks.
         /// </summary>
-        /// <returns>Cloned custom CultureInfo</returns>
+        /// <returns>Cloned custom CultureInfo.</returns>
         public override object Clone()
         {
             return new VistaCultureInfo(base.Name, _fallbacks);
@@ -171,17 +172,17 @@ namespace Microsoft.PowerShell
         private static object s_syncObject = new object();
 
         /// <summary>
-        /// Gets the UICulture to be used by console host
+        /// Gets the UICulture to be used by console host.
         /// </summary>
         internal static CultureInfo UICulture
         {
             get
             {
-                if (null == s_uiCulture)
+                if (s_uiCulture == null)
                 {
                     lock (s_syncObject)
                     {
-                        if (null == s_uiCulture)
+                        if (s_uiCulture == null)
                         {
                             s_uiCulture = GetUICulture();
                         }
@@ -196,11 +197,11 @@ namespace Microsoft.PowerShell
         {
             get
             {
-                if (null == s_culture)
+                if (s_culture == null)
                 {
                     lock (s_syncObject)
                     {
-                        if (null == s_culture)
+                        if (s_culture == null)
                         {
                             s_culture = GetCulture();
                         }
@@ -235,8 +236,7 @@ namespace Microsoft.PowerShell
             {
                 try
                 {
-                    string[] fallbacks = langBuffer.Split(new char[] { '\0' },
-                            StringSplitOptions.RemoveEmptyEntries);
+                    string[] fallbacks = langBuffer.Split('\0', StringSplitOptions.RemoveEmptyEntries);
                     string fallback = fallbacks[0];
                     string[] fallbacksForParent = null;
 
@@ -313,7 +313,7 @@ namespace Microsoft.PowerShell
         /// Constructs CultureInfo object without considering any Vista and later
         /// custom culture fallback logic.
         /// </summary>
-        /// <returns>A CultureInfo object</returns>
+        /// <returns>A CultureInfo object.</returns>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("GoldMan", "#pw17903:UseOfLCID", Justification = "This is only called In XP and below where GetUserDefaultLocaleName is not available, or as a fallback when GetThreadPreferredUILanguages fails")]
         private static CultureInfo EmulateDownLevel()
         {
@@ -325,7 +325,7 @@ namespace Microsoft.PowerShell
         }
 
         /// <summary>
-        /// Checks if the current operating system is Vista or later
+        /// Checks if the current operating system is Vista or later.
         /// </summary>
         /// <returns>
         /// true, if vista and above
@@ -361,7 +361,7 @@ namespace Microsoft.PowerShell
         {
             long numberLangs = 0;
             int bufferSize = 0;
-            string returnval = "";
+            string returnval = string.Empty;
 
             if (filterOutNonConsoleCultures)
             {
@@ -455,7 +455,6 @@ namespace Microsoft.PowerShell
         /// include ERR_INSUFFICIENT_BUFFER.
         /// </returns>
         /// <remarks>
-        ///
         /// </remarks>
         [DllImport("kernel32.dll", SetLastError = false, CharSet = CharSet.Unicode)]
         private static extern int GetUserDefaultLocaleName(
@@ -478,7 +477,7 @@ namespace Microsoft.PowerShell
         [DllImport("kernel32.dll", SetLastError = false, CharSet = CharSet.Unicode)]
         internal static extern Int16 SetThreadUILanguage(Int16 langId);
 
-        //private static int MUI_LANGUAGE_ID = 0x4;
+        // private static int MUI_LANGUAGE_ID = 0x4;
         private static int s_MUI_LANGUAGE_NAME = 0x8;
         private static int s_MUI_CONSOLE_FILTER = 0x100;
         private static int s_MUI_MERGE_USER_FALLBACK = 0x20;

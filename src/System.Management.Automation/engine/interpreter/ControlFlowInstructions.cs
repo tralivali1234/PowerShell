@@ -35,6 +35,7 @@ namespace System.Management.Automation.Interpreter
         protected int _offset = Unknown;
 
         public int Offset { get { return _offset; } }
+
         public abstract Instruction[] Cache { get; }
 
         public Instruction Fixup(int offset)
@@ -53,7 +54,7 @@ namespace System.Management.Automation.Interpreter
 
         public override string ToDebugString(int instructionIndex, object cookie, Func<int, int> labelIndexer, IList<object> objects)
         {
-            return ToString() + (_offset != Unknown ? " -> " + (instructionIndex + _offset) : "");
+            return ToString() + (_offset != Unknown ? " -> " + (instructionIndex + _offset) : string.Empty);
         }
 
         public override string ToString()
@@ -132,6 +133,7 @@ namespace System.Management.Automation.Interpreter
         }
 
         public override int ConsumedStack { get { return 1; } }
+
         public override int ProducedStack { get { return 1; } }
 
         public override int Run(InterpretedFrame frame)
@@ -159,6 +161,7 @@ namespace System.Management.Automation.Interpreter
                 {
                     s_caches = new Instruction[2][][] { new Instruction[2][], new Instruction[2][] };
                 }
+
                 return s_caches[ConsumedStack][ProducedStack] ?? (s_caches[ConsumedStack][ProducedStack] = new Instruction[CacheSize]);
             }
         }
@@ -216,7 +219,7 @@ namespace System.Management.Automation.Interpreter
         {
             Debug.Assert(_labelIndex != UnknownInstrIndex);
             int targetIndex = labelIndexer(_labelIndex);
-            return ToString() + (targetIndex != BranchLabel.UnknownIndex ? " -> " + targetIndex : "");
+            return ToString() + (targetIndex != BranchLabel.UnknownIndex ? " -> " + targetIndex : string.Empty);
         }
 
         public override string ToString()
@@ -246,13 +249,11 @@ namespace System.Management.Automation.Interpreter
     /// The jump needs to execute both finally blocks, the first one on stack level 4 the
     /// second one on stack level 2. So, it needs to jump the first finally block, pop 2 items from the stack,
     /// run second finally block and pop another 2 items from the stack and set instruction pointer to label L.
-    ///
-    /// Goto also needs to rethrow ThreadAbortException iff it jumps out of a catch handler and
-    /// the current thread is in "abort requested" state.
     /// </summary>
     internal sealed class GotoInstruction : IndexedBranchInstruction
     {
         private const int Variants = 4;
+
         private static readonly GotoInstruction[] s_cache = new GotoInstruction[Variants * CacheSize];
 
         private readonly bool _hasResult;
@@ -266,6 +267,7 @@ namespace System.Management.Automation.Interpreter
         // case until the label is emitted. By then the consumed and produced stack information is useless.
         // The important thing here is that the stack balance is 0.
         public override int ConsumedContinuations { get { return 0; } }
+
         public override int ProducedContinuations { get { return 0; } }
 
         public override int ConsumedStack
@@ -292,14 +294,12 @@ namespace System.Management.Automation.Interpreter
                 var index = Variants * labelIndex | (hasResult ? 2 : 0) | (hasValue ? 1 : 0);
                 return s_cache[index] ?? (s_cache[index] = new GotoInstruction(labelIndex, hasResult, hasValue));
             }
+
             return new GotoInstruction(labelIndex, hasResult, hasValue);
         }
 
         public override int Run(InterpretedFrame frame)
         {
-            // Are we jumping out of catch/finally while aborting the current thread?
-            Interpreter.AbortThreadIfRequested(frame, _labelIndex);
-
             // goto the target label or the current finally continuation:
             return frame.Goto(_labelIndex, _hasValue ? frame.Pop() : Interpreter.NoValue, gotoExceptionHandler: false);
         }
@@ -328,6 +328,7 @@ namespace System.Management.Automation.Interpreter
         {
             return new EnterTryCatchFinallyInstruction(labelIndex, true);
         }
+
         internal static EnterTryCatchFinallyInstruction CreateTryCatch()
         {
             return new EnterTryCatchFinallyInstruction(UnknownInstrIndex, false);
@@ -342,6 +343,7 @@ namespace System.Management.Automation.Interpreter
                 // Push finally.
                 frame.PushContinuation(_labelIndex);
             }
+
             int prevInstrIndex = frame.InstructionIndex;
             frame.InstructionIndex++;
 
@@ -380,15 +382,6 @@ namespace System.Management.Automation.Interpreter
                 ExceptionHandler exHandler;
                 frame.InstructionIndex += _tryHandler.GotoHandler(frame, exception, out exHandler);
                 if (exHandler == null) { throw; }
-#if !CORECLR // Thread.Abort and ThreadAbortException are not in CoreCLR.
-                // stay in the current catch so that ThreadAbortException is not rethrown by CLR:
-                var abort = exception as ThreadAbortException;
-                if (abort != null)
-                {
-                    Interpreter.AnyAbortException = abort;
-                    frame.CurrentAbortHandler = exHandler;
-                }
-#endif
                 bool rethrow = false;
                 try
                 {
@@ -464,6 +457,7 @@ namespace System.Management.Automation.Interpreter
         private static readonly EnterFinallyInstruction[] s_cache = new EnterFinallyInstruction[CacheSize];
 
         public override int ProducedStack { get { return 2; } }
+
         public override int ConsumedContinuations { get { return 1; } }
 
         private EnterFinallyInstruction(int labelIndex)
@@ -477,6 +471,7 @@ namespace System.Management.Automation.Interpreter
             {
                 return s_cache[labelIndex] ?? (s_cache[labelIndex] = new EnterFinallyInstruction(labelIndex));
             }
+
             return new EnterFinallyInstruction(labelIndex);
         }
 
@@ -587,13 +582,12 @@ namespace System.Management.Automation.Interpreter
                 int index = (2 * labelIndex) | (hasValue ? 1 : 0);
                 return s_cache[index] ?? (s_cache[index] = new LeaveExceptionHandlerInstruction(labelIndex, hasValue));
             }
+
             return new LeaveExceptionHandlerInstruction(labelIndex, hasValue);
         }
 
         public override int Run(InterpretedFrame frame)
         {
-            // CLR rethrows ThreadAbortException when leaving catch handler if abort is requested on the current thread.
-            Interpreter.AbortThreadIfRequested(frame, _labelIndex);
             return GetLabel(frame).Index - frame.InstructionIndex;
         }
     }
@@ -630,11 +624,7 @@ namespace System.Management.Automation.Interpreter
 
         public override int Run(InterpretedFrame frame)
         {
-            // TODO: ThreadAbortException ?
-
             object exception = frame.Pop();
-            // ExceptionHandler handler;
-            // return frame.Interpreter.GotoHandler(frame, exception, out handler);
             throw new RethrowException();
         }
     }
@@ -676,6 +666,7 @@ namespace System.Management.Automation.Interpreter
                 // return frame.Interpreter.GotoHandler(frame, ex, out handler);
                 throw new RethrowException();
             }
+
             throw ex;
         }
     }
@@ -691,6 +682,7 @@ namespace System.Management.Automation.Interpreter
         }
 
         public override int ConsumedStack { get { return 1; } }
+
         public override int ProducedStack { get { return 0; } }
 
         public override int Run(InterpretedFrame frame)
@@ -748,6 +740,7 @@ namespace System.Management.Automation.Interpreter
                     ThreadPool.QueueUserWorkItem(Compile, frame);
                 }
             }
+
             return 1;
         }
 
@@ -770,7 +763,7 @@ namespace System.Management.Automation.Interpreter
                     return;
                 }
 
-                //PerfTrack.NoteEvent(PerfTrack.Categories.Compiler, "Interpreted loop compiled");
+                // PerfTrack.NoteEvent(PerfTrack.Categories.Compiler, "Interpreted loop compiled");
 
                 InterpretedFrame frame = (InterpretedFrame)frameObj;
                 var compiler = new LoopCompiler(_loop, frame.Interpreter.LabelMapping, _variables, _closureVariables, _instructionIndex, _loopEnd);

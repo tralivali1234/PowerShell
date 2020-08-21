@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
 using System;
@@ -8,14 +8,15 @@ using System.Management.Automation;
 namespace Microsoft.PowerShell.Commands
 {
     /// <summary>
-    /// The implementation of the "New-TemporaryFile" cmdlet
+    /// The implementation of the "New-TemporaryFile" cmdlet.
     /// </summary>
-    [Cmdlet(VerbsCommon.New, "TemporaryFile", SupportsShouldProcess = true, HelpUri = "https://go.microsoft.com/fwlink/?LinkId=526726")]
+    [Cmdlet(VerbsCommon.New, "TemporaryFile", SupportsShouldProcess = true, ConfirmImpact = ConfirmImpact.Low,
+        HelpUri = "https://go.microsoft.com/fwlink/?LinkId=2097032")]
     [OutputType(typeof(System.IO.FileInfo))]
     public class NewTemporaryFileCommand : Cmdlet
     {
         /// <summary>
-        /// returns a TemporaryFile
+        /// Returns a TemporaryFile.
         /// </summary>
         protected override void EndProcessing()
         {
@@ -37,6 +38,7 @@ namespace Microsoft.PowerShell.Commands
                             tempPath));
                     return;
                 }
+
                 if (!string.IsNullOrEmpty(filePath))
                 {
                     FileInfo file = new FileInfo(filePath);

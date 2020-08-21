@@ -1,7 +1,7 @@
 # Docker image file that describes an Ubuntu16.04 image with PowerShell installed from Microsoft APT Repo
 
-FROM microsoft/powershell:ubuntu16.04
-LABEL maintainer="PowerShell Team <powershellteam@hotmail.com>" 
+FROM mcr.microsoft.com/powershell:ubuntu-16.04
+LABEL maintainer="PowerShell Team <powershellteam@hotmail.com>"
 
 # Install dependencies and clean up
 RUN apt-get update \
@@ -26,9 +26,12 @@ RUN apt-get update \
 	apt-transport-https \
 	locales \
 	wget \
+    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
 COPY PowerShellPackage.ps1 /
+
+ENV DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
 
 # Use PowerShell as the default shell
 ENTRYPOINT [ "pwsh" ]

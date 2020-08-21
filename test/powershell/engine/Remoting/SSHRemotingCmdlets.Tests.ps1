@@ -1,4 +1,4 @@
-# Copyright (c) Microsoft Corporation. All rights reserved.
+# Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 ##
 ## SSH Remoting cmdlet tests
@@ -11,22 +11,13 @@ Describe "SSHTransport switch parameter value" -Tags 'Feature' {
         $TestCasesSSHTransport = @(
             @{scriptBlock = {New-PSSession -HostName localhost -UserName UserA -SSHTransport:$false}; testName = 'New-PSSession SSHTransport parameter cannot have false value'}
             @{scriptBlock = {Enter-PSSession -HostName localhost -UserName UserA -SSHTransport:$false}; testName = 'Enter-PSSession SSHTransport parameter cannot have false value'}
-            @{scriptBlock = {Invoke-Command -ScriptBlock {"Hello"} -HostName localhost -UserName UserA -SSHTransport:$false}; testName = 'Invoke-Command SSHTransport parameter cannot have false value'}
+            @{scriptBlock = {Invoke-Command -Scriptblock {"Hello"} -HostName localhost -UserName UserA -SSHTransport:$false}; testName = 'Invoke-Command SSHTransport parameter cannot have false value'}
         )
     }
 
     It "<testName>" -TestCases $TestCasesSSHTransport {
-
         param($scriptBlock)
-        try
-        {
-            & $scriptBlock
-            throw "Parameter argument should not be valid"
-        }
-        catch
-        {
-            $_.FullyQualifiedErrorId | Should -Match "ParameterArgumentValidationError"
-        }
+        { & $scriptBlock } | Should -Throw -ErrorId "ParameterArgumentValidationError"
     }
 }
 
@@ -46,14 +37,36 @@ Describe "SSHConnection parameter hashtable error conditions" -Tags 'Feature' {
 
     It "<testName>" -TestCases $TestCasesSSHConnection {
         param ($scriptBlock)
+        { & $scriptBlock } | Should -Throw -ErrorId "Argument,Microsoft.PowerShell.Commands.NewPSSessionCommand"
+    }
+}
+
+Describe "SSHConnection parameter hashtable type conversions" -Tags 'Feature', 'Slow' {
+
+    BeforeAll {
+
+        # Port 49151 is IANA reserved, so it should not be in use. If type conversion fails
+        # then New-PSSession will throw before even attempting to open the session.
+        $TestCasesSSHConnection = @(
+            @{scriptBlock = {New-PSSession -ErrorAction Stop -SSHConnection @{ Port = 49151; ComputerName = [psobject]'localhost' }}; testName = 'SSHConnection can convert PSObject to string'}
+            @{scriptBlock = {New-PSSession -ErrorAction Stop -SSHConnection @{ Port = [psobject]49151; ComputerName = 'localhost' }}; testName = 'SSHConnection can convert PSObject to int'}
+        )
+    }
+
+    It "<testName>" -TestCases $TestCasesSSHConnection {
+        param($scriptBlock)
+
+        $err = $null
         try
         {
             & $scriptBlock
-            throw "Parameter set should not be valid"
         }
         catch
         {
-            $_.FullyQualifiedErrorId | Should -Match "Argument,Microsoft.PowerShell.Commands.NewPSSessionCommand"
+            $err = $_
         }
+        # The exact returned error id string varies depending on platform,
+        # but will always contain 'PSSessionOpenFailed'.
+        $err.FullyQualifiedErrorId | Should -Match 'PSSessionOpenFailed'
     }
 }

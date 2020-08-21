@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
 using System;
@@ -14,7 +14,7 @@ using System.Text.RegularExpressions;
 namespace Microsoft.PowerShell.Commands
 {
     /// <summary>
-    /// Response object for html content without DOM parsing
+    /// Response object for html content without DOM parsing.
     /// </summary>
     public class BasicHtmlWebResponseObject : WebResponseObject
     {
@@ -32,7 +32,7 @@ namespace Microsoft.PowerShell.Commands
         #region Constructors
 
         /// <summary>
-        /// Constructor for BasicHtmlWebResponseObject
+        /// Constructor for BasicHtmlWebResponseObject.
         /// </summary>
         /// <param name="response"></param>
         public BasicHtmlWebResponseObject(HttpResponseMessage response)
@@ -40,7 +40,7 @@ namespace Microsoft.PowerShell.Commands
         { }
 
         /// <summary>
-        /// Constructor for HtmlWebResponseObject with memory stream
+        /// Constructor for HtmlWebResponseObject with memory stream.
         /// </summary>
         /// <param name="response"></param>
         /// <param name="contentStream"></param>
@@ -57,22 +57,28 @@ namespace Microsoft.PowerShell.Commands
         #region Properties
 
         /// <summary>
-        /// gets or protected sets the Content property
+        /// Gets the text body content of this response.
         /// </summary>
+        /// <value>
+        /// Content of the response body, decoded using <see cref="Encoding"/>,
+        /// if the <c>Content-Type</c> response header is a recognized text
+        /// type.  Otherwise <c>null</c>.
+        /// </value>
         public new string Content { get; private set; }
 
         /// <summary>
-        /// Gets the Encoding that was used to decode the Content
+        /// Gets the encoding of the text body content of this response.
         /// </summary>
         /// <value>
-        /// The Encoding used to decode the Content; otherwise, a null reference if the content is not text.
+        /// Encoding of the response body from the <c>Content-Type</c> header,
+        /// or <c>null</c> if the encoding could not be determined.
         /// </value>
         public Encoding Encoding { get; private set; }
 
         private WebCmdletElementCollection _inputFields;
 
         /// <summary>
-        /// gets the Fields property
+        /// Gets the HTML input field elements parsed from <see cref="Content"/>.
         /// </summary>
         public WebCmdletElementCollection InputFields
         {
@@ -99,7 +105,7 @@ namespace Microsoft.PowerShell.Commands
         private WebCmdletElementCollection _links;
 
         /// <summary>
-        /// gets the Links property
+        /// Gets the HTML a link elements parsed from <see cref="Content"/>.
         /// </summary>
         public WebCmdletElementCollection Links
         {
@@ -126,7 +132,7 @@ namespace Microsoft.PowerShell.Commands
         private WebCmdletElementCollection _images;
 
         /// <summary>
-        /// gets the Images property
+        /// Gets the HTML img elements parsed from <see cref="Content"/>.
         /// </summary>
         public WebCmdletElementCollection Images
         {
@@ -166,7 +172,7 @@ namespace Microsoft.PowerShell.Commands
                 // fill the Content buffer
                 string characterSet = WebResponseHelper.GetCharacterSet(BaseResponse);
 
-                if (String.IsNullOrEmpty(characterSet) && ContentHelper.IsJson(contentType))
+                if (string.IsNullOrEmpty(characterSet) && ContentHelper.IsJson(contentType))
                 {
                     characterSet = Encoding.UTF8.HeaderName;
                 }
@@ -226,7 +232,7 @@ namespace Microsoft.PowerShell.Commands
 
             if (s_imageRegex == null)
             {
-                s_imageRegex = new Regex(@"<img\s+[^>]*>",
+                s_imageRegex = new Regex(@"<img\s[^>]*?>",
                     RegexOptions.Singleline | RegexOptions.IgnoreCase | RegexOptions.Compiled);
             }
         }

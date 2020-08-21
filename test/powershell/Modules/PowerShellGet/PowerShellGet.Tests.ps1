@@ -1,11 +1,11 @@
-# Copyright (c) Microsoft Corporation. All rights reserved.
+# Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
 # no progress output during these tests
 $ProgressPreference = "SilentlyContinue"
 
 $RepositoryName = 'INTGallery'
-$SourceLocation = 'https://dtlgalleryint.cloudapp.net'
+$SourceLocation = 'https://www.poshtestgallery.com'
 $RegisteredINTRepo = $false
 $ContosoServer = 'ContosoServer'
 $FabrikamServerScript = 'Fabrikam-ServerScript'
@@ -25,7 +25,7 @@ if(IsInbox)
 {
     $script:ProgramFilesPSPath = Microsoft.PowerShell.Management\Join-Path -Path $env:ProgramFiles -ChildPath "WindowsPowerShell"
 }
-elseif(IsCoreCLR){
+elseif(IsCoreCLR) {
     if(IsWindows) {
         $script:ProgramFilesPSPath = Microsoft.PowerShell.Management\Join-Path -Path $env:ProgramFiles -ChildPath 'PowerShell'
     }
@@ -127,8 +127,8 @@ Describe "PowerShellGet - Module tests" -tags "Feature" {
         $psgetModuleInfo.Repository | Should -Be $RepositoryName
     }
 
-    It "Should install a module correctly to the required location with CurrentUser scope" {
-        Install-Module -Name $ContosoServer -Repository $RepositoryName -Scope CurrentUser
+    It "Should install a module correctly to the required location with default CurrentUser scope" {
+        Install-Module -Name $ContosoServer -Repository $RepositoryName
         $installedModuleInfo = Get-InstalledModule -Name $ContosoServer
 
         $installedModuleInfo | Should -Not -BeNullOrEmpty
@@ -145,7 +145,7 @@ Describe "PowerShellGet - Module tests" -tags "Feature" {
     }
 }
 
-Describe "PowerShellGet - Module tests (Admin)" -tags @('Feature', 'RequireAdminOnWindows') {
+Describe "PowerShellGet - Module tests (Admin)" -Tags @('Feature', 'RequireAdminOnWindows', 'RequireSudoOnUnix') {
 
     BeforeAll {
         if ($script:Initialized -eq $false) {
@@ -158,9 +158,8 @@ Describe "PowerShellGet - Module tests (Admin)" -tags @('Feature', 'RequireAdmin
         Remove-InstalledModules
     }
 
-    ## Marked as 'Pending' on Linux for now because the test requires root privilege but we cannot do it now in our Travis CI Linux build
-    It "Should install a module correctly to the required location with default AllUsers scope" -Pending:$IsLinux {
-        Install-Module -Name $ContosoServer -Repository $RepositoryName
+    It "Should install a module correctly to the required location with AllUsers scope" {
+        Install-Module -Name $ContosoServer -Repository $RepositoryName -Scope AllUsers
         $installedModuleInfo = Get-InstalledModule -Name $ContosoServer
 
         $installedModuleInfo | Should -Not -BeNullOrEmpty
@@ -201,8 +200,8 @@ Describe "PowerShellGet - Script tests" -tags "Feature" {
         $psgetScriptInfo.Repository | Should -Be $RepositoryName
     }
 
-    It "Should install a script correctly to the required location with CurrentUser scope" {
-        Install-Script -Name $FabrikamServerScript -Repository $RepositoryName -Scope CurrentUser -NoPathUpdate
+    It "Should install a script correctly to the required location with default CurrentUser scope" {
+        Install-Script -Name $FabrikamServerScript -Repository $RepositoryName -NoPathUpdate
         $installedScriptInfo = Get-InstalledScript -Name $FabrikamServerScript
 
         $installedScriptInfo | Should -Not -BeNullOrEmpty
@@ -215,7 +214,7 @@ Describe "PowerShellGet - Script tests" -tags "Feature" {
     }
 }
 
-Describe "PowerShellGet - Script tests (Admin)" -tags @('Feature', 'RequireAdminOnWindows') {
+Describe "PowerShellGet - Script tests (Admin)" -Tags @('Feature', 'RequireAdminOnWindows', 'RequireSudoOnUnix') {
 
     BeforeAll {
         if ($script:Initialized -eq $false) {
@@ -228,9 +227,8 @@ Describe "PowerShellGet - Script tests (Admin)" -tags @('Feature', 'RequireAdmin
         Remove-InstalledScripts
     }
 
-    ## Marked as 'Pending' on Linux for now because the test requires root privilege but we cannot do it now in our Travis CI Linux build
-    It "Should install a script correctly to the required location with default AllUsers scope" -Pending:$IsLinux {
-        Install-Script -Name $FabrikamServerScript -Repository $RepositoryName -NoPathUpdate
+    It "Should install a script correctly to the required location with AllUsers scope" {
+        Install-Script -Name $FabrikamServerScript -Repository $RepositoryName -NoPathUpdate -Scope AllUsers
         $installedScriptInfo = Get-InstalledScript -Name $FabrikamServerScript
 
         $installedScriptInfo | Should -Not -BeNullOrEmpty

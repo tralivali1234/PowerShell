@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
 using System.ComponentModel;
@@ -7,15 +7,12 @@ using System.Management.Automation;
 namespace Microsoft.PowerShell
 {
     /// <summary>
-    ///
     /// PSHostMshSnapin (or PSHostMshSnapinInstaller) is a class for facilitating registry
     /// of necessary information for monad host mshsnapin.
     ///
     /// This class will be built with monad host engine dll
     /// (Microsoft.PowerShell.ConsoleHost.dll).
-    ///
     /// </summary>
-    ///
     [RunInstaller(true)]
     public sealed class PSHostPSSnapIn : PSSnapIn
     {

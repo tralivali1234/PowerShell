@@ -1,4 +1,4 @@
-# Copyright (c) Microsoft Corporation. All rights reserved.
+# Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 Describe "DSC MOF Compilation" -tags "CI" {
 
@@ -7,13 +7,26 @@ Describe "DSC MOF Compilation" -tags "CI" {
     }
 
     BeforeAll {
-        $env:DSC_HOME = Join-Path -Path (Join-Path -Path $PSScriptRoot -ChildPath assets) -ChildPath dsc
+        $platformInfo = Get-PlatformInfo
+        $SkipAdditionalPlatforms =
+            ($platformInfo.Platform -match "alpine|raspbian") -or
+            ($platformInfo.Platform -eq "debian" -and ($platformInfo.Version -eq '10' -or $platformInfo.Version -eq '')) -or # debian 11 has empty Version ID
+            ($platformInfo.Platform -eq 'centos' -and $platformInfo.Version -eq '8')
+
+        Import-Module PSDesiredStateConfiguration
+        $dscModule = Get-Module PSDesiredStateConfiguration
+        $baseSchemaPath = Join-Path $dscModule.ModuleBase 'Configuration'
+        $testResourceSchemaPath = Join-Path -Path (Join-Path -Path (Join-Path -Path $PSScriptRoot -ChildPath assets) -ChildPath dsc) schema
+
+        # Copy test resources to PSDesiredStateConfiguration module
+        Copy-Item $testResourceSchemaPath $baseSchemaPath -Recurse -Force
+
         $_modulePath = $env:PSModulePath
-        $powershellexe = (get-process -pid $PID).MainModule.FileName
-        $env:PSModulePath = join-path ([io.path]::GetDirectoryName($powershellexe)) Modules
+        $powershellexe = (Get-Process -pid $PID).MainModule.FileName
+        $env:PSModulePath = Join-Path ([io.path]::GetDirectoryName($powershellexe)) Modules
     }
 
-    It "Should be able to compile a MOF from a basic configuration" -Skip:($IsMacOS -or $IsWindows) {
+    It "Should be able to compile a MOF from a basic configuration" -Skip:($IsMacOS -or $IsWindows -or $SkipAdditionalPlatforms) {
         [Scriptblock]::Create(@"
         configuration DSCTestConfig
         {
@@ -27,12 +40,12 @@ Describe "DSC MOF Compilation" -tags "CI" {
         }
 
         DSCTestConfig -OutputPath TestDrive:\DscTestConfig1
-"@) | should not throw
+"@) | Should -Not -Throw
 
-        "TestDrive:\DscTestConfig1\localhost.mof" | Should Exist
+        "TestDrive:\DscTestConfig1\localhost.mof" | Should -Exist
     }
 
-    It "Should be able to compile a MOF from another basic configuration" -Skip:($IsMacOS -or $IsWindows) {
+    It "Should be able to compile a MOF from another basic configuration" -Skip:($IsMacOS -or $IsWindows -or $SkipAdditionalPlatforms) {
         [Scriptblock]::Create(@"
         configuration DSCTestConfig
         {
@@ -49,12 +62,12 @@ Describe "DSC MOF Compilation" -tags "CI" {
         }
 
         DSCTestConfig -OutputPath TestDrive:\DscTestConfig2
-"@) | should not throw
+"@) | Should -Not -Throw
 
-        "TestDrive:\DscTestConfig2\localhost.mof" | Should Exist
+        "TestDrive:\DscTestConfig2\localhost.mof" | Should -Exist
     }
 
-    It "Should be able to compile a MOF from a complex configuration" -Skip:($IsMacOS -or $IsWindows) {
+    It "Should be able to compile a MOF from a complex configuration" -Skip:($IsMacOS -or $IsWindows -or $SkipAdditionalPlatforms) {
         [Scriptblock]::Create(@"
     Configuration WordPressServer{
 
@@ -158,12 +171,12 @@ Describe "DSC MOF Compilation" -tags "CI" {
 
     }
         WordPressServer -OutputPath TestDrive:\DscTestConfig3
-"@) | should not throw
+"@) | Should -Not -Throw
 
-        "TestDrive:\DscTestConfig3\CentOS.mof" | Should Exist
+        "TestDrive:\DscTestConfig3\CentOS.mof" | Should -Exist
     }
 
-    It "Should be able to compile a MOF from a basic configuration on Windows" -Skip:($IsMacOS -or $IsLinux) {
+    It "Should be able to compile a MOF from a basic configuration on Windows" -Skip:($IsMacOS -or $IsLinux -or $SkipAdditionalPlatforms) {
         [Scriptblock]::Create(@"
         configuration DSCTestConfig
         {
@@ -178,12 +191,12 @@ Describe "DSC MOF Compilation" -tags "CI" {
         }
 
         DSCTestConfig -OutputPath TestDrive:\DscTestConfig4
-"@) | should not throw
+"@) | Should -Not -Throw
 
-        "TestDrive:\DscTestConfig4\localhost.mof" | Should Exist
+        "TestDrive:\DscTestConfig4\localhost.mof" | Should -Exist
     }
 
-    It "Should be able to compile a MOF from a configuration with multiple resources on Windows" -Skip:($IsMacOS -or $IsLinux) {
+    It "Should be able to compile a MOF from a configuration with multiple resources on Windows" -Skip:($IsMacOS -or $IsLinux -or $SkipAdditionalPlatforms) {
         [Scriptblock]::Create(@"
         configuration DSCTestConfig
         {
@@ -208,8 +221,8 @@ Describe "DSC MOF Compilation" -tags "CI" {
         }
 
         DSCTestConfig -OutputPath TestDrive:\DscTestConfig5
-"@) | should not throw
+"@) | Should -Not -Throw
 
-        "TestDrive:\DscTestConfig5\localhost.mof" | Should Exist
+        "TestDrive:\DscTestConfig5\localhost.mof" | Should -Exist
     }
 }

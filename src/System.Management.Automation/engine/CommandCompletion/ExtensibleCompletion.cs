@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
 using System.Collections;
@@ -12,9 +12,11 @@ namespace System.Management.Automation
     /// <summary>
     /// This attribute is used to specify an argument completer for a parameter to a cmdlet or function.
     /// <example>
+    /// <code>
     ///     [Parameter()]
     ///     [ArgumentCompleter(typeof(NounArgumentCompleter))]
     ///     public string Noun { get; set; }
+    /// </code>
     /// </example>
     /// </summary>
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
@@ -32,7 +34,7 @@ namespace System.Management.Automation
         {
             if (type == null || (type.GetInterfaces().All(t => t != typeof(IArgumentCompleter))))
             {
-                throw PSTraceSource.NewArgumentException("type");
+                throw PSTraceSource.NewArgumentException(nameof(type));
             }
 
             Type = type;
@@ -46,7 +48,7 @@ namespace System.Management.Automation
         {
             if (scriptBlock == null)
             {
-                throw PSTraceSource.NewArgumentNullException("scriptBlock");
+                throw PSTraceSource.NewArgumentNullException(nameof(scriptBlock));
             }
 
             ScriptBlock = scriptBlock;
@@ -82,13 +84,11 @@ namespace System.Management.Automation
     }
 
     /// <summary>
-    ///
     /// </summary>
     [Cmdlet(VerbsLifecycle.Register, "ArgumentCompleter", HelpUri = "https://go.microsoft.com/fwlink/?LinkId=528576")]
     public class RegisterArgumentCompleterCommand : PSCmdlet
     {
         /// <summary>
-        ///
         /// </summary>
         [Parameter(ParameterSetName = "NativeSet", Mandatory = true)]
         [Parameter(ParameterSetName = "PowerShellSet")]
@@ -96,26 +96,22 @@ namespace System.Management.Automation
         public string[] CommandName { get; set; }
 
         /// <summary>
-        ///
         /// </summary>
         [Parameter(ParameterSetName = "PowerShellSet", Mandatory = true)]
         public string ParameterName { get; set; }
 
         /// <summary>
-        ///
         /// </summary>
         [Parameter(Mandatory = true)]
         [AllowNull()]
         public ScriptBlock ScriptBlock { get; set; }
 
         /// <summary>
-        ///
         /// </summary>
         [Parameter(ParameterSetName = "NativeSet")]
         public SwitchParameter Native { get; set; }
 
         /// <summary>
-        ///
         /// </summary>
         protected override void EndProcessing()
         {
@@ -171,21 +167,21 @@ namespace System.Management.Automation
         private string[] _completions;
 
         /// <summary>
-        /// Initializes a new instance of the ArgumentCompletionsAttribute class
+        /// Initializes a new instance of the ArgumentCompletionsAttribute class.
         /// </summary>
-        /// <param name="completions">list of complete values</param>
-        /// <exception cref="ArgumentNullException">for null arguments</exception>
-        /// <exception cref="ArgumentOutOfRangeException">for invalid arguments</exception>
+        /// <param name="completions">List of complete values.</param>
+        /// <exception cref="ArgumentNullException">For null arguments.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">For invalid arguments.</exception>
         public ArgumentCompletionsAttribute(params string[] completions)
         {
             if (completions == null)
             {
-                throw PSTraceSource.NewArgumentNullException("completions");
+                throw PSTraceSource.NewArgumentNullException(nameof(completions));
             }
 
             if (completions.Length == 0)
             {
-                throw PSTraceSource.NewArgumentOutOfRangeException("completions", completions);
+                throw PSTraceSource.NewArgumentOutOfRangeException(nameof(completions), completions);
             }
 
             _completions = completions;

@@ -1,4 +1,7 @@
-// Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
+// Code in this file was copied from https://github.com/dotnet/roslyn
 
 using System;
 using System.Collections.Generic;
@@ -128,22 +131,19 @@ namespace Microsoft.CodeAnalysis
             hr = nameObject.GetDisplayName(null, ref characterCountIncludingTerminator, displayFlags);
             if (hr == 0)
             {
-                return String.Empty;
+                return string.Empty;
             }
 
             if (hr != ERROR_INSUFFICIENT_BUFFER)
             {
-                throw Marshal.GetExceptionForHR(hr);
+                Marshal.ThrowExceptionForHR(hr);
             }
 
             byte[] data = new byte[(int)characterCountIncludingTerminator * 2];
             fixed (byte* p = data)
             {
                 hr = nameObject.GetDisplayName(p, ref characterCountIncludingTerminator, displayFlags);
-                if (hr != 0)
-                {
-                    throw Marshal.GetExceptionForHR(hr);
-                }
+                Marshal.ThrowExceptionForHR(hr);
 
                 return Marshal.PtrToStringUni((IntPtr)p, (int)characterCountIncludingTerminator - 1);
             }
@@ -162,17 +162,14 @@ namespace Microsoft.CodeAnalysis
 
             if (hr != ERROR_INSUFFICIENT_BUFFER)
             {
-                throw Marshal.GetExceptionForHR(hr);
+                Marshal.ThrowExceptionForHR(hr);
             }
 
             byte[] data = new byte[(int)size];
             fixed (byte* p = data)
             {
                 hr = nameObject.GetProperty(propertyId, p, ref size);
-                if (hr != 0)
-                {
-                    throw Marshal.GetExceptionForHR(hr);
-                }
+                Marshal.ThrowExceptionForHR(hr);
             }
 
             return data;
@@ -210,10 +207,7 @@ namespace Microsoft.CodeAnalysis
             uint result;
             uint size = sizeof(uint);
             int hr = nameObject.GetProperty(propertyId, &result, ref size);
-            if (hr != 0)
-            {
-                throw Marshal.GetExceptionForHR(hr);
-            }
+            Marshal.ThrowExceptionForHR(hr);
 
             if (size == 0)
             {

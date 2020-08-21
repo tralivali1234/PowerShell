@@ -1,96 +1,13 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
 using System;
-using System.Globalization;
 using System.Collections.Generic;
+using System.Globalization;
+
 using Microsoft.Win32;
 
 #pragma warning disable 1591, 1572, 1571, 1573, 1587, 1570, 0067
-
-#region CLR_STUBS
-
-// This namespace contains stubs for some .NET types that are not in CoreCLR, such as ISerializable and SerializableAttribute.
-// We use the stubs in this namespace to reduce #if/def in the code as much as possible.
-namespace Microsoft.PowerShell.CoreClr.Stubs
-{
-    #region SystemManagementStubs
-
-    // Summary:
-    //     Describes the authentication level to be used to connect to WMI. This is
-    //     used for the COM connection to WMI.
-    public enum AuthenticationLevel
-    {
-        // Summary:
-        //     Authentication level should remain as it was before.
-        Unchanged = -1,
-        //
-        // Summary:
-        //     The default COM authentication level. WMI uses the default Windows Authentication
-        //     setting.
-        Default = 0,
-        //
-        // Summary:
-        //     No COM authentication.
-        None = 1,
-        //
-        // Summary:
-        //     Connect-level COM authentication.
-        Connect = 2,
-        //
-        // Summary:
-        //     Call-level COM authentication.
-        Call = 3,
-        //
-        // Summary:
-        //     Packet-level COM authentication.
-        Packet = 4,
-        //
-        // Summary:
-        //     Packet Integrity-level COM authentication.
-        PacketIntegrity = 5,
-        //
-        // Summary:
-        //     Packet Privacy-level COM authentication.
-        PacketPrivacy = 6,
-    }
-
-    // Summary:
-    //     Describes the impersonation level to be used to connect to WMI.
-    public enum ImpersonationLevel
-    {
-        // Summary:
-        //     Default impersonation.
-        Default = 0,
-        //
-        // Summary:
-        //     Anonymous COM impersonation level that hides the identity of the caller.
-        //     Calls to WMI may fail with this impersonation level.
-        Anonymous = 1,
-        //
-        // Summary:
-        //     Identify-level COM impersonation level that allows objects to query the credentials
-        //     of the caller. Calls to WMI may fail with this impersonation level.
-        Identify = 2,
-        //
-        // Summary:
-        //     Impersonate-level COM impersonation level that allows objects to use the
-        //     credentials of the caller. This is the recommended impersonation level for
-        //     WMI calls.
-        Impersonate = 3,
-        //
-        // Summary:
-        //     Delegate-level COM impersonation level that allows objects to permit other
-        //     objects to use the credentials of the caller. This level, which will work
-        //     with WMI calls but may constitute an unnecessary security risk, is supported
-        //     only under Windows 2000.
-        Delegate = 4,
-    }
-
-    #endregion
-}
-
-#endregion CLR_STUBS
 
 #region PS_STUBS
 // Include PS types that are not needed for PowerShell on CSS
@@ -101,11 +18,12 @@ namespace System.Management.Automation
 
     /// <summary>
     /// We don't need PSTransaction related types on CSS because System.Transactions
-    /// namespace is not available in CoreCLR
+    /// namespace is not available in CoreCLR.
     /// </summary>
     public sealed class PSTransactionContext : IDisposable
     {
         internal PSTransactionContext(Internal.PSTransactionManager transactionManager) { }
+
         public void Dispose() { }
     }
 
@@ -116,49 +34,29 @@ namespace System.Management.Automation
     public enum RollbackSeverity
     {
         /// <summary>
-        /// Non-terminating errors or worse
+        /// Non-terminating errors or worse.
         /// </summary>
         Error,
 
         /// <summary>
-        /// Terminating errors or worse
+        /// Terminating errors or worse.
         /// </summary>
         TerminatingError,
 
         /// <summary>
-        /// Do not rollback the transaction on error
+        /// Do not rollback the transaction on error.
         /// </summary>
         Never
     }
 
     #endregion PSTransaction
-
-    #region ApartmentState
-
-    internal enum ApartmentState
-    {
-        //
-        // Summary:
-        //     The System.Threading.Thread will create and enter a single-threaded apartment.
-        STA = 0,
-        //
-        // Summary:
-        //     The System.Threading.Thread will create and enter a multithreaded apartment.
-        MTA = 1,
-        //
-        // Summary:
-        //     The System.Threading.Thread.ApartmentState property has not been set.
-        Unknown = 2
-    }
-
-    #endregion ApartmentState
 }
 
 namespace System.Management.Automation.Internal
 {
     /// <summary>
     /// We don't need PSTransaction related types on CSS because System.Transactions
-    /// namespace is not available in CoreCLR
+    /// namespace is not available in CoreCLR.
     /// </summary>
     internal sealed class PSTransactionManager : IDisposable
     {
@@ -199,7 +97,7 @@ namespace System.Management.Automation.Internal
         }
 
         /// <summary>
-        /// Gets the rollback preference for the active transaction
+        /// Gets the rollback preference for the active transaction.
         /// </summary>
         internal RollbackSeverity RollbackPreference
         {
@@ -233,253 +131,6 @@ namespace System.Management.Automation.Internal
     }
 }
 
-namespace System.Management.Automation.ComInterop
-{
-    using System.Dynamic;
-    using System.Diagnostics;
-    using System.Runtime.InteropServices;
-
-    /// <summary>
-    /// Provides helper methods to bind COM objects dynamically.
-    /// </summary>
-    /// <remarks>
-    /// COM is not supported in core powershell. So this is a stub type.
-    /// </remarks>
-    internal static class ComBinder
-    {
-        /// <summary>
-        /// Tries to perform binding of the dynamic get index operation.
-        /// </summary>
-        /// <remarks>
-        /// Always return false in CoreCLR.
-        /// </remarks>
-        public static bool TryBindGetIndex(GetIndexBinder binder, DynamicMetaObject instance, DynamicMetaObject[] args, out DynamicMetaObject result)
-        {
-            result = null;
-            return false;
-        }
-
-        /// <summary>
-        /// Tries to perform binding of the dynamic set index operation.
-        /// </summary>
-        /// <remarks>
-        /// Always return false in CoreCLR.
-        /// </remarks>
-        public static bool TryBindSetIndex(SetIndexBinder binder, DynamicMetaObject instance, DynamicMetaObject[] args, DynamicMetaObject value, out DynamicMetaObject result)
-        {
-            result = null;
-            return false;
-        }
-
-        /// <summary>
-        /// Tries to perform binding of the dynamic get member operation.
-        /// </summary>
-        /// <remarks>
-        /// Always return false in CoreCLR.
-        /// </remarks>
-        public static bool TryBindGetMember(GetMemberBinder binder, DynamicMetaObject instance, out DynamicMetaObject result)
-        {
-            result = null;
-            return false;
-        }
-
-        /// <summary>
-        /// Tries to perform binding of the dynamic set member operation.
-        /// </summary>
-        /// <remarks>
-        /// Always return false in CoreCLR.
-        /// </remarks>
-        public static bool TryBindSetMember(SetMemberBinder binder, DynamicMetaObject instance, DynamicMetaObject value, out DynamicMetaObject result)
-        {
-            result = null;
-            return false;
-        }
-
-        /// <summary>
-        /// Tries to perform binding of the dynamic invoke member operation.
-        /// </summary>
-        /// <remarks>
-        /// Always return false in CoreCLR.
-        /// </remarks>
-        public static bool TryBindInvokeMember(InvokeMemberBinder binder, bool isSetProperty, DynamicMetaObject instance, DynamicMetaObject[] args, out DynamicMetaObject result)
-        {
-            result = null;
-            return false;
-        }
-    }
-
-#pragma warning disable 618 // Disable obsolete warning about VarEnum in CoreCLR
-    internal class VarEnumSelector
-    {
-        private static readonly Dictionary<VarEnum, Type> _ComToManagedPrimitiveTypes = CreateComToManagedPrimitiveTypes();
-
-        internal static Type GetTypeForVarEnum(VarEnum vt)
-        {
-            Type type;
-
-            switch (vt)
-            {
-                // VarEnums which can be used in VARIANTs, but which cannot occur in a TYPEDESC
-                case VarEnum.VT_EMPTY:
-                case VarEnum.VT_NULL:
-                case VarEnum.VT_RECORD:
-                    type = typeof(void);
-                    break;
-
-                // VarEnums which are not used in VARIANTs, but which can occur in a TYPEDESC
-                case VarEnum.VT_VOID:
-                    type = typeof(void);
-                    break;
-
-                case VarEnum.VT_HRESULT:
-                    type = typeof(int);
-                    break;
-
-                case ((VarEnum)37): // VT_INT_PTR:
-                    type = typeof(IntPtr);
-                    break;
-
-                case ((VarEnum)38): // VT_UINT_PTR:
-                    type = typeof(UIntPtr);
-                    break;
-
-                case VarEnum.VT_SAFEARRAY:
-                case VarEnum.VT_CARRAY:
-                    type = typeof(Array);
-                    break;
-
-                case VarEnum.VT_LPSTR:
-                case VarEnum.VT_LPWSTR:
-                    type = typeof(string);
-                    break;
-
-                case VarEnum.VT_PTR:
-                case VarEnum.VT_USERDEFINED:
-                    type = typeof(object);
-                    break;
-
-                // For VarEnums that can be used in VARIANTs and well as TYPEDESCs, just use VarEnumSelector
-                default:
-                    type = VarEnumSelector.GetManagedMarshalType(vt);
-                    break;
-            }
-
-            return type;
-        }
-
-        /// <summary>
-        /// Gets the managed type that an object needs to be coverted to in order for it to be able
-        /// to be represented as a Variant.
-        ///
-        /// In general, there is a many-to-many mapping between Type and VarEnum. However, this method
-        /// returns a simple mapping that is needed for the current implementation. The reason for the
-        /// many-to-many relation is:
-        /// 1. Int32 maps to VT_I4 as well as VT_ERROR, and Decimal maps to VT_DECIMAL and VT_CY. However,
-        ///    this changes if you throw the wrapper types into the mix.
-        /// 2. There is no Type to represent COM types. __ComObject is a private type, and Object is too
-        ///    general.
-        /// </summary>
-        internal static Type GetManagedMarshalType(VarEnum varEnum) {
-            Debug.Assert((varEnum & VarEnum.VT_BYREF) == 0);
-
-            if (varEnum == VarEnum.VT_CY) {
-                return typeof(CurrencyWrapper);
-            }
-
-            if (IsPrimitiveType(varEnum)) {
-                return _ComToManagedPrimitiveTypes[varEnum];
-            }
-
-            switch (varEnum) {
-                case VarEnum.VT_EMPTY:
-                case VarEnum.VT_NULL:
-                case VarEnum.VT_UNKNOWN:
-                case VarEnum.VT_DISPATCH:
-                case VarEnum.VT_VARIANT:
-                    return typeof(Object);
-
-                case VarEnum.VT_ERROR:
-                    return typeof(ErrorWrapper);
-
-                default:
-                    throw new InvalidOperationException(string.Format(System.Globalization.CultureInfo.CurrentCulture, ParserStrings.UnexpectedVarEnum, varEnum));;
-            }
-        }
-
-        private static Dictionary<VarEnum, Type> CreateComToManagedPrimitiveTypes()
-        {
-            Dictionary<VarEnum, Type> dict = new Dictionary<VarEnum, Type>();
-
-            // *** BEGIN GENERATED CODE ***
-            // generated by function: gen_ComToManagedPrimitiveTypes from: generate_comdispatch.py
-
-            dict[VarEnum.VT_I1] = typeof(SByte);
-            dict[VarEnum.VT_I2] = typeof(Int16);
-            dict[VarEnum.VT_I4] = typeof(Int32);
-            dict[VarEnum.VT_I8] = typeof(Int64);
-            dict[VarEnum.VT_UI1] = typeof(Byte);
-            dict[VarEnum.VT_UI2] = typeof(UInt16);
-            dict[VarEnum.VT_UI4] = typeof(UInt32);
-            dict[VarEnum.VT_UI8] = typeof(UInt64);
-            dict[VarEnum.VT_INT] = typeof(Int32);
-            dict[VarEnum.VT_UINT] = typeof(UInt32);
-            dict[VarEnum.VT_PTR] = typeof(IntPtr);
-            dict[VarEnum.VT_BOOL] = typeof(Boolean);
-            dict[VarEnum.VT_R4] = typeof(Single);
-            dict[VarEnum.VT_R8] = typeof(Double);
-            dict[VarEnum.VT_DECIMAL] = typeof(Decimal);
-            dict[VarEnum.VT_DATE] = typeof(DateTime);
-            dict[VarEnum.VT_BSTR] = typeof(String);
-            dict[VarEnum.VT_CLSID] = typeof(Guid);
-
-            // *** END GENERATED CODE ***
-
-            dict[VarEnum.VT_CY] = typeof(CurrencyWrapper);
-            dict[VarEnum.VT_ERROR] = typeof(ErrorWrapper);
-
-            return dict;
-        }
-
-        /// <summary>
-        /// Primitive types are the basic COM types. It includes valuetypes like ints, but also reference types
-        /// like BStrs. It does not include composite types like arrays and user-defined COM types (IUnknown/IDispatch).
-        /// </summary>
-        internal static bool IsPrimitiveType(VarEnum varEnum) {
-            switch (varEnum) {
-
-                // *** BEGIN GENERATED CODE ***
-                // generated by function: gen_IsPrimitiveType from: generate_comdispatch.py
-
-                case VarEnum.VT_I1:
-                case VarEnum.VT_I2:
-                case VarEnum.VT_I4:
-                case VarEnum.VT_I8:
-                case VarEnum.VT_UI1:
-                case VarEnum.VT_UI2:
-                case VarEnum.VT_UI4:
-                case VarEnum.VT_UI8:
-                case VarEnum.VT_INT:
-                case VarEnum.VT_UINT:
-                case VarEnum.VT_BOOL:
-                case VarEnum.VT_ERROR:
-                case VarEnum.VT_R4:
-                case VarEnum.VT_R8:
-                case VarEnum.VT_DECIMAL:
-                case VarEnum.VT_CY:
-                case VarEnum.VT_DATE:
-                case VarEnum.VT_BSTR:
-
-                // *** END GENERATED CODE ***
-
-                    return true;
-            }
-
-            return false;
-        }
-    }
-#pragma warning restore 618
-}
-
 namespace Microsoft.PowerShell.Commands.Internal
 {
     using System.Security.AccessControl;
@@ -500,6 +151,7 @@ namespace Microsoft.PowerShell.Commands.Internal
         {
             throw new NotImplementedException("SetValue(string name, obj value, RegistryValueKind valueKind) is not implemented. TransactedRegistry related APIs should not be used.");
         }
+
         public string[] GetValueNames()
         {
             throw new NotImplementedException("GetValueNames() is not implemented. TransactedRegistry related APIs should not be used.");
@@ -551,6 +203,7 @@ namespace Microsoft.PowerShell.Commands.Internal
         }
 
         public abstract string Name { get; }
+
         public abstract int SubKeyCount { get; }
 
         public void SetAccessControl(ObjectSecurity securityDescriptor)
@@ -688,18 +341,102 @@ namespace System.Management.Automation
     #endregion
 }
 
+#if UNIX
+
+namespace System.Management.Automation.ComInterop
+{
+    using System.Dynamic;
+    using System.Runtime.InteropServices;
+
+    /// <summary>
+    /// Provides helper methods to bind COM objects dynamically.
+    /// </summary>
+    /// <remarks>
+    /// COM is not supported on Unix platforms. So this is a stub type.
+    /// </remarks>
+    internal static class ComBinder
+    {
+        /// <summary>
+        /// Tries to perform binding of the dynamic get index operation.
+        /// </summary>
+        /// <remarks>
+        /// Always return false in CoreCLR.
+        /// </remarks>
+        public static bool TryBindGetIndex(GetIndexBinder binder, DynamicMetaObject instance, DynamicMetaObject[] args, out DynamicMetaObject result)
+        {
+            result = null;
+            return false;
+        }
+
+        /// <summary>
+        /// Tries to perform binding of the dynamic set index operation.
+        /// </summary>
+        /// <remarks>
+        /// Always return false in CoreCLR.
+        /// </remarks>
+        public static bool TryBindSetIndex(SetIndexBinder binder, DynamicMetaObject instance, DynamicMetaObject[] args, DynamicMetaObject value, out DynamicMetaObject result)
+        {
+            result = null;
+            return false;
+        }
+
+        /// <summary>
+        /// Tries to perform binding of the dynamic get member operation.
+        /// </summary>
+        /// <remarks>
+        /// Always return false in CoreCLR.
+        /// </remarks>
+        public static bool TryBindGetMember(GetMemberBinder binder, DynamicMetaObject instance, out DynamicMetaObject result, bool delayInvocation)
+        {
+            result = null;
+            return false;
+        }
+
+        /// <summary>
+        /// Tries to perform binding of the dynamic set member operation.
+        /// </summary>
+        /// <remarks>
+        /// Always return false in CoreCLR.
+        /// </remarks>
+        public static bool TryBindSetMember(SetMemberBinder binder, DynamicMetaObject instance, DynamicMetaObject value, out DynamicMetaObject result)
+        {
+            result = null;
+            return false;
+        }
+
+        /// <summary>
+        /// Tries to perform binding of the dynamic invoke member operation.
+        /// </summary>
+        /// <remarks>
+        /// Always return false in CoreCLR.
+        /// </remarks>
+        public static bool TryBindInvokeMember(InvokeMemberBinder binder, bool isSetProperty, DynamicMetaObject instance, DynamicMetaObject[] args, out DynamicMetaObject result)
+        {
+            result = null;
+            return false;
+        }
+    }
+
+    internal class VarEnumSelector
+    {
+        internal static Type GetTypeForVarEnum(VarEnum vt)
+        {
+            throw new PlatformNotSupportedException();
+        }
+    }
+}
+
 namespace System.Management.Automation.Security
 {
     /// <summary>
-    /// We don't need Windows Lockdown Policy related types on CSS because CSS is
-    /// amd64 only and is used internally.
+    /// Application white listing security policies only affect Windows OSs.
     /// </summary>
     internal sealed class SystemPolicy
     {
         private SystemPolicy() { }
 
         /// <summary>
-        /// Gets the system lockdown policy
+        /// Gets the system lockdown policy.
         /// </summary>
         /// <remarks>Always return SystemEnforcementMode.None in CSS (trusted)</remarks>
         public static SystemEnforcementMode GetSystemLockdownPolicy()
@@ -708,7 +445,7 @@ namespace System.Management.Automation.Security
         }
 
         /// <summary>
-        /// Gets lockdown policy as applied to a file
+        /// Gets lockdown policy as applied to a file.
         /// </summary>
         /// <remarks>Always return SystemEnforcementMode.None in CSS (trusted)</remarks>
         public static SystemEnforcementMode GetLockdownPolicy(string path, System.Runtime.InteropServices.SafeHandle handle)
@@ -723,7 +460,7 @@ namespace System.Management.Automation.Security
     }
 
     /// <summary>
-    /// How the policy is being enforced
+    /// How the policy is being enforced.
     /// </summary>
     internal enum SystemEnforcementMode
     {
@@ -738,8 +475,6 @@ namespace System.Management.Automation.Security
     }
 }
 
-#if UNIX
-
 // Porting note: Tracing is absolutely not available on Linux
 namespace System.Management.Automation.Tracing
 {
@@ -747,13 +482,11 @@ namespace System.Management.Automation.Tracing
     using System.Management.Automation.Internal;
 
     /// <summary>
-    ///
     /// </summary>
     [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly")]
     public abstract class EtwActivity
     {
         /// <summary>
-        ///
         /// </summary>
         /// <param name="activityId"></param>
         /// <returns></returns>
@@ -763,7 +496,6 @@ namespace System.Management.Automation.Tracing
         }
 
         /// <summary>
-        ///
         /// </summary>
         /// <returns></returns>
         public static Guid CreateActivityId()
@@ -772,7 +504,6 @@ namespace System.Management.Automation.Tracing
         }
 
         /// <summary>
-        ///
         /// </summary>
         /// <returns></returns>
         public static Guid GetActivityId()
@@ -784,27 +515,27 @@ namespace System.Management.Automation.Tracing
     public enum PowerShellTraceTask
     {
         /// <summary>
-        /// None
+        /// None.
         /// </summary>
         None = 0,
 
         /// <summary>
-        /// CreateRunspace
+        /// CreateRunspace.
         /// </summary>
         CreateRunspace = 1,
 
         /// <summary>
-        /// ExecuteCommand
+        /// ExecuteCommand.
         /// </summary>
         ExecuteCommand = 2,
 
         /// <summary>
-        /// Serialization
+        /// Serialization.
         /// </summary>
         Serialization = 3,
 
         /// <summary>
-        /// PowerShellConsoleStartup
+        /// PowerShellConsoleStartup.
         /// </summary>
         PowerShellConsoleStartup = 4,
     }
@@ -817,67 +548,64 @@ namespace System.Management.Automation.Tracing
     public enum PowerShellTraceKeywords : ulong
     {
         /// <summary>
-        /// None
+        /// None.
         /// </summary>
         None = 0,
 
         /// <summary>
-        /// Runspace
+        /// Runspace.
         /// </summary>
         Runspace = 0x1,
 
         /// <summary>
-        /// Pipeline
+        /// Pipeline.
         /// </summary>
         Pipeline = 0x2,
 
         /// <summary>
-        /// Protocol
+        /// Protocol.
         /// </summary>
         Protocol = 0x4,
 
         /// <summary>
-        /// Transport
+        /// Transport.
         /// </summary>
         Transport = 0x8,
 
         /// <summary>
-        /// Host
+        /// Host.
         /// </summary>
         Host = 0x10,
 
         /// <summary>
-        /// Cmdlets
+        /// Cmdlets.
         /// </summary>
         Cmdlets = 0x20,
 
         /// <summary>
-        /// Serializer
+        /// Serializer.
         /// </summary>
         Serializer = 0x40,
 
         /// <summary>
-        /// Session
+        /// Session.
         /// </summary>
         Session = 0x80,
 
         /// <summary>
-        /// ManagedPlugIn
+        /// ManagedPlugIn.
         /// </summary>
         ManagedPlugIn = 0x100,
 
         /// <summary>
-        ///
         /// </summary>
         UseAlwaysDebug = 0x2000000000000000,
 
         /// <summary>
-        ///
         /// </summary>
         UseAlwaysOperational = 0x8000000000000000,
 
         /// <summary>
-        ///
         /// </summary>
         UseAlwaysAnalytic = 0x4000000000000000,
     }
@@ -949,13 +677,12 @@ namespace System.Management.Automation.Tracing
         {
         }
 
-        public bool WriteMessage(String message)
+        public bool WriteMessage(string message)
         {
             return false;
         }
 
         /// <summary>
-        ///
         /// </summary>
         /// <param name="message1"></param>
         /// <param name="message2"></param>
@@ -966,7 +693,6 @@ namespace System.Management.Automation.Tracing
         }
 
         /// <summary>
-        ///
         /// </summary>
         /// <param name="message"></param>
         /// <param name="instanceId"></param>
@@ -977,7 +703,6 @@ namespace System.Management.Automation.Tracing
         }
 
         /// <summary>
-        ///
         /// </summary>
         /// <param name="className"></param>
         /// <param name="methodName"></param>
@@ -991,7 +716,6 @@ namespace System.Management.Automation.Tracing
         }
 
         /// <summary>
-        ///
         /// </summary>
         /// <param name="className"></param>
         /// <param name="methodName"></param>

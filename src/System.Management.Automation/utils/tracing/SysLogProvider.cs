@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 #if UNIX
 
@@ -108,6 +108,7 @@ namespace System.Management.Automation.Tracing
             {
                 _keywordFilter |= (ulong) PSKeyword.UseAlwaysOperational;
             }
+
             if ((_channelFilter & (ulong) PSChannel.Analytic) != 0)
             {
                 _keywordFilter |= (ulong) PSKeyword.UseAlwaysAnalytic;
@@ -122,18 +123,19 @@ namespace System.Management.Automation.Tracing
         /// property to ensure correct thread initialization; otherwise, a null reference can occur.
         /// </remarks>
         [ThreadStatic]
-        private static StringBuilder _messageBuilder;
+        private static StringBuilder t_messageBuilder;
 
         private static StringBuilder MessageBuilder
         {
             get
             {
-                if (_messageBuilder == null)
+                if (t_messageBuilder == null)
                 {
                     // NOTE: Thread static fields must be explicitly initialized for each thread.
-                    _messageBuilder = new StringBuilder(200);
+                    t_messageBuilder = new StringBuilder(200);
                 }
-                return _messageBuilder;
+
+                return t_messageBuilder;
             }
         }
 
@@ -145,22 +147,24 @@ namespace System.Management.Automation.Tracing
         /// to ensure correct thread initialization.
         /// </remarks>
         [ThreadStatic]
-        static Guid? _activity;
+        static Guid? t_activity;
 
         private static Guid Activity
         {
             get
             {
-                if (_activity.HasValue == false)
+                if (t_activity.HasValue == false)
                 {
                     // NOTE: Thread static fields must be explicitly initialized for each thread.
-                    _activity = Guid.NewGuid();
+                    t_activity = Guid.NewGuid();
                 }
-                return _activity.Value;
+
+                return t_activity.Value;
             }
+
             set
             {
-                _activity = value;
+                t_activity = value;
             }
         }
 
@@ -169,7 +173,7 @@ namespace System.Management.Automation.Tracing
         /// </summary>
         /// <param name="level">The PSLevel to check.</param>
         /// <param name="keywords">The PSKeyword to check.</param>
-        /// <returns>true if the specified level and keywords are enabled for logging.</returns>
+        /// <returns>True if the specified level and keywords are enabled for logging.</returns>
         internal bool IsEnabled(PSLevel level, PSKeyword keywords)
         {
             return ( ((ulong) keywords & _keywordFilter) != 0 &&
@@ -187,7 +191,7 @@ namespace System.Management.Automation.Tracing
                     IsEnabled(level, keywords));
         }
 
-        #region resource manager
+#region resource manager
 
         private static global::System.Resources.ResourceManager _resourceManager;
         private static global::System.Globalization.CultureInfo _resourceCulture;
@@ -196,10 +200,11 @@ namespace System.Management.Automation.Tracing
         {
             get
             {
-                if (object.ReferenceEquals(_resourceManager, null))
+                if (_resourceManager is null)
                 {
-                    _resourceManager = new global::System.Resources.ResourceManager("System.Management.Automation.resources.EventResource", typeof(EventResource).GetTypeInfo().Assembly);
+                    _resourceManager = new global::System.Resources.ResourceManager("System.Management.Automation.resources.EventResource", typeof(EventResource).Assembly);
                 }
+
                 return _resourceManager;
             }
         }
@@ -215,6 +220,7 @@ namespace System.Management.Automation.Tracing
             {
                 return _resourceCulture;
             }
+
             set
             {
                 _resourceCulture = value;
@@ -229,10 +235,11 @@ namespace System.Management.Automation.Tracing
                 value = string.Format(CultureInfo.InvariantCulture, "Unknown resource: {0}", resourceName);
                 Diagnostics.Assert(false, value);
             }
+
             return value;
         }
 
-        #endregion resource manager
+#endregion resource manager
 
         /// <summary>
         /// Gets the EventMessage for a given event.
@@ -265,7 +272,7 @@ namespace System.Management.Automation.Tracing
             }
         }
 
-        #region logging
+#region logging
 
         // maps a LogLevel to an associated SysLogPriority.
         static NativeMethods.SysLogPriority[] _levels =
@@ -352,7 +359,7 @@ namespace System.Management.Automation.Tracing
             }
         }
 
-        #endregion logging
+#endregion logging
     }
 
     internal enum LogLevel : uint
@@ -391,94 +398,94 @@ namespace System.Management.Automation.Tracing
             // Priorities enum values.
 
             /// <summary>
-            /// System is unusable
+            /// System is unusable.
             /// </summary>
             Emergency       = 0,
 
             /// <summary>
-            /// Action must be taken immediately
+            /// Action must be taken immediately.
             /// </summary>
             Alert           = 1,
 
             /// <summary>
-            /// Critical conditions
+            /// Critical conditions.
             /// </summary>
             Critical        = 2,
 
             /// <summary>
-            /// Error conditions
+            /// Error conditions.
             /// </summary>
             Error           = 3,
 
             /// <summary>
-            /// Warning conditions
+            /// Warning conditions.
             /// </summary>
             Warning         = 4,
 
             /// <summary>
-            /// Normal but significant condition
+            /// Normal but significant condition.
             /// </summary>
             Notice          = 5,
 
             /// <summary>
-            /// Informational
+            /// Informational.
             /// </summary>
             Info            = 6,
 
             /// <summary>
-            /// Debug-level messages
+            /// Debug-level messages.
             /// </summary>
             Debug           = 7,
 
             // Facility enum values.
 
             /// <summary>
-            /// Kernel messages
+            /// Kernel messages.
             /// </summary>
             Kernel          = (0<<3),
 
             /// <summary>
-            /// Random user-level messages
+            /// Random user-level messages.
             /// </summary>
             User            = (1<<3),
 
             /// <summary>
-            /// Mail system
+            /// Mail system.
             /// </summary>
             Mail            = (2<<3),
 
             /// <summary>
-            /// System daemons
+            /// System daemons.
             /// </summary>
             Daemon          = (3<<3),
 
             /// <summary>
-            /// Authorization messages
+            /// Authorization messages.
             /// </summary>
             Authorization   = (4<<3),
 
             /// <summary>
-            /// Messages generated internally by syslogd
+            /// Messages generated internally by syslogd.
             /// </summary>
             Syslog          = (5<<3),
 
             /// <summary>
-            /// Line printer subsystem
+            /// Line printer subsystem.
             /// </summary>
             Lpr             = (6<<3),
 
             /// <summary>
-            /// Network news subsystem
+            /// Network news subsystem.
             /// </summary>
             News            = (7<<3),
 
             /// <summary>
-            /// UUCP subsystem
+            /// UUCP subsystem.
             /// </summary>
             Uucp            = (8<<3),
 
             /// <summary>
-            /// Clock daemon
+            /// Clock daemon.
             /// </summary>
             Cron            = (9<<3),
 
@@ -488,42 +495,42 @@ namespace System.Management.Automation.Tracing
             Authpriv        = (10<<3),
 
             /// <summary>
-            /// FTP daemon
+            /// FTP daemon.
             /// </summary>
             Ftp             = (11<<3),
 
             // Reserved for system use
 
             /// <summary>
-            /// Reserved for local use
+            /// Reserved for local use.
             /// </summary>
             Local0          = (16<<3),
             /// <summary>
-            /// Reserved for local use
+            /// Reserved for local use.
             /// </summary>
             Local1          = (17<<3),
             /// <summary>
-            /// Reserved for local use
+            /// Reserved for local use.
             /// </summary>
             Local2          = (18<<3),
             /// <summary>
-            /// Reserved for local use
+            /// Reserved for local use.
             /// </summary>
             Local3          = (19<<3),
             /// <summary>
-            /// Reserved for local use
+            /// Reserved for local use.
             /// </summary>
             Local4          = (20<<3),
             /// <summary>
-            /// Reserved for local use
+            /// Reserved for local use.
             /// </summary>
             Local5          = (21<<3),
             /// <summary>
-            /// Reserved for local use
+            /// Reserved for local use.
             /// </summary>
             Local6          = (22<<3),
             /// <summary>
-            /// Reserved for local use
+            /// Reserved for local use.
             /// </summary>
             Local7          = (23<<3),
         }

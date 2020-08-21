@@ -1,4 +1,4 @@
-# Copyright (c) Microsoft Corporation. All rights reserved.
+# Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 Describe "CliXml test" -Tags "CI" {
 
@@ -6,7 +6,7 @@ Describe "CliXml test" -Tags "CI" {
         $testFilePath = Join-Path "testdrive:\" "testCliXml"
         $subFilePath = Join-Path $testFilePath ".test"
 
-        if(test-path $testFilePath)
+        if(Test-Path $testFilePath)
         {
             Remove-Item $testFilePath -Force -Recurse
         }
@@ -23,11 +23,11 @@ Describe "CliXml test" -Tags "CI" {
             [string] $expectedError
             [string] $testFile
 
-            TestData($name, $file, $inputObj, $error)
+            TestData($name, $file, $inputObj, $errorId)
             {
                 $this.testName = $name
                 $this.inputObject = $inputObj
-                $this.expectedError = $error
+                $this.expectedError = $errorId
                 $this.testFile = $file
             }
         }
@@ -169,6 +169,17 @@ Describe "CliXml test" -Tags "CI" {
             Export-Clixml -Path $testPath -InputObject "string" -WhatIf
             $testPath | Should -Not -Exist
         }
+
+        It "should import PSCredential" {
+            $UserName = "Foo"
+            $pass = ConvertTo-SecureString (New-RandomHexString) -AsPlainText -Force
+            $cred =  [PSCredential]::new($UserName, $pass)
+            $path = "$testdrive/cred.xml"
+            $cred | Export-Clixml -Path $path
+            $cred = Import-Clixml -Path $path
+            $cred.UserName | Should -BeExactly "Foo"
+            $cred.Password | Should -BeOfType System.Security.SecureString
+        }
     }
 }
 
@@ -181,22 +192,22 @@ Describe "Deserializing corrupted Cim classes should not instantiate non-Cim typ
 
         # Only run on Windows platform.
         # Ensure calc.exe is avaiable for test.
-        $shouldRunTest = $IsWindows -and ((Get-Command calc.exe -ea SilentlyContinue) -ne $null)
+        $shouldRunTest = $IsWindows -and ((Get-Command calc.exe -ErrorAction SilentlyContinue) -ne $null)
         $skipNotWindows = ! $shouldRunTest
         if ( $shouldRunTest )
         {
-            (Get-Process -Name 'win32calc','calculator' 2>$null) | Stop-Process -Force -ErrorAction SilentlyContinue
+            (Get-Process -Name 'win32calc','calculator' 2> $null) | Stop-Process -Force -ErrorAction SilentlyContinue
         }
     }
 
     AfterAll {
         if ( $shouldRunTest )
         {
-            (Get-Process -Name 'win32calc','calculator' 2>$null) | Stop-Process -Force -ErrorAction SilentlyContinue
+            (Get-Process -Name 'win32calc','calculator' 2> $null) | Stop-Process -Force -ErrorAction SilentlyContinue
         }
     }
 
-    It "Verifies that importing the corrupted Cim class does not launch calc.exe" -skip:$skipNotWindows {
+    It "Verifies that importing the corrupted Cim class does not launch calc.exe" -Skip:$skipNotWindows {
 
         Import-Clixml -Path (Join-Path $PSScriptRoot "assets\CorruptedCim.clixml")
 
@@ -205,7 +216,7 @@ Describe "Deserializing corrupted Cim classes should not instantiate non-Cim typ
         $count = 0
         while (!$calcProc -and ($count++ -lt 20))
         {
-            $calcProc = Get-Process -Name 'win32calc','calculator' 2>$null
+            $calcProc = Get-Process -Name 'win32calc','calculator' 2> $null
             Start-Sleep -Milliseconds 500
         }
 

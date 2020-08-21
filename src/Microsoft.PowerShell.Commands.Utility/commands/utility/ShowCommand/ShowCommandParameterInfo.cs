@@ -1,30 +1,29 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Management.Automation;
 
 namespace Microsoft.PowerShell.Commands.ShowCommandExtension
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Management.Automation;
-
     /// <summary>
-    /// Implements a facade around ShowCommandParameterInfo and its deserialized counterpart
+    /// Implements a facade around ShowCommandParameterInfo and its deserialized counterpart.
     /// </summary>
     public class ShowCommandParameterInfo
     {
         /// <summary>
-        /// Creates an instance of the ShowCommandParameterInfo class based on a CommandParameterInfo object
+        /// Creates an instance of the ShowCommandParameterInfo class based on a CommandParameterInfo object.
         /// </summary>
-        ///
         /// <param name="other">
         /// The object to wrap.
         /// </param>
         public ShowCommandParameterInfo(CommandParameterInfo other)
         {
-            if (null == other)
+            if (other == null)
             {
-                throw new ArgumentNullException("other");
+                throw new ArgumentNullException(nameof(other));
             }
 
             this.Name = other.Name;
@@ -42,17 +41,16 @@ namespace Microsoft.PowerShell.Commands.ShowCommandExtension
         }
 
         /// <summary>
-        /// Creates an instance of the ShowCommandParameterInfo class based on a PSObject object
+        /// Creates an instance of the ShowCommandParameterInfo class based on a PSObject object.
         /// </summary>
-        ///
         /// <param name="other">
         /// The object to wrap.
         /// </param>
         public ShowCommandParameterInfo(PSObject other)
         {
-            if (null == other)
+            if (other == null)
             {
-                throw new ArgumentNullException("other");
+                throw new ArgumentNullException(nameof(other));
             }
 
             this.Name = other.Members["Name"].Value as string;
@@ -88,7 +86,7 @@ namespace Microsoft.PowerShell.Commands.ShowCommandExtension
         public ShowCommandParameterType ParameterType { get; private set; }
 
         /// <summary>
-        /// The possible values of this parameter
+        /// The possible values of this parameter.
         /// </summary>
         public IList<string> ValidParamSetValues { get; private set; }
 

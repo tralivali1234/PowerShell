@@ -1,14 +1,16 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
 using System;
+
 using Microsoft.Management.Infrastructure;
+
 using Dbg = System.Management.Automation.Diagnostics;
 
 namespace Microsoft.PowerShell.Cmdletization.Cim
 {
     /// <summary>
-    /// Job wrapping invocation of a CreateInstance intrinsic CIM method
+    /// Job wrapping invocation of a CreateInstance intrinsic CIM method.
     /// </summary>
     internal class CreateInstanceJob : PropertySettingJob<CimInstance>
     {
@@ -74,7 +76,7 @@ namespace Microsoft.PowerShell.Cmdletization.Cim
             else
             {
 #if DEBUG
-                Dbg.Assert(_createInstanceOperationGotStarted == true, "GetInstance should be started *after* CreateInstance");
+                Dbg.Assert(_createInstanceOperationGotStarted, "GetInstance should be started *after* CreateInstance");
                 Dbg.Assert(_getInstanceOperationGotStarted == false, "Should not start GetInstance operation twice");
                 Dbg.Assert(_resultFromGetInstance == null, "GetInstance operation shouldn't happen twice");
                 _getInstanceOperationGotStarted = true;

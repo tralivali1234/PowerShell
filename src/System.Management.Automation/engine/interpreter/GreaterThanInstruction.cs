@@ -19,9 +19,10 @@ namespace System.Management.Automation.Interpreter
 {
     internal abstract class GreaterThanInstruction : Instruction
     {
-        private static Instruction s_SByte,s_int16,s_char,s_int32,s_int64,s_byte,s_UInt16,s_UInt32,s_UInt64,s_single,s_double;
+        private static Instruction s_SByte, s_int16, s_char, s_int32, s_int64, s_byte, s_UInt16, s_UInt32, s_UInt64, s_single, s_double;
 
         public override int ConsumedStack { get { return 2; } }
+
         public override int ProducedStack { get { return 1; } }
 
         private GreaterThanInstruction()
@@ -32,8 +33,8 @@ namespace System.Management.Automation.Interpreter
         {
             public override int Run(InterpretedFrame frame)
             {
-                SByte right = (SByte)frame.Pop();
-                frame.Push(((SByte)frame.Pop()) > right);
+                sbyte right = (sbyte)frame.Pop();
+                frame.Push(((sbyte)frame.Pop()) > right);
                 return +1;
             }
         }
@@ -52,8 +53,8 @@ namespace System.Management.Automation.Interpreter
         {
             public override int Run(InterpretedFrame frame)
             {
-                Char right = (Char)frame.Pop();
-                frame.Push(((Char)frame.Pop()) > right);
+                char right = (char)frame.Pop();
+                frame.Push(((char)frame.Pop()) > right);
                 return +1;
             }
         }
@@ -82,8 +83,8 @@ namespace System.Management.Automation.Interpreter
         {
             public override int Run(InterpretedFrame frame)
             {
-                Byte right = (Byte)frame.Pop();
-                frame.Push(((Byte)frame.Pop()) > right);
+                byte right = (byte)frame.Pop();
+                frame.Push(((byte)frame.Pop()) > right);
                 return +1;
             }
         }
@@ -132,8 +133,8 @@ namespace System.Management.Automation.Interpreter
         {
             public override int Run(InterpretedFrame frame)
             {
-                Double right = (Double)frame.Pop();
-                frame.Push(((Double)frame.Pop()) > right);
+                double right = (double)frame.Pop();
+                frame.Push(((double)frame.Pop()) > right);
                 return +1;
             }
         }

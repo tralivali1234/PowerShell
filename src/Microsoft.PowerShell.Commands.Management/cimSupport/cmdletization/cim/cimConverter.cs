@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
 using System;
@@ -10,13 +10,15 @@ using System.Net;
 using System.Net.Mail;
 using System.Net.NetworkInformation;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Security;
 using System.Security.AccessControl;
 using System.Security.Cryptography.X509Certificates;
 using System.Xml;
+
 using Microsoft.Management.Infrastructure;
+
 using Dbg = System.Management.Automation.Diagnostics;
-using System.Runtime.InteropServices;
 
 // TODO/FIXME: Move this class to src/cimSupport/other directory (to map to the namespace it lives in and functionality it implements [cmdletization independent])
 
@@ -50,17 +52,20 @@ namespace Microsoft.PowerShell.Cim
             {
                 if ((offset < 0) || (offset >= _string.Length))
                 {
-                    throw new ArgumentOutOfRangeException("offset");
+                    throw new ArgumentOutOfRangeException(nameof(offset));
                 }
+
                 if (offset + charsToCopy > _string.Length)
                 {
-                    throw new ArgumentOutOfRangeException("charsToCopy");
+                    throw new ArgumentOutOfRangeException(nameof(charsToCopy));
                 }
 
                 fixed (char* target = _string)
-                for (int i = 0; i < charsToCopy; i++)
                 {
-                    target[offset + i] = source[i];
+                    for (int i = 0; i < charsToCopy; i++)
+                    {
+                        target[offset + i] = source[i];
+                    }
                 }
             }
 
@@ -97,7 +102,7 @@ namespace Microsoft.PowerShell.Cim
             }
 
             /// <summary>
-            /// Releases resources associated with this object
+            /// Releases resources associated with this object.
             /// </summary>
             public void Dispose()
             {
@@ -106,7 +111,7 @@ namespace Microsoft.PowerShell.Cim
             }
 
             /// <summary>
-            /// Releases resources associated with this object
+            /// Releases resources associated with this object.
             /// </summary>
             private void Dispose(bool disposing)
             {
@@ -127,7 +132,7 @@ namespace Microsoft.PowerShell.Cim
         private readonly List<IDisposable> _trackedDisposables = new List<IDisposable>();
 
         /// <summary>
-        /// Releases resources associated with this object
+        /// Releases resources associated with this object.
         /// </summary>
         public void Dispose()
         {
@@ -136,7 +141,7 @@ namespace Microsoft.PowerShell.Cim
         }
 
         /// <summary>
-        /// Releases resources associated with this object
+        /// Releases resources associated with this object.
         /// </summary>
         private void Dispose(bool disposing)
         {
@@ -146,6 +151,7 @@ namespace Microsoft.PowerShell.Cim
                 {
                     d.Dispose();
                 }
+
                 _trackedDisposables.Clear();
             }
         }
@@ -171,6 +177,7 @@ namespace Microsoft.PowerShell.Cim
 
                 var sensitiveString = new SensitiveString(escapedUsername.Length + PSCredentialDelimiter.Length + credential.Password.Length);
                 lock (_trackedDisposables) { _trackedDisposables.Add(sensitiveString); }
+
                 sensitiveString.Copy(escapedUsername, 0);
                 sensitiveString.Copy(PSCredentialDelimiter, escapedUsername.Length);
                 sensitiveString.Copy(credential.Password, escapedUsername.Length + PSCredentialDelimiter.Length);
@@ -182,6 +189,7 @@ namespace Microsoft.PowerShell.Cim
                 SecureString secureString = (SecureString)psObject.BaseObject;
                 var sensitiveString = new SensitiveString(secureString.Length);
                 lock (_trackedDisposables) { _trackedDisposables.Add(sensitiveString); }
+
                 sensitiveString.Copy(secureString, 0);
                 return sensitiveString.Value;
             }
@@ -199,6 +207,7 @@ namespace Microsoft.PowerShell.Cim
                         object cimElement = ConvertFromDotNetToCim(dotNetArray.GetValue(i));
                         cimArray.SetValue(cimElement, i);
                     }
+
                     return cimArray;
                 }
             }
@@ -224,7 +233,7 @@ namespace Microsoft.PowerShell.Cim
 
     internal static class CimValueConverter
     {
-        /// <exception cref="PSInvalidCastException">The only kind of exception this method can throw</exception>
+        /// <exception cref="PSInvalidCastException">The only kind of exception this method can throw.</exception>
         internal static object ConvertFromDotNetToCim(object dotNetObject)
         {
             if (dotNetObject == null)
@@ -242,10 +251,12 @@ namespace Microsoft.PowerShell.Cim
             {
                 return psObject.BaseObject;
             }
+
             if (typeof(CimInstance).IsAssignableFrom(dotNetType))
             {
                 return psObject.BaseObject;
             }
+
             if (typeof(PSReference).IsAssignableFrom(dotNetType))
             {
                 PSReference psReference = (PSReference)psObject.BaseObject;
@@ -273,6 +284,7 @@ namespace Microsoft.PowerShell.Cim
                         object cimElement = ConvertFromDotNetToCim(dotNetArray.GetValue(i));
                         cimArray.SetValue(cimElement, i);
                     }
+
                     return cimArray;
                 }
             }
@@ -337,10 +349,10 @@ namespace Microsoft.PowerShell.Cim
                 CmdletizationResources.CimConversion_CimIntrinsicValue);
         }
 
-        /// <exception cref="PSInvalidCastException">The only kind of exception this method can throw</exception>
+        /// <exception cref="PSInvalidCastException">The only kind of exception this method can throw.</exception>
         internal static object ConvertFromCimToDotNet(object cimObject, Type expectedDotNetType)
         {
-            if (expectedDotNetType == null) { throw new ArgumentNullException("expectedDotNetType"); }
+            if (expectedDotNetType == null) { throw new ArgumentNullException(nameof(expectedDotNetType)); }
 
             if (cimObject == null)
             {
@@ -356,6 +368,7 @@ namespace Microsoft.PowerShell.Cim
             {
                 return LanguagePrimitives.ConvertTo(cimObject, expectedDotNetType, CultureInfo.InvariantCulture);
             }
+
             if (expectedDotNetType == typeof(CimInstance))
             {
                 return LanguagePrimitives.ConvertTo(cimObject, expectedDotNetType, CultureInfo.InvariantCulture);
@@ -373,6 +386,7 @@ namespace Microsoft.PowerShell.Cim
                         object dotNetElement = ConvertFromCimToDotNet(cimArray.GetValue(i), dotNetElementType);
                         dotNetArray.SetValue(dotNetElement, i);
                     }
+
                     return dotNetArray;
                 }
             }
@@ -445,8 +459,8 @@ namespace Microsoft.PowerShell.Cim
                 return exceptionSafeReturn(delegate
                                                {
                                                    int indexOfLastColon = cimIntrinsicValue.LastIndexOf(':');
-                                                   int port = int.Parse(cimIntrinsicValue.Substring(indexOfLastColon + 1), NumberStyles.Integer, CultureInfo.InvariantCulture);
-                                                   IPAddress address = IPAddress.Parse(cimIntrinsicValue.Substring(0, indexOfLastColon));
+                                                   int port = int.Parse(cimIntrinsicValue.AsSpan(indexOfLastColon + 1), NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                                   IPAddress address = IPAddress.Parse(cimIntrinsicValue.AsSpan(0, indexOfLastColon));
                                                    return new IPEndPoint(address, port);
                                                });
             }
@@ -482,6 +496,7 @@ namespace Microsoft.PowerShell.Cim
             {
                 return CimType.Reference;
             }
+
             if (typeof(PSReference[]).IsAssignableFrom(dotNetType))
             {
                 return CimType.ReferenceArray;
@@ -508,10 +523,12 @@ namespace Microsoft.PowerShell.Cim
             {
                 return dotNetType;
             }
+
             if (dotNetType == typeof(CimInstance))
             {
                 return dotNetType;
             }
+
             if (dotNetType == typeof(PSReference))
             {
                 return dotNetType;
@@ -568,7 +585,7 @@ namespace Microsoft.PowerShell.Cim
         }
 
         /// <summary>
-        /// Returns a type of CIM representation if conversion from/to CIM can be done purely with LanguagePrimitives.ConvertTo
+        /// Returns a type of CIM representation if conversion from/to CIM can be done purely with LanguagePrimitives.ConvertTo.
         /// </summary>
         /// <param name="dotNetType"></param>
         /// <returns></returns>
@@ -613,6 +630,7 @@ namespace Microsoft.PowerShell.Cim
             {
                 return null;
             }
+
             Type elementType = arrayType.GetElementType();
             if (elementType.IsArray)
             {

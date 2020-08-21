@@ -1,4 +1,4 @@
-# Copyright (c) Microsoft Corporation. All rights reserved.
+# Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
 #####################################################################################################
@@ -26,7 +26,7 @@ param
     $PowerShellHome
 )
 
-Set-StrictMode -Version Latest
+Set-StrictMode -Version 3.0
 
 if (! ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator"))
 {
@@ -67,7 +67,7 @@ function Register-WinRmPlugin
     SDKVersion="2" XmlRenderingType="text" Enabled="True" OutputBufferingMode="Block" ProcessIdleTimeoutSec="0" Architecture="{2}"
     UseSharedProcess="false" RunAsUser="" RunAsPassword="" AutoRestart="false">
     <InitializationParameters>
-        <Param Name="PSVersion" Value="6.0"/>
+        <Param Name="PSVersion" Value="7.0"/>
     </InitializationParameters>
     <Resources>
         <Resource ResourceUri="http://schemas.microsoft.com/powershell/{0}" SupportsOptions="true" ExactMatch="true">
@@ -124,7 +124,7 @@ function Install-PluginEndpoint {
     #                    #
     ######################
 
-    if ($PsCmdlet.ParameterSetName -eq "ByPath")
+    if (-not [String]::IsNullOrEmpty($PowerShellHome))
     {
         $targetPsHome = $PowerShellHome
         $targetPsVersion = & "$targetPsHome\pwsh" -NoProfile -Command '$PSVersionTable.PSVersion.ToString()'
@@ -135,6 +135,7 @@ function Install-PluginEndpoint {
         $targetPsHome = $PSHOME
         $targetPsVersion = $PSVersionTable.PSVersion.ToString()
     }
+    Write-Verbose "PowerShellHome: $targetPsHome" -Verbose
 
     # For default, not tied to the specific version endpoint, we apply
     # only first number in the PSVersion string to the endpoint name.
@@ -163,7 +164,16 @@ function Install-PluginEndpoint {
         return
     }
 
-    $pluginBasePath = Join-Path ([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::Windows) + "\System32\PowerShell") $targetPsVersion
+    if ($PSVersionTable.PSVersion -lt "6.0")
+    {
+        # This script is primarily used from Windows PowerShell for Win10 IoT and NanoServer to setup PSCore6 remoting endpoint
+        # so it's ok to hardcode to 'C:\Windows' for those systems
+        $pluginBasePath = Join-Path "C:\Windows\System32\PowerShell" $targetPsVersion
+    }
+    else
+    {
+        $pluginBasePath = Join-Path ([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::Windows) + "\System32\PowerShell") $targetPsVersion
+    }
 
     $resolvedPluginAbsolutePath = ""
     if (! (Test-Path $pluginBasePath))
@@ -205,7 +215,7 @@ function Install-PluginEndpoint {
 
     try
     {
-        Write-Host "`nGet-PSSessionConfiguration $pluginEndpointName" -foregroundcolor "green"
+        Write-Host "`nGet-PSSessionConfiguration $pluginEndpointName" -ForegroundColor "green"
         Get-PSSessionConfiguration $pluginEndpointName -ErrorAction Stop
     }
     catch [Microsoft.PowerShell.Commands.WriteErrorException]
@@ -217,6 +227,6 @@ function Install-PluginEndpoint {
 Install-PluginEndpoint -Force $Force
 Install-PluginEndpoint -Force $Force -VersionIndependent
 
-Write-Host "Restarting WinRM to ensure that the plugin configuration change takes effect.`nThis is required for WinRM running on Windows SKUs prior to Windows 10." -foregroundcolor Magenta
+Write-Host "Restarting WinRM to ensure that the plugin configuration change takes effect.`nThis is required for WinRM running on Windows SKUs prior to Windows 10." -ForegroundColor Magenta
 Restart-Service winrm
 

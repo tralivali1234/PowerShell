@@ -1,30 +1,14 @@
-﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
+<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
   <Import Project="..\..\PowerShell.Common.props" />
   <PropertyGroup>
-    <Description>PowerShell Core's Microsoft.PowerShell.CoreCLR.Eventing project</Description>
+    <Description>PowerShell's Microsoft.PowerShell.CoreCLR.Eventing project</Description>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <AssemblyName>Microsoft.PowerShell.CoreCLR.Eventing</AssemblyName>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <DefineConstants>$(DefineConstants);CORECLR</DefineConstants>
-  </PropertyGroup>
-
-  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <DebugType>portable</DebugType>
-  </PropertyGroup>
-
-  <PropertyGroup Condition=" '$(Configuration)' == 'Linux' ">
-    <DefineConstants>$(DefineConstants);UNIX</DefineConstants>
-  </PropertyGroup>
-
-  <PropertyGroup Condition=" '$(Configuration)' == 'CodeCoverage' ">
-    <DebugType>full</DebugType>
-  </PropertyGroup>
-
   <ItemGroup>
     <!-- the following package(s) are from https://github.com/dotnet/corefx -->
-    <PackageReference Include="System.Security.Principal.Windows" Version="4.4.1" />
+    <PackageReference Include="System.Diagnostics.EventLog" Version="5.0.0-preview.7.20364.11" />
   </ItemGroup>
 
 </Project>

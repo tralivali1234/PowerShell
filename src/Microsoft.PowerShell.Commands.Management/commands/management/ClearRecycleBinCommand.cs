@@ -1,14 +1,16 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
 using System;
+using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
+using System.IO;
 using System.Management.Automation;
 using System.Runtime.InteropServices;
-using System.IO;
-using System.Globalization;
-using System.ComponentModel;
 using System.Text.RegularExpressions;
-using System.Diagnostics.CodeAnalysis;
+
+#if !UNIX
 
 namespace Microsoft.PowerShell.Commands
 {
@@ -17,7 +19,7 @@ namespace Microsoft.PowerShell.Commands
     /// This cmdlet clear all files in the RecycleBin for the given DriveLetter.
     /// If not DriveLetter is specified, then the RecycleBin for all drives are cleared.
     /// </summary>
-    [Cmdlet(VerbsCommon.Clear, "RecycleBin", SupportsShouldProcess = true, HelpUri = "https://go.microsoft.com/fwlink/?LinkId=524082", ConfirmImpact = ConfirmImpact.High)]
+    [Cmdlet(VerbsCommon.Clear, "RecycleBin", SupportsShouldProcess = true, HelpUri = "https://go.microsoft.com/fwlink/?LinkId=2109377", ConfirmImpact = ConfirmImpact.High)]
     public class ClearRecycleBinCommand : PSCmdlet
     {
         private string[] _drivesList;
@@ -33,6 +35,7 @@ namespace Microsoft.PowerShell.Commands
         public string[] DriveLetter
         {
             get { return _drivesList; }
+
             set { _drivesList = value; }
         }
 
@@ -46,6 +49,7 @@ namespace Microsoft.PowerShell.Commands
             {
                 return _force;
             }
+
             set
             {
                 _force = value;
@@ -75,7 +79,7 @@ namespace Microsoft.PowerShell.Commands
                     {
                         WriteError(new ErrorRecord(
                             new ArgumentException(
-                                String.Format(CultureInfo.InvariantCulture, ClearRecycleBinResources.InvalidDriveNameFormat, "C", "C:", "C:\\")),
+                                string.Format(CultureInfo.InvariantCulture, ClearRecycleBinResources.InvalidDriveNameFormat, "C", "C:", "C:\\")),
                                 "InvalidDriveNameFormat",
                                  ErrorCategory.InvalidArgument,
                                  drive));
@@ -109,7 +113,7 @@ namespace Microsoft.PowerShell.Commands
             {
                 foreach (DriveInfo drive in _availableDrives)
                 {
-                    if (String.Compare(drive.Name, drivePath, StringComparison.OrdinalIgnoreCase) == 0)
+                    if (string.Equals(drive.Name, drivePath, StringComparison.OrdinalIgnoreCase))
                     {
                         actualDrive = drive;
                         break;
@@ -122,7 +126,7 @@ namespace Microsoft.PowerShell.Commands
             {
                 WriteError(new ErrorRecord(
                             new System.IO.DriveNotFoundException(
-                                String.Format(CultureInfo.InvariantCulture, ClearRecycleBinResources.DriveNotFound, drivePath, "Get-Volume")),
+                                string.Format(CultureInfo.InvariantCulture, ClearRecycleBinResources.DriveNotFound, drivePath, "Get-Volume")),
                                 "DriveNotFound",
                                 ErrorCategory.InvalidArgument,
                                 drivePath));
@@ -134,13 +138,15 @@ namespace Microsoft.PowerShell.Commands
                     // The drive path exists, and the drive is 'fixed'.
                     return true;
                 }
+
                 WriteError(new ErrorRecord(
                             new ArgumentException(
-                                String.Format(CultureInfo.InvariantCulture, ClearRecycleBinResources.InvalidDriveType, drivePath, "Get-Volume")),
+                                string.Format(CultureInfo.InvariantCulture, ClearRecycleBinResources.InvalidDriveType, drivePath, "Get-Volume")),
                                 "InvalidDriveType",
                                 ErrorCategory.InvalidArgument,
                                 drivePath));
             }
+
             return false;
         }
 
@@ -167,7 +173,7 @@ namespace Microsoft.PowerShell.Commands
             {
                 drivePath = driveName;
             }
-            else if (driveName.EndsWith(":", StringComparison.OrdinalIgnoreCase))
+            else if (driveName.EndsWith(':'))
             {
                 drivePath = driveName + "\\";
             }
@@ -175,6 +181,7 @@ namespace Microsoft.PowerShell.Commands
             {
                 drivePath = driveName + ":\\";
             }
+
             return drivePath;
         }
 
@@ -202,16 +209,16 @@ namespace Microsoft.PowerShell.Commands
             {
                 // If driveName is null, then clear the recyclebin for all drives; otherwise, just for the specified driveName.
 
-                string activity = String.Format(CultureInfo.InvariantCulture, ClearRecycleBinResources.ClearRecycleBinProgressActivity);
+                string activity = string.Format(CultureInfo.InvariantCulture, ClearRecycleBinResources.ClearRecycleBinProgressActivity);
                 string statusDescription;
 
                 if (drivePath == null)
                 {
-                    statusDescription = String.Format(CultureInfo.InvariantCulture, ClearRecycleBinResources.ClearRecycleBinStatusDescriptionForAllDrives);
+                    statusDescription = string.Format(CultureInfo.InvariantCulture, ClearRecycleBinResources.ClearRecycleBinStatusDescriptionForAllDrives);
                 }
                 else
                 {
-                    statusDescription = String.Format(CultureInfo.InvariantCulture, ClearRecycleBinResources.ClearRecycleBinStatusDescriptionByDrive, drivePath);
+                    statusDescription = string.Format(CultureInfo.InvariantCulture, ClearRecycleBinResources.ClearRecycleBinStatusDescriptionByDrive, drivePath);
                 }
 
                 ProgressRecord progress = new ProgressRecord(0, activity, statusDescription);
@@ -219,25 +226,14 @@ namespace Microsoft.PowerShell.Commands
                 progress.RecordType = ProgressRecordType.Processing;
                 WriteProgress(progress);
 
+                // no need to check result as a failure is returned only if recycle bin is already empty
                 uint result = NativeMethod.SHEmptyRecycleBin(IntPtr.Zero, drivePath,
                                                             NativeMethod.RecycleFlags.SHERB_NOCONFIRMATION |
                                                             NativeMethod.RecycleFlags.SHERB_NOPROGRESSUI |
                                                             NativeMethod.RecycleFlags.SHERB_NOSOUND);
-                int lastError = Marshal.GetLastWin32Error();
-
-                // update the progress bar to completed
                 progress.PercentComplete = 100;
                 progress.RecordType = ProgressRecordType.Completed;
                 WriteProgress(progress);
-
-                // 0 is for a successful operation
-                // 203 comes up when trying to empty an already emptied recyclebin
-                // 18 comes up when there are no more files in the given recyclebin
-                if (!(lastError == 0 || lastError == 203 || lastError == 18))
-                {
-                    Win32Exception exception = new Win32Exception(lastError);
-                    WriteError(new ErrorRecord(exception, "FailedToClearRecycleBin", ErrorCategory.InvalidOperation, "RecycleBin"));
-                }
             }
         }
     }
@@ -251,7 +247,9 @@ namespace Microsoft.PowerShell.Commands
             SHERB_NOPROGRESSUI = 0x00000002,
             SHERB_NOSOUND = 0x00000004
         }
+
         [DllImport("Shell32.dll", CharSet = CharSet.Unicode)]
         internal static extern uint SHEmptyRecycleBin(IntPtr hwnd, string pszRootPath, RecycleFlags dwFlags);
     }
 }
+#endif

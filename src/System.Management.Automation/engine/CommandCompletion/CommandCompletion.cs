@@ -1,9 +1,9 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Collections.ObjectModel;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
@@ -55,7 +55,8 @@ namespace System.Management.Automation
         [SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public Collection<CompletionResult> CompletionMatches { get; set; }
 
-        internal static readonly IList<CompletionResult> EmptyCompletionResult = Utils.EmptyArray<CompletionResult>();
+        internal static readonly IList<CompletionResult> EmptyCompletionResult = Array.Empty<CompletionResult>();
+
         private static readonly CommandCompletion s_emptyCommandCompletion = new CommandCompletion(
             new Collection<CompletionResult>(EmptyCompletionResult), -1, -1, -1);
 
@@ -64,7 +65,6 @@ namespace System.Management.Automation
         #region public methods
 
         /// <summary>
-        ///
         /// </summary>
         /// <param name="input"></param>
         /// <param name="cursorIndex"></param>
@@ -73,7 +73,7 @@ namespace System.Management.Automation
         {
             if (cursorIndex > input.Length)
             {
-                throw PSTraceSource.NewArgumentException("cursorIndex");
+                throw PSTraceSource.NewArgumentException(nameof(cursorIndex));
             }
 
             Token[] tokens;
@@ -86,11 +86,10 @@ namespace System.Management.Automation
         }
 
         /// <summary>
-        ///
         /// </summary>
-        /// <param name="input">The input to complete</param>
-        /// <param name="cursorIndex">The index of the cursor in the input</param>
-        /// <param name="options">Optional options to configure how completion is performed</param>
+        /// <param name="input">The input to complete.</param>
+        /// <param name="cursorIndex">The index of the cursor in the input.</param>
+        /// <param name="options">Optional options to configure how completion is performed.</param>
         /// <returns></returns>
         public static CommandCompletion CompleteInput(string input, int cursorIndex, Hashtable options)
         {
@@ -104,28 +103,27 @@ namespace System.Management.Automation
         }
 
         /// <summary>
-        ///
         /// </summary>
-        /// <param name="ast">Ast for pre-parsed input</param>
-        /// <param name="tokens">Tokens for pre-parsed input</param>
+        /// <param name="ast">Ast for pre-parsed input.</param>
+        /// <param name="tokens">Tokens for pre-parsed input.</param>
         /// <param name="positionOfCursor"></param>
-        /// <param name="options">Optional options to configure how completion is performed</param>
+        /// <param name="options">Optional options to configure how completion is performed.</param>
         /// <returns></returns>
         public static CommandCompletion CompleteInput(Ast ast, Token[] tokens, IScriptPosition positionOfCursor, Hashtable options)
         {
             if (ast == null)
             {
-                throw PSTraceSource.NewArgumentNullException("ast");
+                throw PSTraceSource.NewArgumentNullException(nameof(ast));
             }
 
             if (tokens == null)
             {
-                throw PSTraceSource.NewArgumentNullException("tokens");
+                throw PSTraceSource.NewArgumentNullException(nameof(tokens));
             }
 
             if (positionOfCursor == null)
             {
-                throw PSTraceSource.NewArgumentNullException("positionOfCursor");
+                throw PSTraceSource.NewArgumentNullException(nameof(positionOfCursor));
             }
 
             return CompleteInputImpl(ast, tokens, positionOfCursor, options);
@@ -135,10 +133,10 @@ namespace System.Management.Automation
         /// Invokes the script function TabExpansion2.
         /// For legacy support, TabExpansion2 will indirectly call TabExpansion if it exists.
         /// </summary>
-        /// <param name="input">The input script to complete</param>
-        /// <param name="cursorIndex">The offset in <paramref name="input"/> where completion is requested</param>
+        /// <param name="input">The input script to complete.</param>
+        /// <param name="cursorIndex">The offset in <paramref name="input"/> where completion is requested.</param>
         /// <param name="options">Optional parameter that specifies configurable options for completion.</param>
-        /// <param name="powershell">The powershell to use to invoke the script function TabExpansion2</param>
+        /// <param name="powershell">The powershell to use to invoke the script function TabExpansion2.</param>
         /// <returns>A collection of completions with the replacement start and length.</returns>
         [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "powershell")]
         public static CommandCompletion CompleteInput(string input, int cursorIndex, Hashtable options, PowerShell powershell)
@@ -150,12 +148,12 @@ namespace System.Management.Automation
 
             if (cursorIndex > input.Length)
             {
-                throw PSTraceSource.NewArgumentException("cursorIndex");
+                throw PSTraceSource.NewArgumentException(nameof(cursorIndex));
             }
 
             if (powershell == null)
             {
-                throw PSTraceSource.NewArgumentNullException("powershell");
+                throw PSTraceSource.NewArgumentNullException(nameof(powershell));
             }
 
             // If we are in a debugger stop, let the debugger do the command completion.
@@ -208,33 +206,33 @@ namespace System.Management.Automation
         /// Invokes the script function TabExpansion2.
         /// For legacy support, TabExpansion2 will indirectly call TabExpansion if it exists.
         /// </summary>
-        /// <param name="ast">The ast for pre-parsed input</param>
+        /// <param name="ast">The ast for pre-parsed input.</param>
         /// <param name="tokens"></param>
         /// <param name="cursorPosition"></param>
-        /// <param name="options">Optional options to configure how completion is performed</param>
-        /// <param name="powershell">The powershell to use to invoke the script function TabExpansion2</param>
+        /// <param name="options">Optional options to configure how completion is performed.</param>
+        /// <param name="powershell">The powershell to use to invoke the script function TabExpansion2.</param>
         /// <returns></returns>
         [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "powershell")]
         public static CommandCompletion CompleteInput(Ast ast, Token[] tokens, IScriptPosition cursorPosition, Hashtable options, PowerShell powershell)
         {
             if (ast == null)
             {
-                throw PSTraceSource.NewArgumentNullException("ast");
+                throw PSTraceSource.NewArgumentNullException(nameof(ast));
             }
 
             if (tokens == null)
             {
-                throw PSTraceSource.NewArgumentNullException("tokens");
+                throw PSTraceSource.NewArgumentNullException(nameof(tokens));
             }
 
             if (cursorPosition == null)
             {
-                throw PSTraceSource.NewArgumentNullException("cursorPosition");
+                throw PSTraceSource.NewArgumentNullException(nameof(cursorPosition));
             }
 
             if (powershell == null)
             {
-                throw PSTraceSource.NewArgumentNullException("powershell");
+                throw PSTraceSource.NewArgumentNullException(nameof(powershell));
             }
 
             // If we are in a debugger stop, let the debugger do the command completion.
@@ -337,12 +335,12 @@ namespace System.Management.Automation
 
             if (cursorIndex > input.Length)
             {
-                throw PSTraceSource.NewArgumentException("cursorIndex");
+                throw PSTraceSource.NewArgumentException(nameof(cursorIndex));
             }
 
             if (debugger == null)
             {
-                throw PSTraceSource.NewArgumentNullException("debugger");
+                throw PSTraceSource.NewArgumentNullException(nameof(debugger));
             }
 
             Command cmd = new Command("TabExpansion2");
@@ -356,32 +354,32 @@ namespace System.Management.Automation
         /// <summary>
         /// Command completion while in debug break mode.
         /// </summary>
-        /// <param name="ast">The ast for pre-parsed input</param>
+        /// <param name="ast">The ast for pre-parsed input.</param>
         /// <param name="tokens"></param>
         /// <param name="cursorPosition"></param>
-        /// <param name="options">Optional options to configure how completion is performed</param>
-        /// <param name="debugger">Current debugger</param>
-        /// <returns>Command completion</returns>
+        /// <param name="options">Optional options to configure how completion is performed.</param>
+        /// <param name="debugger">Current debugger.</param>
+        /// <returns>Command completion.</returns>
         internal static CommandCompletion CompleteInputInDebugger(Ast ast, Token[] tokens, IScriptPosition cursorPosition, Hashtable options, Debugger debugger)
         {
             if (ast == null)
             {
-                throw PSTraceSource.NewArgumentNullException("ast");
+                throw PSTraceSource.NewArgumentNullException(nameof(ast));
             }
 
             if (tokens == null)
             {
-                throw PSTraceSource.NewArgumentNullException("tokens");
+                throw PSTraceSource.NewArgumentNullException(nameof(tokens));
             }
 
             if (cursorPosition == null)
             {
-                throw PSTraceSource.NewArgumentNullException("cursorPosition");
+                throw PSTraceSource.NewArgumentNullException(nameof(cursorPosition));
             }
 
             if (debugger == null)
             {
-                throw PSTraceSource.NewArgumentNullException("debugger");
+                throw PSTraceSource.NewArgumentNullException(nameof(debugger));
             }
 
             // For remote debugging just pass string input.
@@ -518,9 +516,12 @@ namespace System.Management.Automation
         // This is the start of the real implementation of autocomplete/intellisense/tab completion
         private static CommandCompletion CompleteInputImpl(Ast ast, Token[] tokens, IScriptPosition positionOfCursor, Hashtable options)
         {
+#if LEGACYTELEMETRY
+            // We could start collecting telemetry at a later date.
+            // We will leave the #if to remind us that we did this once.
             var sw = new Stopwatch();
             sw.Start();
-
+#endif
             using (var powershell = PowerShell.Create(RunspaceMode.CurrentRunspace))
             {
                 var context = LocalPipeline.GetExecutionContextFromTLS();
@@ -557,6 +558,7 @@ namespace System.Management.Automation
                                 break;
                             }
                         }
+
                         SessionStateScope scopeToRestore = null;
                         if (tupleForFrameToSkipPast != null)
                         {
@@ -567,11 +569,13 @@ namespace System.Management.Automation
                             {
                                 scope = scope.Parent;
                             }
+
                             if (scope != null)
                             {
                                 context.EngineSessionState.CurrentScope = scope.Parent;
                             }
                         }
+
                         try
                         {
                         */
@@ -590,8 +594,10 @@ namespace System.Management.Automation
                     }
 
                     var completionResults = results ?? EmptyCompletionResult;
-                    sw.Stop();
+
 #if LEGACYTELEMETRY
+                    // no telemetry here. We don't capture tab completion performance.
+                    sw.Stop();
                     TelemetryAPI.ReportTabCompletionTelemetry(sw.ElapsedMilliseconds, completionResults.Count,
                         completionResults.Count > 0 ? completionResults[0].ResultType : CompletionResultType.Text);
 #endif
@@ -667,8 +673,10 @@ namespace System.Management.Automation
                                 oldResultStr = quote + oldResultStr + quote;
                             }
                         }
+
                         completionResult = new CompletionResult(oldResultStr);
                     }
+
                     results.Add(completionResult);
                 }
             }
@@ -693,7 +701,6 @@ namespace System.Management.Automation
         /// exists for legacy purpose only. It is used only in a remote interactive session from Win8 to Win7. V3 and forward
         /// uses completely different completers.
         /// </summary>
-        ///
         /// <remarks>
         /// The implementation of file name completion is completely different on V2 and V3 for remote scenarios. On PSv3, the
         /// CompletionResults are generated always on the target machine, and
@@ -706,7 +713,7 @@ namespace System.Management.Automation
             #region "Handle Command"
 
             /// <summary>
-            /// Used when remoting from a win8 machine to a win7 machine
+            /// Used when remoting from a win8 machine to a win7 machine.
             /// </summary>
             /// <param name="lastWord"></param>
             /// <param name="isSnapinSpecified"></param>
@@ -720,6 +727,7 @@ namespace System.Management.Automation
                 {
                     return s_cmdletTabRegex.IsMatch(lastWord);
                 }
+
                 if (cmdletParts.Length == 2)
                 {
                     isSnapinSpecified = PSSnapInInfo.IsPSSnapinIdValid(cmdletParts[0]);
@@ -728,6 +736,7 @@ namespace System.Management.Automation
                         return s_cmdletTabRegex.IsMatch(cmdletParts[1]);
                     }
                 }
+
                 return false;
             }
 
@@ -845,10 +854,10 @@ namespace System.Management.Automation
 
                     CommandAndName nextCommandAndName = cmdlets[lookAhead];
 
-                    if (string.Compare(
+                    if (string.Equals(
                             commandAndName.CommandName.ShortName,
                             nextCommandAndName.CommandName.ShortName,
-                            StringComparison.OrdinalIgnoreCase) == 0)
+                            StringComparison.OrdinalIgnoreCase))
                     {
                         AddCommandResult(commandAndName, true, completingAtStartOfLine, quote, results);
                         previousMatched = true;
@@ -858,6 +867,7 @@ namespace System.Management.Automation
                         AddCommandResult(commandAndName, previousMatched, completingAtStartOfLine, quote, results);
                         previousMatched = false;
                     }
+
                     i++;
                 }
             }
@@ -882,8 +892,8 @@ namespace System.Management.Automation
                 // Determine if we need to quote the paths we parse
 
                 lastWord = lastWord ?? string.Empty;
-                bool isLastWordEmpty = String.IsNullOrEmpty(lastWord);
-                bool lastCharIsStar = !isLastWordEmpty && lastWord.EndsWith("*", StringComparison.Ordinal);
+                bool isLastWordEmpty = string.IsNullOrEmpty(lastWord);
+                bool lastCharIsStar = !isLastWordEmpty && lastWord.EndsWith('*');
                 bool containsGlobChars = WildcardPattern.ContainsWildcardCharacters(lastWord);
 
                 string wildWord = lastWord + "*";
@@ -988,11 +998,12 @@ namespace System.Management.Automation
                 result.AddRange(s1);
                 for (int i = 0, j = 0; i < s2.Count; ++i)
                 {
-                    if (j < s1.Count && String.Compare(s2[i].Path, s1[j].Path, StringComparison.CurrentCultureIgnoreCase) == 0)
+                    if (j < s1.Count && string.Equals(s2[i].Path, s1[j].Path, StringComparison.CurrentCultureIgnoreCase))
                     {
                         ++j;
                         continue;
                     }
+
                     result.Add(s2[i]);
                 }
 
@@ -1040,9 +1051,9 @@ namespace System.Management.Automation
             {
                 // These are special cases, as they represent cases where the user expects to
                 // see the full path.
-                if (lastWord.StartsWith("~", StringComparison.OrdinalIgnoreCase) ||
-                    lastWord.StartsWith("\\", StringComparison.OrdinalIgnoreCase) ||
-                    lastWord.StartsWith("/", StringComparison.OrdinalIgnoreCase))
+                if (lastWord.StartsWith('~') ||
+                    lastWord.StartsWith('\\') ||
+                    lastWord.StartsWith('/'))
                 {
                     return true;
                 }
@@ -1072,7 +1083,7 @@ namespace System.Management.Automation
 
             private static List<PathItemAndConvertedPath> PSv2FindMatches(PowerShellExecutionHelper helper, string path, bool shouldFullyQualifyPaths)
             {
-                Diagnostics.Assert(!String.IsNullOrEmpty(path), "path should have a value");
+                Diagnostics.Assert(!string.IsNullOrEmpty(path), "path should have a value");
                 var result = new List<PathItemAndConvertedPath>();
 
                 Exception exceptionThrown;
@@ -1081,14 +1092,14 @@ namespace System.Management.Automation
                 // It's OK to use script, since tab completion is useless when the remote Win7 machine is in nolanguage mode
                 if (!shouldFullyQualifyPaths)
                 {
-                    powershell.AddScript(String.Format(
+                    powershell.AddScript(string.Format(
                         CultureInfo.InvariantCulture,
                         "& {{ trap {{ continue }} ; resolve-path {0} -Relative -WarningAction SilentlyContinue | ForEach-Object {{,($_,(get-item $_ -WarningAction SilentlyContinue),(convert-path $_ -WarningAction SilentlyContinue))}} }}",
                         path));
                 }
                 else
                 {
-                    powershell.AddScript(String.Format(
+                    powershell.AddScript(string.Format(
                         CultureInfo.InvariantCulture,
                         "& {{ trap {{ continue }} ; resolve-path {0} -WarningAction SilentlyContinue | ForEach-Object {{,($_,(get-item $_ -WarningAction SilentlyContinue),(convert-path $_ -WarningAction SilentlyContinue))}} }}",
                         path));
@@ -1291,6 +1302,7 @@ namespace System.Management.Automation
             private int ReplacementIndex
             {
                 get { return _replacementIndex; }
+
                 set
                 {
                     Diagnostics.Assert(value >= 0 && value < _sentence.Length + 1, "value out of range");

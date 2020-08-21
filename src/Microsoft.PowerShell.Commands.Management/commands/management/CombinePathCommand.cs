@@ -1,10 +1,11 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
 using System;
-using System.Text;
 using System.Collections.ObjectModel;
 using System.Management.Automation;
+using System.Text;
+
 using Dbg = System.Management.Automation;
 
 namespace Microsoft.PowerShell.Commands
@@ -13,21 +14,21 @@ namespace Microsoft.PowerShell.Commands
     /// A command that adds the parent and child parts of a path together
     /// with the appropriate path separator.
     /// </summary>
-    [Cmdlet(VerbsCommon.Join, "Path", SupportsTransactions = true, HelpUri = "https://go.microsoft.com/fwlink/?LinkID=113347")]
+    [Cmdlet(VerbsCommon.Join, "Path", SupportsTransactions = true, HelpUri = "https://go.microsoft.com/fwlink/?LinkID=2096811")]
     [OutputType(typeof(string))]
     public class JoinPathCommand : CoreCommandWithCredentialsBase
     {
         #region Parameters
 
         /// <summary>
-        /// Gets or sets the path parameter to the command
+        /// Gets or sets the path parameter to the command.
         /// </summary>
         [Parameter(Position = 0, Mandatory = true, ValueFromPipeline = true, ValueFromPipelineByPropertyName = true)]
         [Alias("PSPath")]
         public string[] Path { get; set; }
 
         /// <summary>
-        /// Gets or sets the childPath parameter to the command
+        /// Gets or sets the childPath parameter to the command.
         /// </summary>
         [Parameter(Position = 1, Mandatory = true, ValueFromPipelineByPropertyName = true)]
         [AllowNull]
@@ -41,10 +42,10 @@ namespace Microsoft.PowerShell.Commands
         [AllowNull]
         [AllowEmptyString]
         [AllowEmptyCollection]
-        public string[] AdditionalChildPath { get; set; } = Utils.EmptyArray<string>();
+        public string[] AdditionalChildPath { get; set; } = Array.Empty<string>();
 
         /// <summary>
-        /// Determines if the path should be resolved after being joined
+        /// Determines if the path should be resolved after being joined.
         /// </summary>
         /// <value></value>
         [Parameter]
@@ -203,7 +204,7 @@ namespace Microsoft.PowerShell.Commands
                                     pathNotFound));
                             continue;
                         }
-                    } // for each path
+                    }
                 }
                 else
                 {
@@ -213,9 +214,9 @@ namespace Microsoft.PowerShell.Commands
                     }
                 }
             }
-        } // ProcessRecord
+        }
         #endregion Command code
 
-    } // JoinPathCommand
-} // namespace Microsoft.PowerShell.Commands
+    }
+}
 

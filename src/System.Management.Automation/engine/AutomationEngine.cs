@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
 using System.Linq;
@@ -24,9 +24,8 @@ namespace System.Management.Automation
         internal ExecutionContext Context { get; }
 
         /// <summary>
-        /// Gets the CommandDiscovery instance for the current engine
+        /// Gets the CommandDiscovery instance for the current engine.
         /// </summary>
-        ///
         internal CommandDiscovery CommandDiscovery { get; }
 
         /// <summary>
@@ -36,15 +35,33 @@ namespace System.Management.Automation
         /// </summary>
         internal AutomationEngine(PSHost hostInterface, InitialSessionState iss)
         {
+#if !UNIX
+            // Update the env variable PATHEXT to contain .CPL
+            var pathext = Environment.GetEnvironmentVariable("PATHEXT");
+
+            if (string.IsNullOrEmpty(pathext))
+            {
+                Environment.SetEnvironmentVariable("PATHEXT", ".CPL");
+            }
+            else if (!(pathext.EndsWith(";.CPL", StringComparison.OrdinalIgnoreCase) ||
+                       pathext.StartsWith(".CPL;", StringComparison.OrdinalIgnoreCase) ||
+                       pathext.Contains(";.CPL;", StringComparison.OrdinalIgnoreCase) ||
+                       pathext.Equals(".CPL", StringComparison.OrdinalIgnoreCase)))
+            {
+                // Fast skip if we already added the extention as ";.CPL".
+                // Fast skip if user already added the extention.
+                pathext += pathext[pathext.Length - 1] == ';' ? ".CPL" : ";.CPL";
+                Environment.SetEnvironmentVariable("PATHEXT", pathext);
+            }
+#endif
+
             Context = new ExecutionContext(this, hostInterface, iss);
 
             EngineParser = new Language.Parser();
             CommandDiscovery = new CommandDiscovery(Context);
 
             // Load the iss, resetting everything to it's defaults...
-            iss.Bind(Context, /*updateOnly*/ false);
-
-            InitialSessionState.SetSessionStateDrive(Context, true);
+            iss.Bind(Context, updateOnly: false, module: null, noClobber: false, local: false, setLocation: true);
         }
 
         /// <summary>
@@ -55,36 +72,37 @@ namespace System.Management.Automation
             var ast = Parser.ScanString(s);
 
             // ExpandString is assumed to invoke code, so passing 'IsTrustedInput'
-            return Compiler.GetExpressionValue(ast, true, Context, Context.EngineSessionState) as string ?? "";
+            return Compiler.GetExpressionValue(ast, true, Context, Context.EngineSessionState) as string ?? string.Empty;
         }
 
         /// <summary>
         /// Compile a piece of text into a parse tree for later execution.
         /// </summary>
-        /// <param name="script">The text to parse</param>
-        /// <param name="interactiveCommand"></param>
+        /// <param name="script">The text to parse.</param>
+        /// <param name="addToHistory">True iff the scriptblock will be added to history.</param>
         /// <returns>The parse text as a parsetree node.</returns>
-        internal ScriptBlock ParseScriptBlock(string script, bool interactiveCommand)
+        internal ScriptBlock ParseScriptBlock(string script, bool addToHistory)
         {
-            return ParseScriptBlock(script, null, interactiveCommand);
+            return ParseScriptBlock(script, null, addToHistory);
         }
 
-        internal ScriptBlock ParseScriptBlock(string script, string fileName, bool interactiveCommand)
+        internal ScriptBlock ParseScriptBlock(string script, string fileName, bool addToHistory)
         {
             ParseError[] errors;
             var ast = EngineParser.Parse(fileName, script, null, out errors, ParseMode.Default);
 
-            if (interactiveCommand)
+            if (addToHistory)
             {
                 EngineParser.SetPreviousFirstLastToken(Context);
             }
 
-            if (errors.Any())
+            if (errors.Length > 0)
             {
                 if (errors[0].IncompleteInput)
                 {
                     throw new IncompleteParseException(errors[0].Message, errors[0].ErrorId);
                 }
+
                 throw new ParseException(errors);
             }
 

@@ -1,19 +1,20 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
 using System;
-using System.Collections.Generic;
 using System.Collections;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Management.Automation;
 using System.Management.Automation.Internal;
-using System.Globalization;
+
 using Microsoft.PowerShell.Commands.Internal.Format;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.PowerShell.Commands
 {
     /// <summary>
-    /// definitions for hash table keys
+    /// Definitions for hash table keys.
     /// </summary>
     internal static class SortObjectParameterDefinitionKeys
     {
@@ -44,13 +45,12 @@ namespace Microsoft.PowerShell.Commands
     }
 
     /// <summary>
-    /// Base Cmdlet for cmdlets which deal with raw objects
+    /// Base Cmdlet for cmdlets which deal with raw objects.
     /// </summary>
     public class ObjectCmdletBase : PSCmdlet
     {
         #region Parameters
         /// <summary>
-        ///
         /// </summary>
         /// <value></value>
         [Parameter]
@@ -58,6 +58,7 @@ namespace Microsoft.PowerShell.Commands
         public string Culture
         {
             get { return _cultureInfo != null ? _cultureInfo.ToString() : null; }
+
             set
             {
                 if (string.IsNullOrEmpty(value))
@@ -71,7 +72,7 @@ namespace Microsoft.PowerShell.Commands
                 if (trimmedValue.StartsWith("0x", StringComparison.OrdinalIgnoreCase))
                 {
                     if ((trimmedValue.Length > 2) &&
-                        int.TryParse(trimmedValue.Substring(2), NumberStyles.AllowHexSpecifier,
+                        int.TryParse(trimmedValue.AsSpan(2), NumberStyles.AllowHexSpecifier,
                                   CultureInfo.CurrentCulture, out cultureNumber))
                     {
                         _cultureInfo = new CultureInfo(cultureNumber);
@@ -84,21 +85,24 @@ namespace Microsoft.PowerShell.Commands
                     _cultureInfo = new CultureInfo(cultureNumber);
                     return;
                 }
+
                 _cultureInfo = new CultureInfo(value);
             }
         }
+
         internal CultureInfo _cultureInfo = null;
 
         /// <summary>
-        ///
         /// </summary>
         /// <value></value>
         [Parameter]
         public SwitchParameter CaseSensitive
         {
             get { return _caseSensitive; }
+
             set { _caseSensitive = value; }
         }
+
         private bool _caseSensitive;
         #endregion Parameters
     }
@@ -111,7 +115,6 @@ namespace Microsoft.PowerShell.Commands
         #region Parameters
 
         /// <summary>
-        ///
         /// </summary>
         [Parameter(ValueFromPipeline = true)]
         public PSObject InputObject { set; get; } = AutomationNull.Value;
@@ -139,14 +142,16 @@ namespace Microsoft.PowerShell.Commands
         internal SwitchParameter DescendingOrder
         {
             get { return !_ascending; }
+
             set { _ascending = !value; }
         }
+
         private bool _ascending = true;
 
         internal List<PSObject> InputObjects { get; } = new List<PSObject>();
 
         /// <summary>
-        /// CultureInfo converted from the Culture Cmdlet parameter
+        /// CultureInfo converted from the Culture Cmdlet parameter.
         /// </summary>
         internal CultureInfo ConvertedCulture
         {
@@ -159,9 +164,7 @@ namespace Microsoft.PowerShell.Commands
         #endregion Internal Properties
 
         /// <summary>
-        ///
-        /// Simply accumulates the incoming objects
-        ///
+        /// Simply accumulates the incoming objects.
         /// </summary>
         protected override void ProcessRecord()
         {
@@ -177,7 +180,7 @@ namespace Microsoft.PowerShell.Commands
         #region Internal properties
 
         /// <summary>
-        /// a logical matrix where each row is an input object and its property values specified by Properties
+        /// A logical matrix where each row is an input object and its property values specified by Properties.
         /// </summary>
         internal List<OrderByPropertyEntry> OrderMatrix { get; } = null;
 
@@ -199,7 +202,7 @@ namespace Microsoft.PowerShell.Commands
         // a string array and allows wildcard.
         // Yes, the Cmdlet is needed. It's used to get the TerminatingErrorContext, WriteError and WriteDebug.
 
-        #region process MshExpression and MshParameter
+        #region process PSPropertyExpression and MshParameter
 
         private static void ProcessExpressionParameter(
             List<PSObject> inputObjects,
@@ -218,6 +221,7 @@ namespace Microsoft.PowerShell.Commands
             {
                 expr = GetDefaultKeyPropertySet(inputObjects[0]);
             }
+
             if (expr != null)
             {
                 List<MshParameter> unexpandedParameterList = processor.ProcessParameters(expr, invocationContext);
@@ -245,7 +249,7 @@ namespace Microsoft.PowerShell.Commands
 
                     foreach (MshParameter unexpandedParameter in _unexpandedParameterList)
                     {
-                        MshExpression mshExpression = (MshExpression)unexpandedParameter.GetEntry(FormatParameterDefinitionKeys.ExpressionEntryKey);
+                        PSPropertyExpression mshExpression = (PSPropertyExpression)unexpandedParameter.GetEntry(FormatParameterDefinitionKeys.ExpressionEntryKey);
                         if (!mshExpression.HasWildCardCharacters) // this special cases 1) script blocks and 2) wildcard-less strings
                         {
                             _mshParameterList.Add(unexpandedParameter);
@@ -274,14 +278,14 @@ namespace Microsoft.PowerShell.Commands
             {
                 foreach (MshParameter unexpandedParameter in unexpandedParameterList)
                 {
-                    MshExpression ex = (MshExpression)unexpandedParameter.GetEntry(FormatParameterDefinitionKeys.ExpressionEntryKey);
+                    PSPropertyExpression ex = (PSPropertyExpression)unexpandedParameter.GetEntry(FormatParameterDefinitionKeys.ExpressionEntryKey);
                     if (!ex.HasWildCardCharacters) // this special cases 1) script blocks and 2) wildcard-less strings
                     {
                         expandedParameterList.Add(unexpandedParameter);
                     }
                     else
                     {
-                        SortedDictionary<string, MshExpression> expandedPropertyNames = new SortedDictionary<string, MshExpression>(StringComparer.OrdinalIgnoreCase);
+                        SortedDictionary<string, PSPropertyExpression> expandedPropertyNames = new SortedDictionary<string, PSPropertyExpression>(StringComparer.OrdinalIgnoreCase);
                         if (inputObjects != null)
                         {
                             foreach (object inputObject in inputObjects)
@@ -291,14 +295,14 @@ namespace Microsoft.PowerShell.Commands
                                     continue;
                                 }
 
-                                foreach (MshExpression resolvedName in ex.ResolveNames(PSObject.AsPSObject(inputObject)))
+                                foreach (PSPropertyExpression resolvedName in ex.ResolveNames(PSObject.AsPSObject(inputObject)))
                                 {
                                     expandedPropertyNames[resolvedName.ToString()] = resolvedName;
                                 }
                             }
                         }
 
-                        foreach (MshExpression expandedExpression in expandedPropertyNames.Values)
+                        foreach (PSPropertyExpression expandedExpression in expandedPropertyNames.Values)
                         {
                             MshParameter expandedParameter = new MshParameter();
                             expandedParameter.hash = (Hashtable)unexpandedParameter.hash.Clone();
@@ -321,20 +325,20 @@ namespace Microsoft.PowerShell.Commands
             {
                 foreach (MshParameter unexpandedParameter in UnexpandedParametersWithWildCardPattern)
                 {
-                    MshExpression ex = (MshExpression)unexpandedParameter.GetEntry(FormatParameterDefinitionKeys.ExpressionEntryKey);
+                    PSPropertyExpression ex = (PSPropertyExpression)unexpandedParameter.GetEntry(FormatParameterDefinitionKeys.ExpressionEntryKey);
 
-                    SortedDictionary<string, MshExpression> expandedPropertyNames = new SortedDictionary<string, MshExpression>(StringComparer.OrdinalIgnoreCase);
+                    SortedDictionary<string, PSPropertyExpression> expandedPropertyNames = new SortedDictionary<string, PSPropertyExpression>(StringComparer.OrdinalIgnoreCase);
                     if (inputObject == null)
                     {
                         continue;
                     }
 
-                    foreach (MshExpression resolvedName in ex.ResolveNames(PSObject.AsPSObject(inputObject)))
+                    foreach (PSPropertyExpression resolvedName in ex.ResolveNames(PSObject.AsPSObject(inputObject)))
                     {
                         expandedPropertyNames[resolvedName.ToString()] = resolvedName;
                     }
 
-                    foreach (MshExpression expandedExpression in expandedPropertyNames.Values)
+                    foreach (PSPropertyExpression expandedExpression in expandedPropertyNames.Values)
                     {
                         MshParameter expandedParameter = new MshParameter();
                         expandedParameter.hash = (Hashtable)unexpandedParameter.hash.Clone();
@@ -353,18 +357,20 @@ namespace Microsoft.PowerShell.Commands
             {
                 return null;
             }
+
             PSPropertySet defaultKeys = standardNames.Members["DefaultKeyPropertySet"] as PSPropertySet;
 
             if (defaultKeys == null)
             {
                 return null;
             }
+
             string[] props = new string[defaultKeys.ReferencedPropertyNames.Count];
             defaultKeys.ReferencedPropertyNames.CopyTo(props, 0);
             return props;
         }
 
-        #endregion process MshExpression and MshParameter
+        #endregion process PSPropertyExpression and MshParameter
 
         internal static List<OrderByPropertyEntry> CreateOrderMatrix(
             PSCmdlet cmdlet,
@@ -386,10 +392,12 @@ namespace Microsoft.PowerShell.Commands
                 {
                     cmdlet.WriteError(err);
                 }
+
                 foreach (string debugMsg in propertyNotFoundMsgs)
                 {
                     cmdlet.WriteDebug(debugMsg);
                 }
+
                 orderMatrixToCreate.Add(result);
             }
 
@@ -412,10 +420,11 @@ namespace Microsoft.PowerShell.Commands
             {
                 return null;
             }
-            Nullable<bool>[] ascendingOverrides = null;
+
+            bool?[] ascendingOverrides = null;
             if (mshParameterList != null && mshParameterList.Count != 0)
             {
-                ascendingOverrides = new Nullable<bool>[mshParameterList.Count];
+                ascendingOverrides = new bool?[mshParameterList.Count];
                 for (int k = 0; k < ascendingOverrides.Length; k++)
                 {
                     object ascendingVal = mshParameterList[k].GetEntry(
@@ -446,6 +455,7 @@ namespace Microsoft.PowerShell.Commands
                     }
                 }
             }
+
             OrderByPropertyComparer comparer =
                 OrderByPropertyComparer.CreateComparer(orderMatrix, ascending,
                 ascendingOverrides, cultureInfo, caseSensitive);
@@ -481,7 +491,7 @@ namespace Microsoft.PowerShell.Commands
         /// <summary>
         /// Utility function used to create OrderByPropertyEntry for the supplied input object.
         /// </summary>
-        /// <param name="cmdlet">PSCmdlet</param>
+        /// <param name="cmdlet">PSCmdlet.</param>
         /// <param name="inputObject">Input Object.</param>
         /// <param name="isCaseSensitive">Indicates if the Property value comparisons need to be case sensitive or not.</param>
         /// <param name="cultureInfo">Culture Info that needs to be used for comparison.</param>
@@ -507,6 +517,7 @@ namespace Microsoft.PowerShell.Commands
             {
                 cmdlet.WriteError(err);
             }
+
             foreach (string debugMsg in propertyNotFoundMsgs)
             {
                 cmdlet.WriteDebug(debugMsg);
@@ -569,10 +580,10 @@ namespace Microsoft.PowerShell.Commands
             ref bool comparable)
         {
             // NOTE: we assume globbing was not allowed in input
-            MshExpression ex = p.GetEntry(FormatParameterDefinitionKeys.ExpressionEntryKey) as MshExpression;
+            PSPropertyExpression ex = p.GetEntry(FormatParameterDefinitionKeys.ExpressionEntryKey) as PSPropertyExpression;
 
             // get the values, but do not expand aliases
-            List<MshExpressionResult> expressionResults = ex.GetValues(inputObject, false, true);
+            List<PSPropertyExpressionResult> expressionResults = ex.GetValues(inputObject, false, true);
 
             if (expressionResults.Count == 0)
             {
@@ -582,9 +593,10 @@ namespace Microsoft.PowerShell.Commands
                 propertyNotFoundMsg = StringUtil.Format(SortObjectStrings.PropertyNotFound, ex.ToString());
                 return;
             }
+
             propertyNotFoundMsg = null;
             // we obtained some results, enter them into the list
-            foreach (MshExpressionResult r in expressionResults)
+            foreach (PSPropertyExpressionResult r in expressionResults)
             {
                 if (r.Exception == null)
                 {
@@ -600,13 +612,14 @@ namespace Microsoft.PowerShell.Commands
                     errors.Add(errorRecord);
                     orderValues.Add(ObjectCommandPropertyValue.ExistingNullProperty);
                 }
+
                 comparable = true;
             }
         }
     }
 
     /// <summary>
-    /// This is the row of the OrderMatrix
+    /// This is the row of the OrderMatrix.
     /// </summary>
     internal sealed class OrderByPropertyEntry
     {
@@ -650,7 +663,7 @@ namespace Microsoft.PowerShell.Commands
             return order;
         }
 
-        internal static OrderByPropertyComparer CreateComparer(List<OrderByPropertyEntry> orderMatrix, bool ascendingFlag, Nullable<bool>[] ascendingOverrides, CultureInfo cultureInfo, bool caseSensitive)
+        internal static OrderByPropertyComparer CreateComparer(List<OrderByPropertyEntry> orderMatrix, bool ascendingFlag, bool?[] ascendingOverrides, CultureInfo cultureInfo, bool caseSensitive)
         {
             if (orderMatrix.Count == 0)
                 return null;
@@ -663,6 +676,7 @@ namespace Microsoft.PowerShell.Commands
                 if (entry.orderValues.Count > maxEntries)
                     maxEntries = entry.orderValues.Count;
             }
+
             if (maxEntries == 0)
                 return null;
 
@@ -701,6 +715,7 @@ namespace Microsoft.PowerShell.Commands
             {
                 return lhs.comparable.CompareTo(rhs.comparable) * -1;
             }
+
             int result = _orderByPropertyComparer.Compare(lhs, rhs);
             // When items are identical according to the internal comparison, compare by index
             // to preserve the original order
@@ -712,7 +727,6 @@ namespace Microsoft.PowerShell.Commands
             return result;
         }
 
-        OrderByPropertyComparer _orderByPropertyComparer = null;
+        private OrderByPropertyComparer _orderByPropertyComparer = null;
     }
 }
-

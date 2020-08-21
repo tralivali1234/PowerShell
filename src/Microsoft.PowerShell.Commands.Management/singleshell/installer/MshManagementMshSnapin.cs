@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
 using System.ComponentModel;
@@ -7,14 +7,11 @@ using System.Management.Automation;
 namespace Microsoft.PowerShell
 {
     /// <summary>
-    ///
     /// MshManagementMshSnapin (or MshManagementMshSnapinInstaller) is a class for facilitating registry
     /// of necessary information for monad management mshsnapin.
     ///
-    /// This class will be built with monad management dll
-    ///
+    /// This class will be built with monad management dll.
     /// </summary>
-    ///
     [RunInstaller(true)]
     public sealed class PSManagementPSSnapIn : PSSnapIn
     {

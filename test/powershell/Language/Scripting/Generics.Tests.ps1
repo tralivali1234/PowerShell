@@ -1,4 +1,4 @@
-# Copyright (c) Microsoft Corporation. All rights reserved.
+# Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 using namespace system.collections.generic
 using namespace System.Management.Automation
@@ -50,7 +50,7 @@ Describe "Generics support" -Tags "CI" {
         $x = [dictionary[dictionary[list[int],string], stack[double]]]::new()
         $x.gettype().fullname | Should -Match "double"
 
-        $y = new-object "dictionary[dictionary[list[int],string], stack[double]]"
+        $y = New-Object "dictionary[dictionary[list[int],string], stack[double]]"
         $y.gettype().fullname | Should -Match "double"
     }
 
@@ -61,17 +61,11 @@ Describe "Generics support" -Tags "CI" {
 
         # The error message for a generic that doesn't meet the constraints should mention which
         # argument failed.
-        $ex = $null
-        try {
-            [nullable[object]]
-            Throw "Exception expected, execution should not have reached here"
-        } catch {
-            $_.FullyQualifiedErrorId | Should -BeExactly 'TypeNotFoundWithMessage'
-            $_ | Should -Match "\[T\]"
-        }
+        $e = { [nullable[object]] } | Should -Throw -ErrorId 'TypeNotFoundWithMessage' -PassThru
+        $e | Should -Match "\[T\]"
     }
 
-    It 'Array type works properly' -skip:$IsCoreCLR{
+    It 'Array type works properly' -Skip:$IsCoreCLR{
         $x = [system.array]::ConvertAll.OverloadDefinitions
         $x | Should -Match "static\s+TOutput\[\]\s+ConvertAll\[TInput,\s+TOutput\]\("
     }

@@ -1,4 +1,4 @@
-# Copyright (c) Microsoft Corporation. All rights reserved.
+# Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 Describe "Get-PSDrive" -Tags "CI" {
 
@@ -55,5 +55,13 @@ Describe "Get-PSDrive" -Tags "CI" {
     It "Should be able to determine the amount of Used space of a drive" {
         $dInfo = Get-PSDrive TESTDRIVE
         $dInfo.Used -ge 0 | Should -BeTrue
+    }
+}
+
+Describe "Temp: drive" -Tag Feature {
+    It "TEMP: drive exists" {
+        $res = Get-PSDrive Temp
+        $res.Name | Should -BeExactly "Temp"
+        $res.Root | Should -BeExactly ([System.IO.Path]::GetTempPath())
     }
 }

@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
 using System;
@@ -135,10 +135,6 @@ namespace Microsoft.PowerShell.Commands
         /// </returns>
         public LocalUser Clone()
         {
-            if (null == this)
-            {
-                throw new NullReferenceException();
-            }
             return new LocalUser(this);
         }
         #endregion Public Methods

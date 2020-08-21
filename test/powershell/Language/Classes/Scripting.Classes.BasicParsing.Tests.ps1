@@ -1,4 +1,4 @@
-# Copyright (c) Microsoft Corporation. All rights reserved.
+# Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
 Describe 'Positive Parse Properties Tests' -Tags "CI" {
@@ -105,7 +105,7 @@ Describe 'Positive Parse Properties Tests' -Tags "CI" {
         class C12c { [void] f() { [System.Management.Automation.Host.Rectangle]$foo = [System.Management.Automation.Host.Rectangle]::new(0, 0, 0, 0) } }
     }
 
-    context "Positive ParseMethods return type Test" {
+    Context "Positive ParseMethods return type Test" {
         # Method with return type of self
         class C9 { [C9] f() { return [C9]::new() } }
         $c9 = [C9]::new().f()
@@ -116,6 +116,16 @@ Describe 'Positive Parse Properties Tests' -Tags "CI" {
         class C9b { [System.Collections.Generic.List[C9b]] f() { return [C9b]::new() } }
         $c9b = [C9b]::new().f()
         It "Expected a System.Collections.Generic.List[C9b] returned" {  $c9b -is [System.Collections.Generic.List[C9b]] | Should -BeTrue }
+        It 'Methods returning object should return $null if no output was produced' {
+            class Foo {
+                [object] Bar1() { return & {} }
+                static [object] Bar2() { return & {} }
+            }
+            # Test instance method
+            [Foo]::new().Bar1() | Should -BeNullOrEmpty
+            # Test static method
+            [foo]::Bar2() | Should -BeNullOrEmpty
+        }
     }
 
     It 'Positive ParseProperty Attributes Test' {
@@ -219,7 +229,7 @@ Describe 'Positive Parse Properties Tests' -Tags "CI" {
                 '111' -Match '1'
                 $Matches
                 $mAtches
-                $Error[0]
+                $error[0]
                 $error
                 $pwd
                 foreach ($i in 1..10) {$foreach}
@@ -291,8 +301,8 @@ Describe 'Negative Parsing Tests' -Tags "CI" {
     ShouldBeParseError 'class C { [int]foo() { try { throw "foo"} catch [ArgumentException] {} catch {throw $_} } }' MethodHasCodePathNotReturn 15
     ShouldBeParseError 'class C { [int]foo() { try { throw "foo"} catch [ArgumentException] {return 1} catch {} } }' MethodHasCodePathNotReturn 15
     ShouldBeParseError 'class C { [int]foo() { while ($false) { return 1 } } }' MethodHasCodePathNotReturn 15
-    ShouldBeParseError 'class C { [int]foo() { try { mkdir foo } finally { rm -rec foo } } }' MethodHasCodePathNotReturn 15
-    ShouldBeParseError 'class C { [int]foo() { try { mkdir foo; return 1 } catch { } } }' MethodHasCodePathNotReturn 15
+    ShouldBeParseError 'class C { [int]foo() { try { New-Item -ItemType Directory foo } finally { rm -rec foo } } }' MethodHasCodePathNotReturn 15
+    ShouldBeParseError 'class C { [int]foo() { try { New-Item -ItemType Directory foo; return 1 } catch { } } }' MethodHasCodePathNotReturn 15
     ShouldBeParseError 'class C { [bool] Test() { if ($false) { return $true; } } }' MethodHasCodePathNotReturn 17
 
     ShouldBeParseError 'class C { [int]$i; [void] foo() {$i = 10} }' MissingThis 33
@@ -374,17 +384,17 @@ Describe 'Negative ClassAttributes Tests' -Tags "CI" {
 
     [System.Management.Automation.Cmdlet("Get", "Thing", SupportsShouldProcess = $true, SupportsPaging = $true)]class C2{}
     $t = [C2].GetCustomAttributes($false)
-    It "Should have one attribute (class C2)" { $t.Count | should -Be 1 }
+    It "Should have one attribute (class C2)" { $t.Count | Should -Be 1 }
     It "Should have instance of CmdletAttribute (class C2)" { $t[0] | Should -BeOfType System.Management.Automation.CmdletAttribute }
     [System.Management.Automation.CmdletAttribute]$c = $t[0]
     It "Verb should be Get (class C2)" {$c.VerbName | Should -BeExactly 'Get'}
     It "Noun should be Thing (class C2)" {$c.NounName | Should -BeExactly 'Thing'}
 
-    It  "SupportsShouldProcess should be $true" { $c.ConfirmImpact | Should -BeTrue }
+    It  "SupportsShouldProcess should be $true" { $c.SupportsShouldProcess | Should -BeTrue }
     It  "SupportsPaging should be `$true" { $c.SupportsPaging | Should -BeTrue }
     Context "Support ConfirmImpact as an attribute" {
         It  "ConfirmImpact should be high" {
-            [System.Management.Automation.Cmdlet("Get", "Thing", ConfirmImpact = 'High', SupportsPaging = $true)]class C3{}
+            [System.Management.Automation.Cmdlet("Get", "Thing", SupportsShouldProcess = $true, ConfirmImpact = 'High', SupportsPaging = $true)]class C3{}
             $t = [C3].GetCustomAttributes($false)
             $t.Count | Should -Be 1
             $t[0] | Should -BeOfType System.Management.Automation.CmdletAttribute
@@ -404,6 +414,119 @@ Describe 'Property Attributes Test' -Tags "CI" {
         It "Should have 2 valid values" { $v.ValidValues.Count | Should -Be 2 }
         It "first value should be a" { $v.ValidValues[0] | Should -Be 'a' }
         It "second value should be b" { $v.ValidValues[1] | Should -Be 'b' }
+}
+
+Describe 'Testing Method Names can be Keywords' -Tags "CI" {
+    BeforeAll {
+        [powershell] $script:PowerShell = [powershell]::Create()
+
+        function Invoke-PowerShell {
+            [CmdletBinding()]
+            param([string] $Script)
+
+            try {
+                $script:PowerShell.AddScript($Script).Invoke()
+            }
+            finally {
+                $script:PowerShell.Commands.Clear()
+            }
+        }
+
+        function Reset-PowerShell {
+            if ($script:PowerShell) {
+                $script:PowerShell.Dispose()
+            }
+
+            $script:PowerShell = [powershell]::Create()
+        }
+    }
+
+    AfterEach {
+        Reset-PowerShell
+    }
+
+    It 'Permits class methods to be named after keywords' {
+        $TestScript = @'
+            class TestMethodNames : IDisposable {
+                [string] Begin() { return "Begin" }
+
+                [string] Process() { return "Process" }
+
+                [string] End() { return "End" }
+
+                hidden $Data = "Secrets"
+
+                Dispose() {
+                    $this.Data = [string]::Empty
+                }
+            }
+            $Object = [TestMethodNames]::new()
+            [PSCustomObject]@{
+                BeginTest   = $Object.Begin()
+                ProcessTest = $Object.Process()
+                EndTest     = $Object.End()
+                CheckData1  = $Object.Data
+                CheckData2  = $( $Object.Dispose(); $Object.Data )
+            }
+'@
+        $Results = Invoke-PowerShell -Script $TestScript
+
+        $Results.BeginTest | Should -BeExactly 'Begin'
+        $Results.ProcessTest | Should -BeExactly 'Process'
+        $Results.EndTest | Should -BeExactly 'End'
+        $Results.CheckData1 | Should -BeExactly 'Secrets'
+        $Results.CheckData2 | Should -BeNullOrEmpty
+    }
+
+    It 'Permits class methods to be named after DynamicKeywords' {
+        $DefineKeyword = @'
+            function GetData {
+                param(
+                    $KeywordData,
+                    $Name,
+                    $Value,
+                    $SourceMetadata
+                )
+                end {
+                    return $PSBoundParameters
+                }
+            }
+
+            $keyword = [System.Management.Automation.Language.DynamicKeyword]::new()
+            $keyword.NameMode = [System.Management.Automation.Language.DynamicKeywordNameMode]::SimpleNameRequired
+            $keyword.Keyword = 'GetData'
+            $keyword.BodyMode = [System.Management.Automation.Language.DynamicKeywordBodyMode]::Hashtable
+
+            $property = [System.Management.Automation.Language.DynamicKeywordProperty]::new()
+            $property.Name = 'Hey'
+            $property.TypeConstraint = 'int'
+            $keyword.Properties.Add('Hey', $property)
+
+            [System.Management.Automation.Language.DynamicKeyword]::AddKeyword($keyword)
+'@
+        $DefineClass = @'
+            class Test {
+                hidden $Data = 'TOP SECRET'
+
+                [string] GetData() {
+                    return $this.Data
+                }
+            }
+'@
+        $TestScript = @'
+            $Object = [Test]::new()
+            $Object.GetData()
+'@
+        Invoke-PowerShell -Script $DefineKeyword
+        Invoke-PowerShell -Script $DefineClass
+
+        Invoke-PowerShell -Script $TestScript | Should -BeExactly 'TOP SECRET'
+    }
+
+    AfterAll {
+        # Ensure we don't leave any dynamic keywords in the session.
+        [System.Management.Automation.Language.DynamicKeyword]::Reset()
+    }
 }
 
 Describe 'Method Attributes Test' -Tags "CI" {
@@ -571,15 +694,23 @@ Describe 'Hidden Members Test ' -Tags "CI" {
 
         It "Access hidden property should still work" { $instance.hiddenZ | Should -Be 42 }
 
-        # Formatting should not include hidden members by default
-        $tableOutput = $instance | Format-Table -HideTableHeaders -AutoSize | Out-String
-        It "Table formatting should not have included hidden member hiddenZ - should contain 10" { $tableOutput.Contains(10) | Should -BeTrue}
-        It "Table formatting should not have included hidden member hiddenZ- should contain 12" { $tableOutput.Contains(12) | Should -BeTrue}
-        It "Table formatting should not have included hidden member hiddenZ - should not contain 42" { $tableOutput.Contains(42) | Should -BeFalse}
+        It "Table formatting should not include hidden member hiddenZ" {
+            $expectedTable = @"
+
+visibleX visibleY
+-------- --------
+      10       12
+
+
+"@
+
+            $tableOutput = $instance | Format-Table -AutoSize | Out-String
+            $tableOutput.Replace("`r","") | Should -BeExactly $expectedTable.Replace("`r","")
+        }
 
         # Get-Member should not include hidden members by default
         $member = $instance | Get-Member hiddenZ
-        it "Get-Member should not find hidden member w/o -Force" { $member | Should -BeNullOrEmpty }
+        It "Get-Member should not find hidden member w/o -Force" { $member | Should -BeNullOrEmpty }
 
         # Get-Member should include hidden members with -Force
         $member = $instance | Get-Member hiddenZ -Force
@@ -611,10 +742,10 @@ Describe 'Scoped Types Test' -Tags "CI" {
         {
             class C1 { [string] GetContext() { return "f2 scope" } }
 
-            return (new-object C1).GetContext()
+            return (New-Object C1).GetContext()
         }
 
-        It "New-Object at test scope" { (new-object C1).GetContext() | Should -BeExactly "Test scope" }
+        It "New-Object at test scope" { (New-Object C1).GetContext() | Should -BeExactly "Test scope" }
         It "[C1]::new() at test scope" { [C1]::new().GetContext() | Should -BeExactly "Test scope" }
 
         It "[C1]::new() in nested scope" { (f1) | Should -BeExactly "f1 scope" }
@@ -637,7 +768,7 @@ function test-it([EE]$ee){$ee}
         }
         finally
         {
-            Remove-Module -ea ignore MSFT_2081529
+            Remove-Module -ErrorAction ignore MSFT_2081529
         }
 }
 
@@ -673,7 +804,7 @@ Describe 'Type building' -Tags "CI" {
 
 Describe 'RuntimeType created for TypeDefinitionAst' -Tags "CI" {
 
-    It 'can make cast to the right RuntimeType in two different contexts' -pending {
+    It 'can make cast to the right RuntimeType in two different contexts' -Pending {
 
         $ssfe = [System.Management.Automation.Runspaces.SessionStateFunctionEntry]::new("foo", @'
 class Base
@@ -756,7 +887,7 @@ class A
 
     [int] GetX([Foo.Bar]$bar)
     {
-        Set-StrictMode -Version latest
+        Set-StrictMode -Version 3.0
         return $bar.x
     }
 }

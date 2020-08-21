@@ -279,8 +279,26 @@
   <data name="GetContentWriterDynamicParametersProviderException" xml:space="preserve">
     <value>The dynamic parameters for the GetContentWriter operation cannot be retrieved for the '{0}' provider for path '{1}'. {2}</value>
   </data>
+  <data name="GetContainerContentException" xml:space="preserve">
+    <value>Unable to get content because it is a directory: '{0}'. Please use 'Get-ChildItem' instead.</value>
+  </data>
+  <data name="WriteContainerContentException" xml:space="preserve">
+    <value>Unable to write content because it is a directory: '{0}'.</value>
+  </data>
+  <data name="LocationUndoStackIsEmpty" xml:space="preserve">
+    <value>There is no location history left to navigate backwards.</value>
+  </data>
+  <data name="LocationRedoStackIsEmpty" xml:space="preserve">
+    <value>There is no location history left to navigate forwards.</value>
+  </data>
+  <data name="BoundedStackIsEmpty" xml:space="preserve">
+    <value>The BoundedStack is empty.</value>
+  </data>
   <data name="ClearContentProviderException" xml:space="preserve">
     <value>Attempting to perform the ClearContent operation on the '{0}' provider failed for path '{1}'. {2}</value>
+  </data>
+  <data name="ClearDirectoryContent" xml:space="preserve">
+    <value>Unable to clear content of '{0}' because it is a directory. Clear-Content is only supported on files.</value>
   </data>
   <data name="ClearContentDynamicParametersProviderException" xml:space="preserve">
     <value>The dynamic parameters for the ClearContent operation cannot be retrieved from the '{0}' provider for path '{1}'. {2}</value>
@@ -606,6 +624,9 @@
   <data name="VariableDriveDescription" xml:space="preserve">
     <value>Drive that contains a view of those variables stored in a session state</value>
   </data>
+  <data name="TempDriveDescription" xml:space="preserve">
+    <value>Drive that maps to the temporary directory path for the current user</value>
+  </data>
   <data name="ProviderProviderPathFormatException" xml:space="preserve">
     <value>The path is not in the correct format. Paths can contain only provider and drive names separated by slashes or backslashes.</value>
   </data>
@@ -642,8 +663,8 @@
   <data name="RemoveDriveRoot" xml:space="preserve">
     <value>Cannot remove the drive root in this way. Use "Remove-PSDrive" to remove this drive.</value>
   </data>
-  <data name="NewItemValueNotSpecified" xml:space="preserve">
-    <value>Item '{0}' cannot be created because the value was not specified.</value>
+  <data name="NewLinkTargetNotSpecified" xml:space="preserve">
+    <value>Link '{0}' cannot be created because Target was not specified.</value>
   </data>
   <data name="DollarNullDescription" xml:space="preserve">
     <value>References to the null variable always return the null value. Assignments have no effect.</value>

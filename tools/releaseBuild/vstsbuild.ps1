@@ -1,4 +1,4 @@
-# Copyright (c) Microsoft Corporation. All rights reserved.
+# Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 [cmdletbinding(DefaultParameterSetName='Build')]
 param(
@@ -21,7 +21,7 @@ DynamicParam {
     # Add a dynamic parameter '-Name' which specifies the name of the build to run
 
     # Get the names of the builds.
-    $buildJsonPath = (Join-Path -path $PSScriptRoot -ChildPath 'build.json')
+    $buildJsonPath = (Join-Path -Path $PSScriptRoot -ChildPath 'build.json')
     $build = Get-Content -Path $buildJsonPath | ConvertFrom-Json
     $names = @($build.Windows.Name)
     foreach($name in $build.Linux.Name)
@@ -55,8 +55,8 @@ End {
     # If specified, Add package file to container
     if ($BuildPath)
     {
-        Import-Module (Join-Path -path $PSScriptRoot -childpath '..\..\build.psm1')
-        Import-Module (Join-Path -path $PSScriptRoot -childpath '..\packaging')
+        Import-Module (Join-Path -Path $PSScriptRoot -ChildPath '..\..\build.psm1')
+        Import-Module (Join-Path -Path $PSScriptRoot -ChildPath '..\packaging')
 
         # Use temp as destination if not running in VSTS
         $destFolder = $env:temp
@@ -67,7 +67,8 @@ End {
         }
 
         $BuildPackagePath = New-PSSignedBuildZip -BuildPath $BuildPath -SignedFilesPath $SignedFilesPath -DestinationFolder $destFolder
-        Write-Host "##vso[artifact.upload containerfolder=results;artifactname=$name-singed.zip]$BuildPackagePath"
+        Write-Verbose -Verbose "New-PSSignedBuildZip returned `$BuildPackagePath as: $BuildPackagePath"
+        Write-Host "##vso[artifact.upload containerfolder=results;artifactname=results]$BuildPackagePath"
         $buildPackageName = Split-Path -Path $BuildPackagePath -Leaf
         $additionalFiles += $BuildPackagePath
     }
@@ -86,18 +87,10 @@ End {
         throw "Git is required to proceed. Install from 'https://git-scm.com/download/win'"
     }
 
-    Write-Verbose "cloning -b $psReleaseBranch --quiet https://github.com/$psReleaseFork/PSRelease.git" -verbose
+    Write-Verbose "cloning -b $psReleaseBranch --quiet https://github.com/$psReleaseFork/PSRelease.git" -Verbose
     & $gitBinFullPath clone -b $psReleaseBranch --quiet https://github.com/$psReleaseFork/PSRelease.git $location
 
     Push-Location -Path $PWD.Path
-    try{
-        Set-Location $location
-        & $gitBinFullPath  submodule update --init --recursive --quiet
-    }
-    finally
-    {
-        Pop-Location
-    }
 
     $unresolvedRepoRoot = Join-Path -Path $PSScriptRoot '../..'
     $resolvedRepoRoot = (Resolve-Path -Path $unresolvedRepoRoot).ProviderPath

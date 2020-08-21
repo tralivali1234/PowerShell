@@ -39,6 +39,7 @@ case "$1" in
     ;;
 esac
 '@
+
     UbuntuAfterRemoveScript = @'
 #!/bin/sh
 set -e
@@ -48,8 +49,55 @@ case "$1" in
         ;;
 esac
 '@
-# see https://developer.apple.com/library/content/documentation/DeveloperTools/Reference/DistributionDefinitionRef/Chapters/Distribution_XML_Ref.html
-OsxDistributionTemplate = @'
+
+    MacOSAfterInstallScript = @'
+#!/bin/bash
+
+if [ ! -f /etc/shells ] ; then
+    echo "{0}" > /etc/shells
+else
+    grep -q "^{0}$" /etc/shells || echo "{0}" >> /etc/shells
+fi
+'@
+
+    MacOSLauncherScript = @'
+#!/usr/bin/env bash
+open {0}
+'@
+
+    MacOSLauncherPlistTemplate = @'
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleExecutable</key>
+    <string>PowerShell.sh</string>
+    <key>CFBundleGetInfoString</key>
+    <string>{1}</string>
+    <key>CFBundleIconFile</key>
+    <string>{2}</string>
+    <key>CFBundleIdentifier</key>
+    <string>{0}</string>
+    <key>CFBundleInfoDictionaryVersion</key>
+    <string>6.0</string>
+    <key>CFBundleName</key>
+    <string>PowerShell</string>
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+    <key>CFBundleShortVersionString</key>
+    <string>{1}</string>
+    <key>CFBundleSupportedPlatforms</key>
+    <array>
+        <string>MacOSX</string>
+    </array>
+    <key>CFBundleVersion</key>
+    <string>{1}</string>
+</dict>
+</plist>
+'@
+
+    # see https://developer.apple.com/library/content/documentation/DeveloperTools/Reference/DistributionDefinitionRef/Chapters/Distribution_XML_Ref.html
+    OsxDistributionTemplate = @'
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <installer-gui-script minSpecVersion="1">
     <title>{0}</title>
@@ -60,7 +108,7 @@ OsxDistributionTemplate = @'
         <os-version min="{3}" />
     </allowed-os-versions>
     <options customize="never" require-scripts="false"/>
-    <product id="com.microsoft.powershell" version="{1}" />
+    <product id="{4}" version="{1}" />
     <choices-outline>
         <line choice="default">
             <line choice="powershell"/>
@@ -68,48 +116,39 @@ OsxDistributionTemplate = @'
     </choices-outline>
     <choice id="default"/>
     <choice id="powershell" visible="false">
-        <pkg-ref id="com.microsoft.powershell"/>
+        <pkg-ref id="{4}"/>
     </choice>
-    <pkg-ref id="com.microsoft.powershell" version="{1}" onConclusion="none">{2}</pkg-ref>
+    <pkg-ref id="{4}" version="{1}" onConclusion="none">{2}</pkg-ref>
 </installer-gui-script>
 '@
-NuspecTemplate = @'
+
+    NuspecTemplate = @'
 <?xml version="1.0" encoding="utf-8"?>
-<package
-  xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
-  <metadata>
-    <id>{0}</id>
-    <version>{1}</version>
-    <title>PowerShellRuntime</title>
-    <authors>Powershell</authors>
-    <owners>microsoft,powershell</owners>
-    <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>PowerShell runtime for hosting PowerShell</description>
-    <copyright>Copyright (c) Microsoft Corporation. All rights reserved.</copyright>
-    <language>en-US</language>
-    <dependencies>
-      <group targetFramework=".NETCoreApp2.0"></group>
-    </dependencies>
-  </metadata>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/10/nuspec.xsd">
+    <metadata>
+        <id>{0}</id>
+        <version>{1}</version>
+        <authors>Microsoft</authors>
+        <owners>Microsoft,PowerShell</owners>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <description>Runtime for hosting PowerShell</description>
+        <projectUrl>https://github.com/PowerShell/PowerShell</projectUrl>
+        <icon>{2}</icon>
+        <license type="expression">MIT</license>
+        <tags>PowerShell</tags>
+        <language>en-US</language>
+        <copyright>&#169; Microsoft Corporation. All rights reserved.</copyright>
+        <contentFiles>
+            <files include="**/*" buildAction="None" copyToOutput="true" flatten="false" />
+        </contentFiles>
+        <dependencies>
+            <group targetFramework="net5.0"></group>
+        </dependencies>
+    </metadata>
 </package>
 '@
-RefAssemblyCsProj = @'
-<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <Version>{0}</Version>
-    <DelaySign>true</DelaySign>
-    <AssemblyOriginatorKeyFile>{1}</AssemblyOriginatorKeyFile>
-    <SignAssembly>true</SignAssembly>
-  </PropertyGroup>
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Management.Infrastructure" Version="1.0.0-alpha08" />
-    <PackageReference Include="System.Security.AccessControl" Version="4.4.1" />
-    <PackageReference Include="System.Security.Principal.Windows" Version="4.4.1" />
-  </ItemGroup>
-</Project>
-'@
-NuGetConfigFile = @'
+
+    NuGetConfigFile = @'
 <configuration>
   <packageSources>
     <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
@@ -118,4 +157,37 @@ NuGetConfigFile = @'
   </packageSources>
 </configuration>
 '@
+
+    GlobalToolNuSpec = @'
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+    <metadata>
+        <id>{0}</id>
+        <version>{1}</version>
+        <authors>Microsoft</authors>
+        <owners>Microsoft,PowerShell</owners>
+        <projectUrl>https://github.com/PowerShell/PowerShell</projectUrl>
+        <icon>{2}</icon>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <description>PowerShell global tool</description>
+        <license type="expression">MIT</license>
+        <tags>PowerShell</tags>
+        <language>en-US</language>
+        <copyright>&#169; Microsoft Corporation. All rights reserved.</copyright>
+        <packageTypes>
+            <packageType name="DotnetTool" />
+        </packageTypes>
+    </metadata>
+</package>
+'@
+
+    GlobalToolSettingsFile = @'
+<?xml version="1.0" encoding="utf-8"?>
+<DotNetCliTool Version="1">
+    <Commands>
+        <Command Name="pwsh" EntryPoint="{0}" Runner="dotnet" />
+    </Commands>
+</DotNetCliTool>
+'@
+
 }

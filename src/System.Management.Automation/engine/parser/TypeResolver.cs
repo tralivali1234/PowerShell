@@ -1,9 +1,12 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+#if !UNIX
+using System.DirectoryServices;
+#endif
 using System.Globalization;
 using System.Linq;
 using System.Management.Automation.Language;
@@ -18,12 +21,9 @@ using System.Security.AccessControl;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.RegularExpressions;
 using System.Xml;
+
 using Microsoft.Management.Infrastructure;
 using Microsoft.PowerShell.Commands;
-#if !CORECLR
-// System.DirectoryServices are not in CoreCLR
-using System.DirectoryServices;
-#endif
 
 namespace System.Management.Automation.Language
 {
@@ -54,6 +54,7 @@ namespace System.Management.Automation.Language
         internal class AmbiguousTypeException : InvalidCastException
         {
             public string[] Candidates { private set; get; }
+
             public TypeName TypeName { private set; get; }
 
             public AmbiguousTypeException(TypeName typeName, IEnumerable<string> candidates)
@@ -127,7 +128,7 @@ namespace System.Management.Automation.Language
 
             if (foundType2 != null)
             {
-                exception = new AmbiguousTypeException(typeName, new String[] { foundType.AssemblyQualifiedName, foundType2.AssemblyQualifiedName });
+                exception = new AmbiguousTypeException(typeName, new string[] { foundType.AssemblyQualifiedName, foundType2.AssemblyQualifiedName });
                 return null;
             }
 
@@ -139,32 +140,24 @@ namespace System.Management.Automation.Language
         /// </summary>
         internal static bool IsPublic(Type type)
         {
-            TypeInfo typeInfo = type.GetTypeInfo();
-            return IsPublic(typeInfo);
-        }
-
-        /// <summary>
-        /// A typeInfo is public if IsPublic or (IsNestedPublic and is nested in public type(s))
-        /// </summary>
-        internal static bool IsPublic(TypeInfo typeInfo)
-        {
-            if (typeInfo.IsPublic)
+            if (type.IsPublic)
             {
                 return true;
             }
-            if (!typeInfo.IsNestedPublic)
+
+            if (!type.IsNestedPublic)
             {
                 return false;
             }
-            Type type;
-            while ((type = typeInfo.DeclaringType) != null)
+
+            while ((type = type.DeclaringType) != null)
             {
-                typeInfo = type.GetTypeInfo();
-                if (!(typeInfo.IsPublic || typeInfo.IsNestedPublic))
+                if (!(type.IsPublic || type.IsNestedPublic))
                 {
                     return false;
                 }
             }
+
             return true;
         }
 
@@ -189,6 +182,7 @@ namespace System.Management.Automation.Language
                     {
                         return result;
                     }
+
                     currentScope = currentScope.Parent;
                 }
 
@@ -227,7 +221,7 @@ namespace System.Management.Automation.Language
         /// This set should be used directly only in the method CallResolveTypeNameWorkerHelper.
         /// </remarks>
         [ThreadStatic]
-        private static HashSet<Assembly> s_searchedAssemblies = null;
+        private static HashSet<Assembly> t_searchedAssemblies = null;
 
         /// <summary>
         /// A helper method to call ResolveTypeNameWorker in steps.
@@ -239,21 +233,21 @@ namespace System.Management.Automation.Language
                                                             TypeResolutionState typeResolutionState,
                                                             out Exception exception)
         {
-            if (s_searchedAssemblies == null)
+            if (t_searchedAssemblies == null)
             {
-                s_searchedAssemblies = new HashSet<Assembly>();
+                t_searchedAssemblies = new HashSet<Assembly>();
             }
             else
             {
                 // Clear the set before starting a full search to make sure we have a clean start.
-                s_searchedAssemblies.Clear();
+                t_searchedAssemblies.Clear();
             }
 
             try
             {
                 exception = null;
                 var currentScope = context != null ? context.EngineSessionState.CurrentScope : null;
-                Type result = ResolveTypeNameWorker(typeName, currentScope, typeResolutionState.assemblies, s_searchedAssemblies, typeResolutionState,
+                Type result = ResolveTypeNameWorker(typeName, currentScope, typeResolutionState.assemblies, t_searchedAssemblies, typeResolutionState,
                                                     /*onlySearchInGivenAssemblies*/ false, /* reportAmbiguousException */ true, out exception);
                 if (exception == null && result == null)
                 {
@@ -262,14 +256,14 @@ namespace System.Management.Automation.Language
                         // If the assemblies to search from is not specified by the caller of 'ResolveTypeNameWithContext',
                         // then we search our assembly cache first, so as to give preference to resolving the type against
                         // assemblies explicitly loaded by powershell, for example, via importing module/snapin.
-                        result = ResolveTypeNameWorker(typeName, currentScope, context.AssemblyCache.Values, s_searchedAssemblies, typeResolutionState,
+                        result = ResolveTypeNameWorker(typeName, currentScope, context.AssemblyCache.Values, t_searchedAssemblies, typeResolutionState,
                                                     /*onlySearchInGivenAssemblies*/ true, /* reportAmbiguousException */ false, out exception);
                     }
 
                     if (result == null)
                     {
                         // Search from the assembly list passed in.
-                        result = ResolveTypeNameWorker(typeName, currentScope, assemblies, s_searchedAssemblies, typeResolutionState,
+                        result = ResolveTypeNameWorker(typeName, currentScope, assemblies, t_searchedAssemblies, typeResolutionState,
                                                     /*onlySearchInGivenAssemblies*/ true, /* reportAmbiguousException */ false, out exception);
                     }
                 }
@@ -279,7 +273,7 @@ namespace System.Management.Automation.Language
             finally
             {
                 // Clear the set after a full search, so dynamic assemblies can get reclaimed as needed.
-                s_searchedAssemblies.Clear();
+                t_searchedAssemblies.Clear();
             }
         }
 
@@ -449,6 +443,7 @@ namespace System.Management.Automation.Language
             {
                 TypeCache.Add(typeName, typeResolutionState, result);
             }
+
             return result;
         }
 
@@ -488,13 +483,13 @@ namespace System.Management.Automation.Language
         /// <summary>
         /// This routine converts a string into a Type object using the msh rules.
         /// </summary>
-        /// <param name="strTypeName">A string representing the name of the type to convert</param>
-        /// <param name="exception">The exception, if one happened, trying to find the type</param>
+        /// <param name="strTypeName">A string representing the name of the type to convert.</param>
+        /// <param name="exception">The exception, if one happened, trying to find the type.</param>
         /// <returns>A type if the conversion was successful, null otherwise.</returns>
         internal static Type ResolveType(string strTypeName, out Exception exception)
         {
             exception = null;
-            if (String.IsNullOrWhiteSpace(strTypeName))
+            if (string.IsNullOrWhiteSpace(strTypeName))
             {
                 return null;
             }
@@ -524,7 +519,7 @@ namespace System.Management.Automation.Language
     internal class TypeResolutionState
     {
         internal static readonly string[] systemNamespace = { "System" };
-        internal static readonly Assembly[] emptyAssemblies = Utils.EmptyArray<Assembly>();
+        internal static readonly Assembly[] emptyAssemblies = Array.Empty<Assembly>();
         internal static readonly TypeResolutionState UsingSystem = new TypeResolutionState();
 
         internal readonly string[] namespaces;
@@ -611,6 +606,7 @@ namespace System.Management.Automation.Language
             {
                 alternateName = typeName + "Attribute";
             }
+
             return alternateName;
         }
 
@@ -662,14 +658,17 @@ namespace System.Management.Automation.Language
             {
                 result = Utils.CombineHashCodes(result, stringComparer.GetHashCode(namespaces[i]));
             }
+
             for (int i = 0; i < assemblies.Length; i++)
             {
                 result = Utils.CombineHashCodes(result, this.assemblies[i].GetHashCode());
             }
+
             foreach (var t in _typesDefined)
             {
                 result = Utils.CombineHashCodes(result, t.GetHashCode());
             }
+
             return result;
         }
     }
@@ -724,7 +723,7 @@ namespace System.Management.Automation
         // expose the ability to corrupt or escape PowerShell's environment. The following operations must
         // be safe: type conversion, all constructors, all methods (instance and static), and
         // and properties (instance and static).
-        internal static Lazy<Dictionary<Type, string[]>> Items = new Lazy<Dictionary<Type, string[]>>(
+        internal static readonly Lazy<Dictionary<Type, string[]>> Items = new Lazy<Dictionary<Type, string[]>>(
             () =>
                 new Dictionary<Type, string[]>
                 {
@@ -742,12 +741,15 @@ namespace System.Management.Automation
                     { typeof(DateTime),                                    new[] { "datetime" } },
                     { typeof(decimal),                                     new[] { "decimal" } },
                     { typeof(double),                                      new[] { "double" } },
-                    { typeof(DscResourceAttribute),                        new[] { "DscResource"} },
+                    { typeof(DscResourceAttribute),                        new[] { "DscResource" } },
+                    { typeof(ExperimentAction),                            new[] { "ExperimentAction" } },
+                    { typeof(ExperimentalAttribute),                       new[] { "Experimental" } },
+                    { typeof(ExperimentalFeature),                         new[] { "ExperimentalFeature" } },
                     { typeof(float),                                       new[] { "float", "single" } },
                     { typeof(Guid),                                        new[] { "guid" } },
                     { typeof(Hashtable),                                   new[] { "hashtable" } },
                     { typeof(int),                                         new[] { "int", "int32" } },
-                    { typeof(Int16),                                       new[] { "int16" } },
+                    { typeof(Int16),                                       new[] { "short", "int16" } },
                     { typeof(long),                                        new[] { "long", "int64" } },
                     { typeof(CimInstance),                                 new[] { "ciminstance" } },
                     { typeof(CimClass),                                    new[] { "cimclass" } },
@@ -757,7 +759,7 @@ namespace System.Management.Automation
                     { typeof(IPEndPoint),                                  new[] { "IPEndpoint" } },
                     { typeof(NullString),                                  new[] { "NullString" } },
                     { typeof(OutputTypeAttribute),                         new[] { "OutputType" } },
-                    { typeof(Object[]),                                    null },
+                    { typeof(object[]),                                    null },
                     { typeof(ObjectSecurity),                              new[] { "ObjectSecurity" } },
                     { typeof(ParameterAttribute),                          new[] { "Parameter" } },
                     { typeof(PhysicalAddress),                             new[] { "PhysicalAddress" } },
@@ -770,7 +772,7 @@ namespace System.Management.Automation
                     { typeof(PSTypeNameAttribute),                         new[] { "PSTypeNameAttribute" } },
                     { typeof(Regex),                                       new[] { "regex" } },
                     { typeof(DscPropertyAttribute),                        new[] { "DscProperty" } },
-                    { typeof(SByte),                                       new[] { "sbyte" } },
+                    { typeof(sbyte),                                       new[] { "sbyte" } },
                     { typeof(string),                                      new[] { "string" } },
                     { typeof(SupportsWildcardsAttribute),                  new[] { "SupportsWildcards" } },
                     { typeof(SwitchParameter),                             new[] { "switch" } },
@@ -778,9 +780,9 @@ namespace System.Management.Automation
                     { typeof(BigInteger),                                  new[] { "bigint" } },
                     { typeof(SecureString),                                new[] { "securestring" } },
                     { typeof(TimeSpan),                                    new[] { "timespan" } },
-                    { typeof(UInt16),                                      new[] { "uint16" } },
-                    { typeof(UInt32),                                      new[] { "uint32" } },
-                    { typeof(UInt64),                                      new[] { "uint64" } },
+                    { typeof(UInt16),                                      new[] { "ushort", "uint16" } },
+                    { typeof(UInt32),                                      new[] { "uint", "uint32" } },
+                    { typeof(UInt64),                                      new[] { "ulong", "uint64" } },
                     { typeof(Uri),                                         new[] { "uri" } },
                     { typeof(ValidateCountAttribute),                      new[] { "ValidateCount" } },
                     { typeof(ValidateDriveAttribute),                      new[] { "ValidateDrive" } },
@@ -791,6 +793,7 @@ namespace System.Management.Automation
                     { typeof(ValidateRangeAttribute),                      new[] { "ValidateRange" } },
                     { typeof(ValidateScriptAttribute),                     new[] { "ValidateScript" } },
                     { typeof(ValidateSetAttribute),                        new[] { "ValidateSet" } },
+                    { typeof(ValidateTrustedDataAttribute),                new[] { "ValidateTrustedData" } },
                     { typeof(ValidateUserDriveAttribute),                  new[] { "ValidateUserDrive"} },
                     { typeof(Version),                                     new[] { "version" } },
                     { typeof(void),                                        new[] { "void" } },
@@ -803,8 +806,7 @@ namespace System.Management.Automation
                     { typeof(CimSession),                                  new[] { "CimSession" } },
                     { typeof(MailAddress),                                 new[] { "mailaddress" } },
                     { typeof(SemanticVersion),                             new[] { "semver" } },
-#if !CORECLR
-                    // Following types not in CoreCLR
+#if !UNIX
                     { typeof(DirectoryEntry),                              new[] { "adsi" } },
                     { typeof(DirectorySearcher),                           new[] { "adsisearcher" } },
                     { typeof(ManagementClass),                             new[] { "wmiclass" } },
@@ -820,16 +822,18 @@ namespace System.Management.Automation
             {
                 return true;
             }
-            var inputTypeInfo = inputType.GetTypeInfo();
-            if (inputTypeInfo.IsEnum)
+
+            if (inputType.IsEnum)
             {
                 return true;
             }
-            if (inputTypeInfo.IsGenericType)
+
+            if (inputType.IsGenericType)
             {
-                var genericTypeDefinition = inputTypeInfo.GetGenericTypeDefinition();
+                var genericTypeDefinition = inputType.GetGenericTypeDefinition();
                 return genericTypeDefinition == typeof(Nullable<>) || genericTypeDefinition == typeof(FlagsExpression<>);
             }
+
             return (inputType.IsArray && Contains(inputType.GetElementType()));
         }
     }
@@ -841,11 +845,11 @@ namespace System.Management.Automation
     internal static class TypeAccelerators
     {
         // builtins are not exposed publicly in a direct manner so they can't be changed at all
-        internal static Dictionary<string, Type> builtinTypeAccelerators = new Dictionary<string, Type>(64, StringComparer.OrdinalIgnoreCase);
+        internal static readonly Dictionary<string, Type> builtinTypeAccelerators = new Dictionary<string, Type>(64, StringComparer.OrdinalIgnoreCase);
 
         // users can add to user added accelerators (but not currently remove any.)  Keeping a separate
         // list allows us to add removing in the future w/o worrying about breaking the builtins.
-        internal static Dictionary<string, Type> userTypeAccelerators = new Dictionary<string, Type>(64, StringComparer.OrdinalIgnoreCase);
+        internal static readonly Dictionary<string, Type> userTypeAccelerators = new Dictionary<string, Type>(64, StringComparer.OrdinalIgnoreCase);
 
         // We expose this one publicly for programmatic access to our type accelerator table, but it is
         // otherwise unused (so changes to this dictionary don't affect internals.)
@@ -868,6 +872,7 @@ namespace System.Management.Automation
             // Add additional utility types that are useful as type accelerators, but aren't
             // fundamentally "core language", or may be unsafe to expose to untrusted input.
             builtinTypeAccelerators.Add("scriptblock", typeof(ScriptBlock));
+            builtinTypeAccelerators.Add("pspropertyexpression", typeof(PSPropertyExpression));
             builtinTypeAccelerators.Add("psvariable", typeof(PSVariable));
             builtinTypeAccelerators.Add("type", typeof(Type));
             builtinTypeAccelerators.Add("psmoduleinfo", typeof(PSModuleInfo));
@@ -886,7 +891,7 @@ namespace System.Management.Automation
         {
             // Taking attributes as special case. In this case, we only want to return the
             // accelerator.
-            if (null == expectedKey || typeof(Attribute).IsAssignableFrom(type))
+            if (expectedKey == null || typeof(Attribute).IsAssignableFrom(type))
             {
                 foreach (KeyValuePair<string, Type> entry in builtinTypeAccelerators)
                 {
@@ -900,11 +905,12 @@ namespace System.Management.Automation
             {
                 Type resultType = null;
                 builtinTypeAccelerators.TryGetValue(expectedKey, out resultType);
-                if (null != resultType && resultType == type)
+                if (resultType != null && resultType == type)
                 {
                     return expectedKey;
                 }
             }
+
             return null;
         }
         /// <summary>
@@ -933,6 +939,7 @@ namespace System.Management.Automation
             {
                 s_allTypeAccelerators.Remove(typeName);
             }
+
             return true;
         }
 
@@ -967,6 +974,7 @@ namespace System.Management.Automation
             {
                 cache.Add(val.Key, val.Value);
             }
+
             foreach (KeyValuePair<string, Type> val in userTypeAccelerators)
             {
                 cache.Add(val.Key, val.Value);

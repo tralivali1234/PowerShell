@@ -1,4 +1,4 @@
-# Copyright (c) Microsoft Corporation. All rights reserved.
+# Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 Describe "Get-ChildItem" -Tags "CI" {
 
@@ -32,26 +32,72 @@ Describe "Get-ChildItem" -Tags "CI" {
                 @{Parameters = @{Path = (Join-Path $searchRoot '*'); Recurse = $true; File = $true }; ExpectedCount = 1; Title = "file with wildcard"},
                 @{Parameters = @{Path = (Join-Path $searchRoot 'F*.txt'); Recurse = $true; File = $true }; ExpectedCount = 1; Title = "file with wildcard filename"}
             )
+
+            $SkipAppExeCLinks = $true
+            if ($IsWindows -and (Get-ChildItem -Path ~\AppData\Local\Microsoft\WindowsApps\*.exe -ErrorAction Ignore) -ne $null)
+            {
+                $SkipAppExeCLinks = $false
+            }
         }
 
         It "Should list the contents of the current folder" {
             (Get-ChildItem .).Name.Length | Should -BeGreaterThan 0
         }
 
-        It "Should list the contents of the home directory" {
-            pushd $HOME
-            (Get-ChildItem .).Name.Length | Should -BeGreaterThan 0
-            popd
+        It "Should list the contents of the root folder using Drive:\ notation" {
+            (Get-ChildItem TestDrive:\).Name.Length | Should -BeGreaterThan 0
         }
 
-        It "Should have a the proper fields and be populated" {
-            $var = Get-Childitem .
+        It "Should list the contents of the root folder using Drive:\ notation from within another folder" {
+            try
+            {
+                Push-Location -Path TestDrive:\$item_E
+                (Get-ChildItem TestDrive:\ -File).Name.Length | Should -BeExactly 4
+            }
+            finally
+            {
+                Pop-Location
+            }
+        }
+
+        It "Should list the contents of the current folder using Drive: notation when in the root" {
+            (Get-ChildItem TestDrive:).Name.Length | Should -BeGreaterThan 0
+        }
+
+        It "Should list the contents of the current folder using Drive: notation when not in the root" {
+            try
+            {
+                Push-Location -Path TestDrive:\$item_E
+                (Get-ChildItem TestDrive:).Name | Should -BeExactly $item_G
+            }
+            finally
+            {
+                Pop-Location
+            }
+        }
+
+        It "Should list the contents of the home directory" {
+            Push-Location $HOME
+            (Get-ChildItem .).Name.Length | Should -BeGreaterThan 0
+            Pop-Location
+        }
+
+        It "Should have all the proper fields and be populated" {
+            $var = Get-ChildItem .
 
             $var.Name.Length   | Should -BeGreaterThan 0
             $var.Mode.Length   | Should -BeGreaterThan 0
             $var.LastWriteTime | Should -BeGreaterThan 0
             $var.Length.Length | Should -BeGreaterThan 0
+        }
 
+        It "Should have mode property populated for protected files on Windows" -Skip:(!$IsWindows) {
+            $files = Get-ChildItem -Force ~\NT*
+            $files.Count | Should -BeGreaterThan 0
+            foreach ($file in $files)
+            {
+                $file.Mode | Should -Not -BeNullOrEmpty
+            }
         }
 
         It "Should list files in sorted order" {
@@ -64,14 +110,14 @@ Describe "Get-ChildItem" -Tags "CI" {
         }
 
         It "Should list hidden files as well when 'Force' parameter is used" {
-            $files = Get-ChildItem -path $TestDrive -Force
+            $files = Get-ChildItem -Path $TestDrive -Force
             $files | Should -Not -BeNullOrEmpty
             $files.Count | Should -Be 6
             $files.Name.Contains($item_F) | Should -BeTrue
         }
 
         It "Should list only hidden files when 'Hidden' parameter is used" {
-            $files = Get-ChildItem -path $TestDrive -Hidden
+            $files = Get-ChildItem -Path $TestDrive -Hidden
             $files | Should -Not -BeNullOrEmpty
             $files.Count | Should -Be 1
             $files[0].Name | Should -BeExactly $item_F
@@ -96,12 +142,12 @@ Describe "Get-ChildItem" -Tags "CI" {
         }
 
         It "Should return items recursively when using 'Include' or 'Exclude' parameters with -LiteralPath" {
-            (Get-ChildItem -LiteralPath $TestDrive -Recurse -Exclude *).Count | Should Be 0
-            (Get-ChildItem -LiteralPath $TestDrive -Recurse -Include *.dll).Count | Should Be (Get-ChildItem $TestDrive -Recurse -Include *.dll).Count
-            (Get-ChildItem -LiteralPath $TestDrive -Depth 1 -Include $item_G).Count | Should Be 1
-            (Get-ChildItem -LiteralPath $TestDrive -Depth 1 -Exclude $item_a).Count | Should Be 5
+            (Get-ChildItem -LiteralPath $TestDrive -Recurse -Exclude *).Count | Should -Be 0
+            (Get-ChildItem -LiteralPath $TestDrive -Recurse -Include *.dll).Count | Should -Be (Get-ChildItem $TestDrive -Recurse -Include *.dll).Count
+            (Get-ChildItem -LiteralPath $TestDrive -Depth 1 -Include $item_G).Count | Should -Be 1
+            (Get-ChildItem -LiteralPath $TestDrive -Depth 1 -Exclude $item_a).Count | Should -Be 5
         }
-        
+
         It "get-childitem path wildcard - <title>" -TestCases $PathWildCardTestCases {
             param($Parameters, $ExpectedCount)
 
@@ -120,6 +166,47 @@ Describe "Get-ChildItem" -Tags "CI" {
             (Get-ChildItem -Path $searchRoot -File -Recurse).Count | Should -Be 1
             (Get-ChildItem -Path $searchRoot -Directory -Recurse).Count | Should -Be 1
         }
+
+        # VSTS machines don't have a page file
+        It "Should give .sys file if the fullpath is specified with hidden and force parameter" -Pending {
+            # Don't remove!!! It is special test for hidden and opened file with exclusive lock.
+            $file = Get-ChildItem -Path "$env:SystemDrive\\pagefile.sys" -Hidden
+            $file | Should -Not -Be $null
+            $file.Count | Should -Be 1
+            $file.Name | Should -Be "pagefile.sys"
+        }
+
+        It "-Filter *. finds extension-less files" {
+            $null = New-Item -Path TestDrive:/noextension -ItemType File
+            (Get-ChildItem -File -LiteralPath TestDrive:/ -Filter noext*.*).Name | Should -BeExactly 'noextension'
+        }
+
+        It "Understand APPEXECLINKs" -Skip:($SkipAppExeCLinks) {
+            $app = Get-ChildItem -Path ~\appdata\local\microsoft\windowsapps\*.exe | Select-Object -First 1
+            $app.Target | Should -Not -Be $app.FullName
+            $app.LinkType | Should -BeExactly 'AppExeCLink'
+        }
+
+        It "Wildcard matching behavior is the same between -Path and -Include parameters when using escape characters" {
+            $oldLocation = Get-Location
+
+            try {
+                Set-Location $TestDrive
+
+                $expectedPath = 'a`[b]'
+                $escapedPath = 'a```[b`]'
+                New-Item -Type File $expectedPath -ErrorAction SilentlyContinue > $null
+
+                $WithInclude = Get-ChildItem * -Include $escapedPath
+                $WithPath = Get-ChildItem -Path $escapedPath
+
+                $WithInclude.Name | Should -BeExactly $expectedPath
+                $WithPath.Name | Should -BeExactly $expectedPath
+
+            } finally {
+                Set-Location $oldLocation
+            }
+        }
     }
 
     Context 'Env: Provider' {
@@ -127,17 +214,81 @@ Describe "Get-ChildItem" -Tags "CI" {
         It 'can handle mixed case in Env variables' {
             try
             {
-                $env:__FOOBAR = 'foo'
-                $env:__foobar = 'bar'
+                $env:__FOODBAR = 'food'
+                $env:__foodbar = 'bar'
 
-                $foobar = Get-Childitem env: | Where-Object {$_.Name -eq '__foobar'}
+                $foodbar = Get-ChildItem env: | Where-Object {$_.Name -eq '__foodbar'}
                 $count = if ($IsWindows) { 1 } else { 2 }
-                ($foobar | measure).Count | Should -Be $count
+                ($foodbar | Measure-Object).Count | Should -Be $count
             }
             catch
             {
-                Get-ChildItem env: | Where-Object {$_.Name -eq '__foobar'} | Remove-Item -ErrorAction SilentlyContinue
+                Get-ChildItem env: | Where-Object {$_.Name -eq '__foodbar'} | Remove-Item -ErrorAction SilentlyContinue
             }
         }
+    }
+}
+
+Describe "Get-ChildItem with special path" -Tags "CI" {
+
+    BeforeAll {
+        $bracketDirName = "Test[Dir]"
+        $bracketDir = "Test``[Dir``]"
+        $bracketPath = Join-Path $TestDrive $bracketDir
+        $null = New-Item -Path $TestDrive -Name $bracketDirName -ItemType Directory -Force
+    }
+
+    It "Should list files in directory with name containing bracket char" {
+        $null = New-Item -Path $bracketPath -Name file1.txt -ItemType File
+        $null = New-Item -Path $bracketPath -Name file2.txt -ItemType File
+        Get-ChildItem -Path $bracketPath | Should -HaveCount 2
+    }
+}
+
+Describe 'FileSystem Provider Formatting' -Tag "CI","RequireAdminOnWindows" {
+
+    BeforeAll {
+        $modeTestDir = New-Item -Path "$TestDrive/testmodedirectory" -ItemType Directory -Force
+        $targetFile1 = New-Item -Path "$TestDrive/targetFile1" -ItemType File -Force
+        $targetFile2 = New-Item -Path "$TestDrive/targetFile2" -ItemType File -Force
+        $targetDir1 = New-Item -Path "$TestDrive/targetDir1" -ItemType Directory -Force
+        $targetDir2 = New-Item -Path "$TestDrive/targetDir2" -ItemType Directory -Force
+
+        $testcases = @(
+            @{ expectedMode = "d----"; expectedModeWithoutHardlink = "d----"; itemType = "Directory"; itemName = "Directory"; fileAttributes = [System.IO.FileAttributes] "Directory"; target = $null }
+            @{ expectedMode = "l----"; expectedModeWithoutHardlink = "l----"; itemType = "SymbolicLink"; itemName = "SymbolicLink-Directory"; fileAttributes = [System.IO.FileAttributes]::Directory -bor [System.IO.FileAttributes]::ReparsePoint; target = $targetDir2.FullName }
+        )
+
+        if ($IsWindows)
+        {
+            $testcases += @{ expectedMode = "l----"; expectedModeWithoutHardlink = "l----"; itemType = "Junction"; itemName = "Junction-Directory"; fileAttributes = [System.IO.FileAttributes]::Directory -bor [System.IO.FileAttributes]::ReparsePoint; target = $targetDir1.FullName }
+            $testcases += @{ expectedMode = "-a---"; expectedModeWithoutHardlink = "-a---"; itemType = "File"; itemName = "ArchiveFile"; fileAttributes = [System.IO.FileAttributes] "Archive"; target = $null }
+            $testcases += @{ expectedMode = "la---"; expectedModeWithoutHardlink = "la---"; itemType = "SymbolicLink"; itemName = "SymbolicLink-File"; fileAttributes = [System.IO.FileAttributes]::Archive -bor [System.IO.FileAttributes]::ReparsePoint; target = $targetFile1.FullName }
+            $testcases += @{ expectedMode = "la---"; expectedModeWithoutHardlink = "-a---"; itemType = "HardLink"; itemName = "HardLink"; fileAttributes = [System.IO.FileAttributes] "Archive"; target = $targetFile2.FullName }
+        }
+    }
+
+    It 'Validate Mode property - <itemName>' -TestCases $testcases {
+
+        param($expectedMode, $expectedModeWithoutHardlink, $itemType, $itemName, $fileAttributes, $target)
+
+        $item = if ($target)
+        {
+            New-Item -Path $modeTestDir -Name $itemName -ItemType $itemType -Target $target
+        }
+        else
+        {
+            New-Item -Path $modeTestDir -Name $itemName -ItemType $itemType
+        }
+
+        $item | Should -BeOfType System.IO.FileSystemInfo
+
+        $actualMode = [Microsoft.PowerShell.Commands.FileSystemProvider]::Mode($item)
+        $actualMode | Should -BeExactly $expectedMode
+
+        $actualModeWithoutHardlink = [Microsoft.PowerShell.Commands.FileSystemProvider]::ModeWithoutHardlink($item)
+        $actualModeWithoutHardlink | Should -BeExactly $expectedModeWithoutHardlink
+
+        $item.Attributes | Should -Be $fileAttributes
     }
 }

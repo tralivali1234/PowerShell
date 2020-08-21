@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 #if LEGACYTELEMETRY
 
@@ -8,7 +8,7 @@ using System.Diagnostics.Tracing;
 namespace System.Management.Automation.Internal
 {
     /// <summary>
-    /// This wrapper is for encapsulating all the internal details of Asimov-compatible telemetry in Windows Threshold
+    /// This wrapper is for encapsulating all the internal details of Asimov-compatible telemetry in Windows Threshold.
     /// </summary>
     internal static class TelemetryWrapper
     {
@@ -18,7 +18,7 @@ namespace System.Management.Automation.Internal
         /// <summary>
         /// Performing EventSource initialization in the Static Constructor since this is thread safe.
         /// Static constructors are guaranteed to be run only once per application domain, before any instances of a class are created or any static members are accessed.
-        /// https://msdn.microsoft.com/en-us/library/aa645612(VS.71).aspx
+        /// https://docs.microsoft.com/dotnet/csharp/programming-guide/classes-and-structs/static-constructors.
         /// </summary>
         static TelemetryWrapper()
         {
@@ -27,7 +27,7 @@ namespace System.Management.Automation.Internal
                 // We build against CLR4.5 so we can run on Win7/Win8, but we want to use apis added to CLR 4.6.
                 // So we use reflection, and if that fails, we just silently skip logging our telemetry.
 
-                var diagnosticsTracingAssembly = typeof(EventSource).GetTypeInfo().Assembly;
+                var diagnosticsTracingAssembly = typeof(EventSource).Assembly;
 
                 Type eventSourceSettingsType = diagnosticsTracingAssembly.GetType("System.Diagnostics.Tracing.EventSourceSettings");
                 if (eventSourceSettingsType == null)
@@ -85,7 +85,7 @@ namespace System.Management.Automation.Internal
 
         /// <summary>
         /// TRACEMESSAGE is the Generic method to use to log messages using UTC [Universal Telemetry Client] in Windows Threshold
-        /// TRACEMESSAGE calls into EventSource.Write dynamically - https://msdn.microsoft.com/en-us/library/dn823293(v=vs.110).aspx
+        /// TRACEMESSAGE calls into EventSource.Write dynamically - https://msdn.microsoft.com/library/dn823293(v=vs.110).aspx.
         /// </summary>
 
         // EventSource data gets raised on the Client containing OS Environment information and supplied arguments as "data"
@@ -121,11 +121,11 @@ namespace System.Management.Automation.Internal
         //    "data": {
         //        "PSVersion": "5.0"
         //    }
-        //}
+        // }
 
         public static void TraceMessage<T>(string message, T arguments)
         {
-            if (null != s_eventSourceOptionsForWrite)
+            if (s_eventSourceOptionsForWrite != null)
             {
                 try
                 {

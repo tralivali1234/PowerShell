@@ -1,7 +1,8 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
 using System.Management.Automation.Runspaces;
+
 using Dbg = System.Management.Automation.Diagnostics;
 
 namespace System.Management.Automation
@@ -31,7 +32,7 @@ namespace System.Management.Automation
         }
 
         /// <summary>
-        /// Internal copy constructor
+        /// Internal copy constructor.
         /// </summary>
         /// <param name="commandToClone"></param>
         internal PSCommand(PSCommand commandToClone)
@@ -47,9 +48,9 @@ namespace System.Management.Automation
         }
 
         /// <summary>
-        /// Creates a PSCommand from the specified command
+        /// Creates a PSCommand from the specified command.
         /// </summary>
-        /// <param name="command">Command object to use</param>
+        /// <param name="command">Command object to use.</param>
         internal PSCommand(Command command)
         {
             _currentCommand = command;
@@ -86,10 +87,11 @@ namespace System.Management.Automation
         /// </exception>
         public PSCommand AddCommand(string command)
         {
-            if (null == command)
+            if (command == null)
             {
                 throw PSTraceSource.NewArgumentNullException("cmdlet");
             }
+
             if (_owner != null)
             {
                 _owner.AssertChangesAreAccepted();
@@ -129,10 +131,11 @@ namespace System.Management.Automation
         /// </exception>
         public PSCommand AddCommand(string cmdlet, bool useLocalScope)
         {
-            if (null == cmdlet)
+            if (cmdlet == null)
             {
-                throw PSTraceSource.NewArgumentNullException("cmdlet");
+                throw PSTraceSource.NewArgumentNullException(nameof(cmdlet));
             }
+
             if (_owner != null)
             {
                 _owner.AssertChangesAreAccepted();
@@ -170,10 +173,11 @@ namespace System.Management.Automation
         /// </exception>
         public PSCommand AddScript(string script)
         {
-            if (null == script)
+            if (script == null)
             {
-                throw PSTraceSource.NewArgumentNullException("script");
+                throw PSTraceSource.NewArgumentNullException(nameof(script));
             }
+
             if (_owner != null)
             {
                 _owner.AssertChangesAreAccepted();
@@ -214,10 +218,11 @@ namespace System.Management.Automation
         /// </exception>
         public PSCommand AddScript(string script, bool useLocalScope)
         {
-            if (null == script)
+            if (script == null)
             {
-                throw PSTraceSource.NewArgumentNullException("script");
+                throw PSTraceSource.NewArgumentNullException(nameof(script));
             }
+
             if (_owner != null)
             {
                 _owner.AssertChangesAreAccepted();
@@ -251,10 +256,11 @@ namespace System.Management.Automation
         /// </exception>
         public PSCommand AddCommand(Command command)
         {
-            if (null == command)
+            if (command == null)
             {
-                throw PSTraceSource.NewArgumentNullException("command");
+                throw PSTraceSource.NewArgumentNullException(nameof(command));
             }
+
             if (_owner != null)
             {
                 _owner.AssertChangesAreAccepted();
@@ -296,15 +302,17 @@ namespace System.Management.Automation
         /// </exception>
         public PSCommand AddParameter(string parameterName, object value)
         {
-            if (null == _currentCommand)
+            if (_currentCommand == null)
             {
                 throw PSTraceSource.NewInvalidOperationException(PSCommandStrings.ParameterRequiresCommand,
                                                                  new object[] { "PSCommand" });
             }
+
             if (_owner != null)
             {
                 _owner.AssertChangesAreAccepted();
             }
+
             _currentCommand.Parameters.Add(parameterName, value);
             return this;
         }
@@ -336,16 +344,38 @@ namespace System.Management.Automation
         /// </exception>
         public PSCommand AddParameter(string parameterName)
         {
-            if (null == _currentCommand)
+            if (_currentCommand == null)
             {
                 throw PSTraceSource.NewInvalidOperationException(PSCommandStrings.ParameterRequiresCommand,
                                                                  new object[] { "PSCommand" });
             }
+
             if (_owner != null)
             {
                 _owner.AssertChangesAreAccepted();
             }
+
             _currentCommand.Parameters.Add(parameterName, true);
+            return this;
+        }
+
+        /// <summary>
+        /// Adds a <see cref="CommandParameter"/> instance to the last added command.
+        /// </summary>
+        internal PSCommand AddParameter(CommandParameter parameter)
+        {
+            if (_currentCommand == null)
+            {
+                throw PSTraceSource.NewInvalidOperationException(PSCommandStrings.ParameterRequiresCommand,
+                                                                 new object[] { "PSCommand" });
+            }
+
+            if (_owner != null)
+            {
+                _owner.AssertChangesAreAccepted();
+            }
+
+            _currentCommand.Parameters.Add(parameter);
             return this;
         }
 
@@ -356,7 +386,6 @@ namespace System.Management.Automation
         ///         PSCommand command = new PSCommand("get-process").
         ///                                     AddCommand("select-object").AddParameter("name");
         ///     </code>
-        ///
         /// This will add the value "name" to the positional parameter list of "select-object"
         /// cmdlet. When the command is invoked, this value will get bound to positional parameter 0
         /// of the "select-object" cmdlet which is "Property".
@@ -377,15 +406,17 @@ namespace System.Management.Automation
         /// </remarks>
         public PSCommand AddArgument(object value)
         {
-            if (null == _currentCommand)
+            if (_currentCommand == null)
             {
                 throw PSTraceSource.NewInvalidOperationException(PSCommandStrings.ParameterRequiresCommand,
                                                                  new object[] { "PSCommand" });
             }
+
             if (_owner != null)
             {
                 _owner.AssertChangesAreAccepted();
             }
+
             _currentCommand.Parameters.Add(null, value);
             return this;
         }
@@ -436,7 +467,7 @@ namespace System.Management.Automation
         }
 
         /// <summary>
-        /// The PowerShell instance this PSCommand is associated to, or null if it is an standalone command
+        /// The PowerShell instance this PSCommand is associated to, or null if it is an standalone command.
         /// </summary>
         internal PowerShell Owner
         {
@@ -444,6 +475,7 @@ namespace System.Management.Automation
             {
                 return _owner;
             }
+
             set
             {
                 _owner = value;

@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
 using System.Collections.Concurrent;
@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Linq;
 using System.Management.Automation.Remoting.Internal;
 using System.Threading;
+
 using Dbg = System.Management.Automation.Diagnostics;
 
 namespace System.Management.Automation
@@ -22,14 +23,14 @@ namespace System.Management.Automation
     }
 
     /// <summary>
-    /// A job that can throttle execution of child jobs
+    /// A job that can throttle execution of child jobs.
     /// </summary>
     internal sealed class ThrottlingJob : Job
     {
         #region IDisposable Members
 
         /// <summary>
-        /// Releases resources associated with this object
+        /// Releases resources associated with this object.
         /// </summary>
         protected override void Dispose(bool disposing)
         {
@@ -46,14 +47,17 @@ namespace System.Management.Automation
                         childJobsToDispose = new List<Job>(this.ChildJobs);
                         this.ChildJobs.Clear();
                     }
+
                     foreach (Job childJob in childJobsToDispose)
                     {
                         childJob.Dispose();
                     }
+
                     if (_jobResultsThrottlingSemaphore != null)
                     {
                         _jobResultsThrottlingSemaphore.Dispose();
                     }
+
                     _cancellationTokenSource.Dispose();
                 }
             }
@@ -106,6 +110,7 @@ namespace System.Management.Automation
                     {
                         return;
                     }
+
                     if ((!_progressReportLastTime.Equals(DateTime.MinValue)) &&
                         (now - _progressReportLastTime < TimeSpan.FromMilliseconds(200)))
                     {
@@ -123,6 +128,7 @@ namespace System.Management.Automation
                     totalWork = _countOfAllChildJobs;
                     workCompleted = this.CountOfFinishedChildJobs;
                 }
+
                 if (totalWork >= 1.0)
                 {
                     percentComplete = (int)(100.0 * workCompleted / totalWork);
@@ -131,6 +137,7 @@ namespace System.Management.Automation
                 {
                     percentComplete = -1;
                 }
+
                 percentComplete = Math.Max(-1, Math.Min(100, percentComplete));
 
                 var progressRecord = new ProgressRecord(
@@ -144,6 +151,7 @@ namespace System.Management.Automation
                     {
                         return;
                     }
+
                     progressRecord.RecordType = ProgressRecordType.Completed;
                     progressRecord.PercentComplete = 100;
                     progressRecord.SecondsRemaining = 0;
@@ -157,6 +165,7 @@ namespace System.Management.Automation
                     {
                         secondsRemaining = ProgressRecord.GetSecondsRemaining(_progressStartTime, (double)percentComplete / 100.0);
                     }
+
                     if (secondsRemaining.HasValue)
                     {
                         progressRecord.SecondsRemaining = secondsRemaining.Value;
@@ -176,7 +185,7 @@ namespace System.Management.Automation
         internal enum ChildJobFlags
         {
             /// <summary>
-            /// Child job doesn't have any special properties
+            /// Child job doesn't have any special properties.
             /// </summary>
             None = 0,
 
@@ -192,6 +201,7 @@ namespace System.Management.Automation
 
         private bool _ownerWontSubmitNewChildJobs = false;
         private readonly HashSet<Guid> _setOfChildJobsThatCanAddMoreChildJobs = new HashSet<Guid>();
+
         private bool IsEndOfChildJobs
         {
             get
@@ -202,6 +212,7 @@ namespace System.Management.Automation
                 }
             }
         }
+
         private bool IsThrottlingJobCompleted
         {
             get
@@ -222,6 +233,7 @@ namespace System.Management.Automation
         private int _countOfFailedChildJobs;
         private int _countOfStoppedChildJobs;
         private int _countOfSuccessfullyCompletedChildJobs;
+
         private int CountOfFinishedChildJobs
         {
             get
@@ -249,8 +261,8 @@ namespace System.Management.Automation
         /// <summary>
         /// Creates a new <see cref="ThrottlingJob"/> object.
         /// </summary>
-        /// <param name="command">Command invoked by this job object</param>
-        /// <param name="jobName">Friendly name for the job object</param>
+        /// <param name="command">Command invoked by this job object.</param>
+        /// <param name="jobName">Friendly name for the job object.</param>
         /// <param name="jobTypeName">Name describing job type.</param>
         /// <param name="maximumConcurrentChildJobs">
         /// The maximum number of child jobs that can be running at any given point in time.
@@ -274,6 +286,7 @@ namespace System.Management.Automation
             {
                 _jobResultsThrottlingSemaphore = new SemaphoreSlim(ForwardingHelper.AggregationQueueMaxCapacity);
             }
+
             _progressActivityId = new Random(this.GetHashCode()).Next();
 
             this.SetupThrottlingQueue(maximumConcurrentChildJobs);
@@ -285,7 +298,7 @@ namespace System.Management.Automation
         {
             using (var jobGotEnqueued = new ManualResetEventSlim(initialState: false))
             {
-                if (childJob == null) throw new ArgumentNullException("childJob");
+                if (childJob == null) throw new ArgumentNullException(nameof(childJob));
 
                 this.AddChildJobWithoutBlocking(childJob, flags, jobGotEnqueued.Set);
                 jobGotEnqueued.Wait();
@@ -299,7 +312,7 @@ namespace System.Management.Automation
         {
             using (var forwardingCancellation = new CancellationTokenSource())
             {
-                if (childJob == null) throw new ArgumentNullException("childJob");
+                if (childJob == null) throw new ArgumentNullException(nameof(childJob));
 
                 this.AddChildJobWithoutBlocking(childJob, flags, forwardingCancellation.Cancel);
                 this.ForwardAllResultsToCmdlet(cmdlet, forwardingCancellation.Token);
@@ -307,12 +320,14 @@ namespace System.Management.Automation
         }
 
         private bool _alreadyDisabledFlowControlForPendingJobsQueue = false;
+
         internal void DisableFlowControlForPendingJobsQueue()
         {
             if (!_cmdletMode || _alreadyDisabledFlowControlForPendingJobsQueue)
             {
                 return;
             }
+
             _alreadyDisabledFlowControlForPendingJobsQueue = true;
 
             lock (_lockObject)
@@ -331,12 +346,14 @@ namespace System.Management.Automation
         }
 
         private bool _alreadyDisabledFlowControlForPendingCmdletActionsQueue = false;
+
         internal void DisableFlowControlForPendingCmdletActionsQueue()
         {
             if (!_cmdletMode || _alreadyDisabledFlowControlForPendingCmdletActionsQueue)
             {
                 return;
             }
+
             _alreadyDisabledFlowControlForPendingCmdletActionsQueue = true;
 
             long slotsToRelease = (long)(int.MaxValue / 2) - (long)(_jobResultsThrottlingSemaphore.CurrentCount);
@@ -349,17 +366,17 @@ namespace System.Management.Automation
         /// <summary>
         /// Adds and starts a child job.
         /// </summary>
-        /// <param name="childJob">Child job to add</param>
-        /// <param name="flags">Flags of the child job</param>
-        /// <param name="jobEnqueuedAction">action to run after enqueuing the job</param>
+        /// <param name="childJob">Child job to add.</param>
+        /// <param name="flags">Flags of the child job.</param>
+        /// <param name="jobEnqueuedAction">Action to run after enqueuing the job.</param>
         /// <exception cref="ArgumentException">
         /// Thrown when the child job is not in the <see cref="JobState.NotStarted"/> state.
         /// (because this can lead to race conditions - the child job can finish before the parent job has a chance to register for child job events)
         /// </exception>
         internal void AddChildJobWithoutBlocking(StartableJob childJob, ChildJobFlags flags, Action jobEnqueuedAction = null)
         {
-            if (childJob == null) throw new ArgumentNullException("childJob");
-            if (childJob.JobStateInfo.State != JobState.NotStarted) throw new ArgumentException(RemotingErrorIdStrings.ThrottlingJobChildAlreadyRunning, "childJob");
+            if (childJob == null) throw new ArgumentNullException(nameof(childJob));
+            if (childJob.JobStateInfo.State != JobState.NotStarted) throw new ArgumentException(RemotingErrorIdStrings.ThrottlingJobChildAlreadyRunning, nameof(childJob));
             this.AssertNotDisposed();
 
             JobStateInfo newJobStateInfo = null;
@@ -372,10 +389,12 @@ namespace System.Management.Automation
                 {
                     newJobStateInfo = new JobStateInfo(JobState.Running);
                 }
+
                 if (ChildJobFlags.CreatesChildJobs == (ChildJobFlags.CreatesChildJobs & flags))
                 {
                     _setOfChildJobsThatCanAddMoreChildJobs.Add(childJob.InstanceId);
                 }
+
                 this.ChildJobs.Add(childJob);
                 _childJobLocations.Add(childJob.Location);
                 _countOfAllChildJobs++;
@@ -393,6 +412,7 @@ namespace System.Management.Automation
                     }
                 }
             }
+
             if (newJobStateInfo != null)
             {
                 this.SetJobState(newJobStateInfo.State, newJobStateInfo.Reason);
@@ -404,8 +424,9 @@ namespace System.Management.Automation
             childJob.StateChanged += this.childJob_StateChanged;
             if (_cmdletMode)
             {
-                childJob.Results.DataAdded += new EventHandler<DataAddedEventArgs>(childJob_ResultsAdded);
+                childJob.Results.DataAdded += childJob_ResultsAdded;
             }
+
             this.EnqueueReadyToRunChildJob(childJob);
 
             this.ReportProgress(minimizeFrequentUpdates: true);
@@ -431,6 +452,7 @@ namespace System.Management.Automation
 
         private readonly object _alreadyWroteFlowControlBuffersHighMemoryUsageWarningLock = new object();
         private bool _alreadyWroteFlowControlBuffersHighMemoryUsageWarning;
+
         private const long FlowControlBuffersHighMemoryUsageThreshold = 30000;
 
         private void WriteWarningAboutHighUsageOfFlowControlBuffers(long currentCount)
@@ -451,6 +473,7 @@ namespace System.Management.Automation
                 {
                     return;
                 }
+
                 _alreadyWroteFlowControlBuffersHighMemoryUsageWarning = true;
             }
 
@@ -604,6 +627,7 @@ namespace System.Management.Automation
                     }
                 }
             }
+
             if (finalJobStateInfo != null)
             {
                 this.SetJobState(finalJobStateInfo.State, finalJobStateInfo.Reason);
@@ -621,6 +645,7 @@ namespace System.Management.Automation
             {
                 _ownerWontSubmitNewChildJobs = true;
             }
+
             this.FigureOutIfThrottlingJobIsCompleted();
         }
 
@@ -678,6 +703,7 @@ namespace System.Management.Automation
                         parentJobGotUnblocked = true;
                     }
                 }
+
                 if (parentJobGotUnblocked)
                 {
                     this.SetJobState(JobState.Running);
@@ -692,6 +718,7 @@ namespace System.Management.Automation
                     {
                         _countOfBlockedChildJobs++;
                     }
+
                     this.SetJobState(JobState.Blocked);
                     break;
 
@@ -731,11 +758,13 @@ namespace System.Management.Automation
                             {
                                 this.Results.Add(streamObject);
                             }
+
                             this.ChildJobs.Remove(childJob);
                             _setOfChildJobsThatCanAddMoreChildJobs.Remove(childJob.InstanceId);
                             childJob.Dispose();
                         }
                     }
+
                     this.ReportProgress(minimizeFrequentUpdates: !this.IsThrottlingJobCompleted);
                     break;
 
@@ -758,7 +787,7 @@ namespace System.Management.Automation
         /// <summary>
         /// Indicates if job has more data available.
         /// <c>true</c> if any of the child jobs have more data OR if <see cref="EndOfChildJobs"/> have not been called yet;
-        /// <c>false</c> otherwise
+        /// <c>false</c> otherwise.
         /// </summary>
         public override bool HasMoreData
         {
@@ -781,10 +810,11 @@ namespace System.Management.Automation
                 }
             }
         }
+
         private readonly HashSet<string> _childJobLocations = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
-        /// Status message associated with the Job
+        /// Status message associated with the Job.
         /// </summary>
         public override string StatusMessage
         {
@@ -864,15 +894,18 @@ namespace System.Management.Automation
                     {
                         return;
                     }
+
                     if (_monitoredJobs.Contains(job))
                     {
                         return;
                     }
+
                     _monitoredJobs.Add(job);
 
                     job.Results.DataAdded += this.MonitoredJobResults_DataAdded;
                     job.StateChanged += MonitoredJob_StateChanged;
                 }
+
                 this.AggregateJobResults(job.Results);
                 this.CheckIfMonitoredJobIsComplete(job);
             }
@@ -974,10 +1007,12 @@ namespace System.Management.Automation
                         {
                             resultsToAggregate.Add(registeredJob.Results);
                         }
+
                         foreach (Job throttledJob in _throttlingJob.GetChildJobsSnapshot())
                         {
                             resultsToAggregate.Add(throttledJob.Results);
                         }
+
                         resultsToAggregate.Add(_throttlingJob.Results);
                     }
 
@@ -1123,6 +1158,7 @@ namespace System.Management.Automation
             }
 
             private bool _stoppedMonitoringAllJobs;
+
             private void StopMonitoringAllJobs()
             {
                 _cancellationTokenSource.Cancel();
@@ -1135,6 +1171,7 @@ namespace System.Management.Automation
                     {
                         this.StopMonitoringJob(monitoredJob);
                     }
+
                     Dbg.Assert(_monitoredJobs.Count == 0, "No monitored jobs should be left after ForwardingHelper is disposed");
 
                     if (!_disposed && !_aggregatedResults.IsAddingCompleted)
@@ -1179,6 +1216,7 @@ namespace System.Management.Automation
                             {
                                 cancellationTokenRegistration = cancellationToken.Value.Register(helper.CancelForwarding);
                             }
+
                             try
                             {
                                 Interlocked.MemoryBarrier();

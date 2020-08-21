@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
 #pragma warning disable 1634, 1691
@@ -41,7 +41,7 @@ namespace Microsoft.PowerShell.Commands
         /// Initializes a new instance of the HelpCategoryInvalidException class.
         /// </summary>
         /// <param name="helpCategory">The name of help category that is invalid.</param>
-        /// <param name="innerException">The inner exception of this exception</param>
+        /// <param name="innerException">The inner exception of this exception.</param>
         public HelpCategoryInvalidException(string helpCategory, Exception innerException) :
                 base((innerException != null) ? innerException.Message : string.Empty, innerException)
         {
@@ -55,7 +55,7 @@ namespace Microsoft.PowerShell.Commands
         private void CreateErrorRecord()
         {
             _errorRecord = new ErrorRecord(new ParentContainsErrorRecordException(this), "HelpCategoryInvalid", ErrorCategory.InvalidArgument, null);
-            _errorRecord.ErrorDetails = new ErrorDetails(typeof(HelpCategoryInvalidException).GetTypeInfo().Assembly, "HelpErrors", "HelpCategoryInvalid", _helpCategory);
+            _errorRecord.ErrorDetails = new ErrorDetails(typeof(HelpCategoryInvalidException).Assembly, "HelpErrors", "HelpCategoryInvalid", _helpCategory);
         }
 
         private ErrorRecord _errorRecord;
@@ -128,7 +128,7 @@ namespace Microsoft.PowerShell.Commands
         {
             if (info == null)
             {
-                throw PSTraceSource.NewArgumentNullException("info");
+                throw PSTraceSource.NewArgumentNullException(nameof(info));
             }
 
             base.GetObjectData(info, context);

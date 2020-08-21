@@ -120,6 +120,9 @@
   <data name="NoProcessFoundForGivenName" xml:space="preserve">
     <value>Cannot find a process with the name "{0}". Verify the process name and call the cmdlet again.</value>
   </data>
+  <data name="RecommendIdTagForGivenName" xml:space="preserve">
+    <value>Cannot find a process with the name "{0}". Try running with -Id to search by Id of processes.</value>
+  </data>
   <data name="NoDebuggerFound" xml:space="preserve">
     <value>This command cannot be run because the debugger cannot be attached to the process "{0} ({1})". Specify another process and Run your command.</value>
   </data>
@@ -172,7 +175,7 @@
     <value>This command stopped operation because process "{0} ({1})" is not stopped in the specified time-out.</value>
   </data>
   <data name="InvalidStartProcess" xml:space="preserve">
-    <value>This command cannot be run due to the error: {0}.</value>
+    <value>This command cannot be run due to the error: {0}</value>
   </data>
   <data name="InvalidApplication" xml:space="preserve">
     <value>This command cannot be run because the input "{0}" is not a valid Application.  Give a valid application and run your command again.</value>

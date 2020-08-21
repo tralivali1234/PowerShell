@@ -1,8 +1,8 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Management.Automation.Help;
 using System.Collections.Generic;
+using System.Management.Automation.Help;
 
 namespace System.Management.Automation
 {
@@ -33,10 +33,11 @@ namespace System.Management.Automation
             {
                 if (typename.StartsWith(DefaultCommandHelpObjectBuilder.TypeNameForDefaultHelp, StringComparison.OrdinalIgnoreCase))
                 {
-                    //Win8: 638494 if the original help is auto-generated, let the Provider help decide the format.
+                    // Win8: 638494 if the original help is auto-generated, let the Provider help decide the format.
                     return;
                 }
             }
+
             maml1.TypeNames.Clear();
             // User request at the top..
             foreach (string typeName in maml2.TypeNames)
@@ -46,7 +47,7 @@ namespace System.Management.Automation
         }
 
         /// <summary>
-        /// Adds common properties like PSSnapIn,ModuleName from maml2 to maml1
+        /// Adds common properties like PSSnapIn,ModuleName from maml2 to maml1.
         /// </summary>
         /// <param name="maml1"></param>
         /// <param name="maml2"></param>
@@ -55,7 +56,7 @@ namespace System.Management.Automation
             if (maml1.Properties["PSSnapIn"] == null)
             {
                 PSPropertyInfo snapInProperty = maml2.Properties["PSSnapIn"];
-                if (null != snapInProperty)
+                if (snapInProperty != null)
                 {
                     maml1.Properties.Add(new PSNoteProperty("PSSnapIn", snapInProperty.Value));
                 }
@@ -64,7 +65,7 @@ namespace System.Management.Automation
             if (maml1.Properties["ModuleName"] == null)
             {
                 PSPropertyInfo moduleNameProperty = maml2.Properties["ModuleName"];
-                if (null != moduleNameProperty)
+                if (moduleNameProperty != null)
                 {
                     maml1.Properties.Add(new PSNoteProperty("ModuleName", moduleNameProperty.Value));
                 }
@@ -130,10 +131,10 @@ namespace System.Management.Automation
             for (int index = 0; index < maml2items.Count; index++)
             {
                 PSObject m2paramObj = PSObject.AsPSObject(maml2items[index]);
-                string param2Name = "";
+                string param2Name = string.Empty;
                 PSPropertyInfo m2propertyInfo = m2paramObj.Properties["Name"];
 
-                if (null != m2propertyInfo)
+                if (m2propertyInfo != null)
                 {
                     if (!LanguagePrimitives.TryConvertTo<string>(m2propertyInfo.Value, out param2Name))
                     {
@@ -144,10 +145,10 @@ namespace System.Management.Automation
                 bool isParamFoundInMaml1 = false;
                 foreach (PSObject m1ParamObj in maml1items)
                 {
-                    string param1Name = "";
+                    string param1Name = string.Empty;
                     PSPropertyInfo m1PropertyInfo = m1ParamObj.Properties["Name"];
 
-                    if (null != m1PropertyInfo)
+                    if (m1PropertyInfo != null)
                     {
                         if (!LanguagePrimitives.TryConvertTo<string>(m1PropertyInfo.Value, out param1Name))
                         {
@@ -191,7 +192,7 @@ namespace System.Management.Automation
         /// </summary>
         internal static PSPropertyInfo GetPropertyInfo(PSObject psObject, string[] path)
         {
-            if (path.Length <= 0)
+            if (path.Length == 0)
             {
                 return null;
             }
@@ -239,7 +240,7 @@ namespace System.Management.Automation
             // For maml2: Add as collection or single item. No-op if
             PSPropertyInfo propertyInfo2 = GetPropertyInfo(maml2, path);
 
-            if (null != propertyInfo2)
+            if (propertyInfo2 != null)
             {
                 var array = propertyInfo2.Value as Array;
                 if (array != null)
@@ -257,7 +258,7 @@ namespace System.Management.Automation
             // For maml1: Add as collection or single item. Do nothing if null or some other type.
             PSPropertyInfo propertyInfo1 = GetPropertyInfo(maml1, path);
 
-            if (null != propertyInfo1)
+            if (propertyInfo1 != null)
             {
                 if (!shouldOverride)
                 {
@@ -289,7 +290,7 @@ namespace System.Management.Automation
         /// </summary>
         internal static void EnsurePropertyInfoPathExists(PSObject psObject, string[] path)
         {
-            if (path.Length <= 0)
+            if (path.Length == 0)
             {
                 return;
             }

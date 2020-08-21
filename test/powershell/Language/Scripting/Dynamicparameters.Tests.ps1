@@ -1,4 +1,4 @@
-# Copyright (c) Microsoft Corporation. All rights reserved.
+# Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 Describe "Dynamic parameter support in script cmdlets." -Tags "CI" {
     BeforeAll {
@@ -64,12 +64,7 @@ Describe "Dynamic parameter support in script cmdlets." -Tags "CI" {
     }
 
     It "When the dynamic parameter is not available, and raises an error when specified" {
-        try {
-            foo-bar -path def -dp1 42
-            Throw "Exception expected, execution should not have reached here"
-        } catch {
-            $_.FullyQualifiedErrorId | Should -BeExactly "NamedParameterNotFound,foo-bar"
-        }
+        { foo-bar -path def -dp1 42 } | Should -Throw -ErrorId "NamedParameterNotFound,foo-bar"
     }
 
     It "No dynamic parameter shouldn't cause an errr " {
@@ -81,6 +76,6 @@ Describe "Dynamic parameter support in script cmdlets." -Tags "CI" {
     }
 
     It "Parameter is defined in Class" {
-        foo-bar -path class -name "myName" | Should -BeExactly 'myName'
+        foo-bar -path class -Name "myName" | Should -BeExactly 'myName'
     }
 }

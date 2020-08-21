@@ -1,9 +1,10 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
+
 using COM = System.Runtime.InteropServices.ComTypes;
 
 // Disable obsolete warnings about VarEnum and COM-marshaling APIs in CoreCLR
@@ -18,7 +19,7 @@ namespace System.Management.Automation
         // LCID for en-US culture
         private const int LCID_DEFAULT = 0x0409;
         // The dispatch identifier for a parameter that receives the value of an assignment in a PROPERTYPUT.
-        // See https://msdn.microsoft.com/en-us/library/windows/desktop/ms221242(v=vs.85).aspx for details.
+        // See https://msdn.microsoft.com/library/windows/desktop/ms221242(v=vs.85).aspx for details.
         private const int DISPID_PROPERTYPUT = -3;
         // Alias of GUID_NULL. It's a GUID set to all zero
         private static readonly Guid s_IID_NULL = new Guid();
@@ -26,10 +27,10 @@ namespace System.Management.Automation
         private static readonly int s_variantSize = Marshal.SizeOf<Variant>();
 
         /// <summary>
-        /// Make a by-Ref VARIANT value based on the passed-in VARIANT argument
+        /// Make a by-Ref VARIANT value based on the passed-in VARIANT argument.
         /// </summary>
-        /// <param name="srcVariantPtr">The source Variant pointer</param>
-        /// <param name="destVariantPtr">The destination Variant pointer</param>
+        /// <param name="srcVariantPtr">The source Variant pointer.</param>
+        /// <param name="destVariantPtr">The destination Variant pointer.</param>
         private static unsafe void MakeByRefVariant(IntPtr srcVariantPtr, IntPtr destVariantPtr)
         {
             var srcVariant = (Variant*)srcVariantPtr;
@@ -73,8 +74,8 @@ namespace System.Management.Automation
         /// Alloc memory for a VARIANT array with the specified length.
         /// Also initialize the VARIANT elements to be the type 'VT_EMPTY'.
         /// </summary>
-        /// <param name="length">Array length</param>
-        /// <returns>Pointer to the array</returns>
+        /// <param name="length">Array length.</param>
+        /// <returns>Pointer to the array.</returns>
         private static unsafe IntPtr NewVariantArray(int length)
         {
             IntPtr variantArray = Marshal.AllocCoTaskMem(s_variantSize * length);
@@ -92,9 +93,9 @@ namespace System.Management.Automation
         /// <summary>
         /// Generate the ByRef array indicating whether the corresponding argument is by-reference.
         /// </summary>
-        /// <param name="parameters">Parameters retrieved from metadata</param>
-        /// <param name="argumentCount">Count of arguments to pass in IDispatch.Invoke</param>
-        /// <param name="isPropertySet">Indicate if we are handling arguments for PropertyPut/PropertyPutRef</param>
+        /// <param name="parameters">Parameters retrieved from metadata.</param>
+        /// <param name="argumentCount">Count of arguments to pass in IDispatch.Invoke.</param>
+        /// <param name="isPropertySet">Indicate if we are handling arguments for PropertyPut/PropertyPutRef.</param>
         /// <returns></returns>
         internal static bool[] GetByRefArray(ParameterInformation[] parameters, int argumentCount, bool isPropertySet)
         {
@@ -126,13 +127,13 @@ namespace System.Management.Automation
         }
 
         /// <summary>
-        /// Invoke the COM member
+        /// Invoke the COM member.
         /// </summary>
-        /// <param name="target">IDispatch object</param>
-        /// <param name="dispId">Dispatch identifier that identifies the member</param>
-        /// <param name="args">Arguments passed in</param>
-        /// <param name="byRef">Boolean array that indicates by-Ref parameters</param>
-        /// <param name="invokeKind">Invocation kind</param>
+        /// <param name="target">IDispatch object.</param>
+        /// <param name="dispId">Dispatch identifier that identifies the member.</param>
+        /// <param name="args">Arguments passed in.</param>
+        /// <param name="byRef">Boolean array that indicates by-Ref parameters.</param>
+        /// <param name="invokeKind">Invocation kind.</param>
         /// <returns></returns>
         internal static object Invoke(IDispatch target, int dispId, object[] args, bool[] byRef, COM.INVOKEKIND invokeKind)
         {
@@ -216,7 +217,7 @@ namespace System.Management.Automation
                 catch (Exception innerException)
                 {
                     // When 'IDispatch.Invoke' returns error code, CLR will raise exception based on internal HR-to-Exception mapping.
-                    // Description of the return code can be found at https://msdn.microsoft.com/en-us/library/windows/desktop/ms221479(v=vs.85).aspx
+                    // Description of the return code can be found at https://msdn.microsoft.com/library/windows/desktop/ms221479(v=vs.85).aspx
                     // According to CoreCLR team (yzha), the exception needs to be wrapped as an inner exception of TargetInvocationException.
 
                     string exceptionMsg = null;
@@ -241,6 +242,7 @@ namespace System.Management.Automation
                         {
                             Marshal.FreeBSTR(info.bstrSource);
                         }
+
                         if (info.bstrHelpFile != IntPtr.Zero)
                         {
                             Marshal.FreeBSTR(info.bstrHelpFile);
@@ -280,6 +282,7 @@ namespace System.Management.Automation
                     {
                         VariantClear(variantArgArray + s_variantSize * i);
                     }
+
                     Marshal.FreeCoTaskMem(variantArgArray);
                 }
 
@@ -296,6 +299,7 @@ namespace System.Management.Automation
                     {
                         VariantClear(tmpVariants + s_variantSize * i);
                     }
+
                     Marshal.FreeCoTaskMem(tmpVariants);
                 }
             }
@@ -328,7 +332,7 @@ namespace System.Management.Automation
         }
 
         /// <summary>
-        /// VARIANT type used for passing arguments in COM interop
+        /// VARIANT type used for passing arguments in COM interop.
         /// </summary>
         [StructLayout(LayoutKind.Explicit)]
         internal struct Variant
@@ -348,12 +352,16 @@ namespace System.Management.Automation
             {
                 [FieldOffset(0)]
                 internal ushort _vt;
+
                 [FieldOffset(2)]
                 internal ushort _wReserved1;
+
                 [FieldOffset(4)]
                 internal ushort _wReserved2;
+
                 [FieldOffset(6)]
                 internal ushort _wReserved3;
+
                 [FieldOffset(8)]
                 internal UnionTypes _unionTypes;
             }
@@ -369,47 +377,68 @@ namespace System.Management.Automation
             internal struct UnionTypes
             {
                 [FieldOffset(0)]
-                internal SByte _i1;
+                internal sbyte _i1;
+
                 [FieldOffset(0)]
                 internal Int16 _i2;
+
                 [FieldOffset(0)]
                 internal Int32 _i4;
+
                 [FieldOffset(0)]
                 internal Int64 _i8;
+
                 [FieldOffset(0)]
-                internal Byte _ui1;
+                internal byte _ui1;
+
                 [FieldOffset(0)]
                 internal UInt16 _ui2;
+
                 [FieldOffset(0)]
                 internal UInt32 _ui4;
+
                 [FieldOffset(0)]
                 internal UInt64 _ui8;
+
                 [FieldOffset(0)]
                 internal Int32 _int;
+
                 [FieldOffset(0)]
                 internal UInt32 _uint;
+
                 [FieldOffset(0)]
                 internal Int16 _bool;
+
                 [FieldOffset(0)]
                 internal Int32 _error;
+
                 [FieldOffset(0)]
                 internal Single _r4;
+
                 [FieldOffset(0)]
-                internal Double _r8;
+                internal double _r8;
+
                 [FieldOffset(0)]
                 internal Int64 _cy;
+
                 [FieldOffset(0)]
                 internal double _date;
+
                 [FieldOffset(0)]
                 internal IntPtr _bstr;
+
                 [FieldOffset(0)]
                 internal IntPtr _unknown;
+
                 [FieldOffset(0)]
                 internal IntPtr _dispatch;
+
                 [FieldOffset(0)]
                 internal IntPtr _pvarVal;
+
                 [FieldOffset(0)]
                 internal IntPtr _byref;
+
                 [FieldOffset(0)]
                 internal Record _record;
             }

@@ -1,4 +1,4 @@
-# Copyright (c) Microsoft Corporation. All rights reserved.
+# Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 Describe 'Attributes Test' -Tags "CI" {
 
@@ -251,7 +251,7 @@ Describe 'ValidateSet support a dynamically generated set' -Tag "CI" {
         }
 '@
 
-            $cls = Add-Type -TypeDefinition $a -PassThru | select -First 1
+            $cls = Add-Type -TypeDefinition $a -PassThru | Select-Object -First 1
             $testModule = Import-Module $cls.Assembly -PassThru
         }
 
@@ -260,7 +260,7 @@ Describe 'ValidateSet support a dynamically generated set' -Tag "CI" {
         }
 
         It 'Throw if IValidateSetValuesGenerator is not implemented' {
-            { Get-TestValidateSet0 -Param1 "TestString" -ErrorAction Stop } | ShouldBeErrorId "Argument"
+            { Get-TestValidateSet0 -Param1 "TestString" -ErrorAction Stop } | Should -Throw -ErrorId "Argument"
         }
 
         It 'Dynamically generated set works in C# with default (immediate) cache expire' {
@@ -270,7 +270,7 @@ Describe 'ValidateSet support a dynamically generated set' -Tag "CI" {
         It 'Empty dynamically generated set throws in C#' {
             $exc = {
                 Get-TestValidateSet5 -Param1 "TestString1" -ErrorAction Stop
-            } | ShouldBeErrorId "ParameterArgumentValidationError,Test.Language.TestValidateSetCommand5"
+            } | Should -Throw -ErrorId "ParameterArgumentValidationError,Test.Language.TestValidateSetCommand5" -PassThru
             $exc.Exception.InnerException.ErrorRecord.FullyQualifiedErrorId | Should -BeExactly "ValidateSetGeneratedValidValuesListIsNull"
         }
     }
@@ -356,20 +356,20 @@ Describe 'ValidateSet support a dynamically generated set' -Tag "CI" {
         }
 
         It 'Get the appropriate error message' {
-            {Get-TestValidateSetPS4 -Param1 "TestStringWrong" -ErrorAction Stop} | ShouldBeErrorId "ParameterArgumentValidationError,Get-TestValidateSetPS4"
+            {Get-TestValidateSetPS4 -Param1 "TestStringWrong" -ErrorAction Stop} | Should -Throw -ErrorId "ParameterArgumentValidationError,Get-TestValidateSetPS4"
         }
 
         It 'Empty dynamically generated set throws in PowerShell script' {
             $exc = {
                 Get-TestValidateSetPS5 -Param1 "TestString1" -ErrorAction Stop
-            } | ShouldBeErrorId "ParameterArgumentValidationError,Get-TestValidateSetPS5"
+            } | Should -Throw -ErrorId "ParameterArgumentValidationError,Get-TestValidateSetPS5" -PassThru
             $exc.Exception.InnerException.ErrorRecord.FullyQualifiedErrorId | Should -BeExactly "ValidateSetGeneratedValidValuesListIsNull"
         }
 
         It 'Unimplemented valid values generator type throws in PowerShell script' {
             {
                 Get-TestValidateSetPS6 -Param1 "AnyTestString" -ErrorAction Stop
-            } | ShouldBeErrorId "TypeNotFound"
+            } | Should -Throw -ErrorId "TypeNotFound"
         }
 
         It 'IValidateSetValuesGenerator works in PowerShell module' {
@@ -401,7 +401,7 @@ Describe 'ValidateSet support a dynamically generated set' -Tag "CI" {
                 Import-Module -Name $moduleFile -Force
                 Test-ValidateSet 'Hello' | Should -BeExactly 'Hello'
             } finally {
-                Remove-Module -Name $moduleFile -Force
+                Remove-Module -Name $moduleFile -Force -ErrorAction SilentlyContinue
             }
         }
     }
@@ -470,7 +470,7 @@ Describe 'ValidateSet support a dynamically generated set' -Tag "CI" {
         It 'Can implement CachedValidValuesGeneratorBase with cache expiration in PowerShell' {
             Get-TestValidateSetPS5 -Param1 "TestString1" -ErrorAction SilentlyContinue | Should -BeExactly "TestString1"
             Get-TestValidateSetPS5 -Param1 "TestString1" -ErrorAction SilentlyContinue | Should -BeExactly "TestString1"
-            Start-Sleep 3
+            Start-Sleep -Seconds 3
             Get-TestValidateSetPS5 -Param1 "TestString2" -ErrorAction SilentlyContinue | Should -BeExactly "TestString2"
         }
     }

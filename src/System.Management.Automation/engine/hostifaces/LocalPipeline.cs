@@ -1,22 +1,25 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Diagnostics;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
-using System.Threading;
-using Microsoft.Win32;
 using System.Management.Automation.Internal;
 using System.Management.Automation.Internal.Host;
 using System.Management.Automation.Tracing;
+#if !UNIX
+using System.Security.Principal;
+#endif
+using System.Threading;
 using Microsoft.PowerShell.Commands;
+using Microsoft.Win32;
 
 using Dbg = System.Management.Automation.Diagnostics;
 
 namespace System.Management.Automation.Runspaces
 {
     /// <summary>
-    /// Pipeline class to be used for LocalRunspace
+    /// Pipeline class to be used for LocalRunspace.
     /// </summary>
     internal sealed class LocalPipeline : PipelineBase
     {
@@ -37,8 +40,8 @@ namespace System.Management.Automation.Runspaces
         /// pipeline.
         /// </param>
         /// <param name="command">The command string to parse.</param>
-        /// <param name="addToHistory">if true, add pipeline to history</param>
-        /// <param name="isNested">True for nested pipeline</param>
+        /// <param name="addToHistory">If true, add pipeline to history.</param>
+        /// <param name="isNested">True for nested pipeline.</param>
         internal LocalPipeline(LocalRunspace runspace, string command, bool addToHistory, bool isNested)
             : base((Runspace)runspace, command, addToHistory, isNested)
         {
@@ -90,9 +93,9 @@ namespace System.Management.Automation.Runspaces
         }
 
         /// <summary>
-        /// Copy constructor to support cloning
+        /// Copy constructor to support cloning.
         /// </summary>
-        /// <param name="pipeline">The source pipeline</param>
+        /// <param name="pipeline">The source pipeline.</param>
         internal LocalPipeline(LocalPipeline pipeline)
             : base((PipelineBase)(pipeline))
         {
@@ -137,14 +140,14 @@ namespace System.Management.Automation.Runspaces
                 throw PSTraceSource.NewObjectDisposedException("pipeline");
             }
 
-            //Note:This method is called from within a lock by parent class. There
-            //is no need to lock further.
+            // Note:This method is called from within a lock by parent class. There
+            // is no need to lock further.
 
-            //Use input stream in two cases:
-            //1)inputStream is open. In this case PipelineProcessor
-            //will call Invoke only if at least one object is added
-            //to inputStream.
-            //2)inputStream is closed but there are objects in the stream.
+            // Use input stream in two cases:
+            // 1)inputStream is open. In this case PipelineProcessor
+            // will call Invoke only if at least one object is added
+            // to inputStream.
+            // 2)inputStream is closed but there are objects in the stream.
             // NTRAID#Windows Out Of Band Releases-925566-2005/12/09-JonN
             // Remember this here, in the synchronous thread,
             // to avoid timing dependencies in the pipeline thread.
@@ -152,16 +155,31 @@ namespace System.Management.Automation.Runspaces
 
             PSThreadOptions memberOptions = this.IsNested ? PSThreadOptions.UseCurrentThread : this.LocalRunspace.ThreadOptions;
 
+#if !UNIX
+            // Use thread proc that supports impersonation flow for new thread start.
+            ThreadStart invokeThreadProcDelegate = InvokeThreadProcImpersonate;
+            _identityToImpersonate = null;
+
+            // If impersonation identity flow is requested, then get current thread impersonation, if any.
+            if ((InvocationSettings != null) && InvocationSettings.FlowImpersonationPolicy)
+            {
+                Utils.TryGetWindowsImpersonatedIdentity(out _identityToImpersonate);
+            }
+#else
+            // UNIX does not support thread impersonation flow.
+            ThreadStart invokeThreadProcDelegate = InvokeThreadProc;
+#endif
+
             switch (memberOptions)
             {
                 case PSThreadOptions.Default:
                 case PSThreadOptions.UseNewThread:
                     {
-                        // Start execution of pipeline in another thread
-                        Thread invokeThread = new Thread(new ThreadStart(this.InvokeThreadProc), DefaultPipelineStackSize);
+                        // Start execution of pipeline in another thread,
+                        // and support impersonation flow as needed (Windows only).
+                        Thread invokeThread = new Thread(new ThreadStart(invokeThreadProcDelegate), DefaultPipelineStackSize);
                         SetupInvokeThread(invokeThread, true);
-#if !CORECLR
-                        // No ApartmentState in CoreCLR
+
                         ApartmentState apartmentState;
 
                         if (InvocationSettings != null && InvocationSettings.ApartmentState != ApartmentState.Unknown)
@@ -173,11 +191,13 @@ namespace System.Management.Automation.Runspaces
                             apartmentState = this.LocalRunspace.ApartmentState; // use the Runspace apartment state
                         }
 
-                        if (apartmentState != ApartmentState.Unknown)
+#if !UNIX
+                        if (apartmentState != ApartmentState.Unknown && !Platform.IsNanoServer && !Platform.IsIoT)
                         {
                             invokeThread.SetApartmentState(apartmentState);
                         }
 #endif
+
                         invokeThread.Start();
 
                         break;
@@ -187,17 +207,20 @@ namespace System.Management.Automation.Runspaces
                     {
                         if (this.IsNested)
                         {
-                            // if this a nested pipeline we are already in the appropriate thread so we just execute the pipeline here
+                            // If this a nested pipeline we are already in the appropriate thread so we just execute the pipeline here.
+                            // Impersonation flow (Windows only) is not needed when using existing thread.
                             SetupInvokeThread(Thread.CurrentThread, true);
-                            this.InvokeThreadProc();
+                            InvokeThreadProc();
                         }
                         else
                         {
-                            // otherwise we execute the pipeline in the Runspace's thread
+                            // Otherwise we execute the pipeline in the Runspace's thread,
+                            // and support information flow on new thread as needed (Windows only).
                             PipelineThread invokeThread = this.LocalRunspace.GetPipelineThread();
                             SetupInvokeThread(invokeThread.Worker, true);
-                            invokeThread.Start(this.InvokeThreadProc);
+                            invokeThread.Start(invokeThreadProcDelegate);
                         }
+
                         break;
                     }
 
@@ -210,9 +233,10 @@ namespace System.Management.Automation.Runspaces
 
                         try
                         {
-                            // prepare invoke thread
+                            // Prepare invoke thread.
+                            // Impersonation flow (Windows only) is not needed when using existing thread.
                             SetupInvokeThread(Thread.CurrentThread, false);
-                            this.InvokeThreadProc();
+                            InvokeThreadProc();
                         }
                         finally
                         {
@@ -220,17 +244,18 @@ namespace System.Management.Automation.Runspaces
                             Thread.CurrentThread.CurrentCulture = oldCurrentCulture;
                             Thread.CurrentThread.CurrentUICulture = oldCurrentUICulture;
                         }
+
                         break;
                     }
 
                 default:
-                    Debug.Assert(false);
+                    Debug.Fail("");
                     break;
             }
         }
 
         /// <summary>
-        /// Prepares the invoke thread for execution
+        /// Prepares the invoke thread for execution.
         /// </summary>
         private void SetupInvokeThread(Thread invokeThread, bool changeName)
         {
@@ -260,15 +285,15 @@ namespace System.Management.Automation.Runspaces
             {
 #if TRANSACTIONS_SUPPORTED
                 // 2004/11/08-JeffJon
-                //Transactions will not be supported for the Exchange release
+                // Transactions will not be supported for the Exchange release
 
-                //Add the transaction to this thread
+                // Add the transaction to this thread
                 System.Transactions.Transaction.Current = this.LocalRunspace.ExecutionContext.CurrentTransaction;
 #endif
-                //Raise the event for Pipeline.Running
+                // Raise the event for Pipeline.Running
                 RaisePipelineStateEvents();
 
-                //Add this pipeline to history
+                // Add this pipeline to history
                 RecordPipelineStartTime();
 
                 // Add automatic transcription, but don't transcribe nested commands
@@ -288,9 +313,9 @@ namespace System.Management.Automation.Runspaces
                         // Don't need to add Out-Default if the pipeline already has it, or we've got a pipeline evaluating
                         // the PSConsoleHostReadLine command.
                         if (
-                            String.Equals(outDefaultCommandInfo.Name, command.CommandText, StringComparison.OrdinalIgnoreCase) ||
-                            String.Equals("PSConsoleHostReadLine", command.CommandText, StringComparison.OrdinalIgnoreCase) ||
-                            String.Equals("TabExpansion2", command.CommandText, StringComparison.OrdinalIgnoreCase) ||
+                            string.Equals(outDefaultCommandInfo.Name, command.CommandText, StringComparison.OrdinalIgnoreCase) ||
+                            string.Equals("PSConsoleHostReadLine", command.CommandText, StringComparison.OrdinalIgnoreCase) ||
+                            string.Equals("TabExpansion2", command.CommandText, StringComparison.OrdinalIgnoreCase) ||
                             this.IsPulsePipeline)
                         {
                             needToAddOutDefault = false;
@@ -312,7 +337,7 @@ namespace System.Management.Automation.Runspaces
 
                 try
                 {
-                    //Create PipelineProcessor to invoke this pipeline
+                    // Create PipelineProcessor to invoke this pipeline
                     pipelineProcessor = CreatePipelineProcessor();
                 }
                 catch (Exception ex)
@@ -322,10 +347,11 @@ namespace System.Management.Automation.Runspaces
                         SetHadErrors(true);
                         Runspace.ExecutionContext.AppendDollarError(ex);
                     }
+
                     throw;
                 }
 
-                //Supply input stream to PipelineProcessor
+                // Supply input stream to PipelineProcessor
 
                 // NTRAID#Windows Out Of Band Releases-925566-2005/12/09-JonN
                 if (_useExternalInput)
@@ -338,8 +364,9 @@ namespace System.Management.Automation.Runspaces
                 // Set Informational Buffers on the host only if this is not a child.
                 // Do not overwrite parent's informational buffers.
                 if (!this.IsChild)
-                    LocalRunspace.ExecutionContext.InternalHost.
-                        InternalUI.SetInformationalMessageBuffers(InformationalBuffers);
+                {
+                    LocalRunspace.ExecutionContext.InternalHost.InternalUI.SetInformationalMessageBuffers(InformationalBuffers);
+                }
 
                 bool oldQuestionMarkValue = true;
                 bool savedIgnoreScriptDebug = this.LocalRunspace.ExecutionContext.IgnoreScriptDebug;
@@ -349,7 +376,7 @@ namespace System.Management.Automation.Runspaces
 
                 try
                 {
-                    //Add this pipeline to stopper
+                    // Add this pipeline to stopper
                     _stopper.Push(pipelineProcessor);
 
                     // Preserve the last value of $? across non-interactive commands.
@@ -369,9 +396,9 @@ namespace System.Management.Automation.Runspaces
                         this.LocalRunspace.ExecutionContext.ResetRedirection();
                     }
 
-                    //Invoke the pipeline.
-                    //Note:Since we are using pipes for output, return array is
-                    //be empty.
+                    // Invoke the pipeline.
+                    // Note:Since we are using pipes for output, return array is
+                    // be empty.
                     try
                     {
                         pipelineProcessor.SynchronousExecuteEnumerate(AutomationNull.Value);
@@ -402,7 +429,6 @@ namespace System.Management.Automation.Runspaces
                                 catch (ExitNestedPromptException)
                                 {
                                     // Already at the top level so we just want to ignore this exception...
-                                    ;
                                 }
                             }
                         }
@@ -420,13 +446,6 @@ namespace System.Management.Automation.Runspaces
                             finally
                             {
                                 this.LocalRunspace.ExecutionContext.EngineHostInterface.SetShouldExit(exitCode);
-
-                                // close the remote runspaces available
-                                /*foreach (RemoteRunspaceInfo remoteRunspaceInfo in
-                                    this.LocalRunspace.RunspaceRepository.Runspaces)
-                                {
-                                    remoteRunspaceInfo.RemoteRunspace.CloseAsync();
-                                }*/
                             }
                         }
                     }
@@ -443,7 +462,6 @@ namespace System.Management.Automation.Runspaces
                         }
 
                         // Otherwise discard this type of exception generated by the debugger or from an unhandled break, continue or return.
-                        ;
                     }
                     catch (Exception)
                     {
@@ -485,7 +503,7 @@ namespace System.Management.Automation.Runspaces
                     if (!IsChild)
                         LocalRunspace.ExecutionContext.InternalHost.InternalUI.SetInformationalMessageBuffers(null);
 
-                    //Pop the pipeline processor from stopper.
+                    // Pop the pipeline processor from stopper.
                     _stopper.Pop(false);
 
                     if (!AddToHistory)
@@ -500,12 +518,11 @@ namespace System.Management.Automation.Runspaces
             catch (FlowControlException)
             {
                 // Discard this type of exception generated by the debugger or from an unhandled break, continue or return.
-                ;
             }
             finally
             {
                 // 2004/02/26-JonN added IDisposable to PipelineProcessor
-                if (null != pipelineProcessor)
+                if (pipelineProcessor != null)
                 {
                     pipelineProcessor.Dispose();
                     pipelineProcessor = null;
@@ -515,8 +532,26 @@ namespace System.Management.Automation.Runspaces
             return flowControlException;
         }
 
-        // NTRAID#Windows Out Of Band Releases-915506-2005/09/09
-        // Removed HandleUnexpectedExceptions infrastructure
+#if !UNIX
+        /// <summary>
+        /// Invokes the InvokeThreadProc() method on new thread, and flows calling thread
+        /// impersonation as needed.
+        /// </summary>
+        private void InvokeThreadProcImpersonate()
+        {
+            if (_identityToImpersonate != null)
+            {
+                WindowsIdentity.RunImpersonated(
+                    _identityToImpersonate.AccessToken,
+                    () => InvokeThreadProc());
+
+                return;
+            }
+
+            InvokeThreadProc();
+        }
+#endif
+
         /// <summary>
         /// Start thread method for asynchronous pipeline execution.
         /// </summary>
@@ -527,19 +562,6 @@ namespace System.Management.Automation.Runspaces
 
             try
             {
-#if !CORECLR    // Impersonation is not supported in CoreCLR.
-                // Used to store old impersonation context if we impersonate.
-                System.Security.Principal.WindowsImpersonationContext oldImpersonationCtxt = null;
-                try
-                {
-                    if ((null != InvocationSettings) && (InvocationSettings.FlowImpersonationPolicy))
-                    {
-                        // we have a valid identity to impersonate.
-                        System.Security.Principal.WindowsIdentity identityToImPersonate =
-                            new System.Security.Principal.WindowsIdentity(InvocationSettings.WindowsIdentityToImpersonate.Token);
-                        oldImpersonationCtxt = identityToImPersonate.Impersonate();
-                    }
-#endif
                 // Set up pipeline internal host if it is available.
                 if (InvocationSettings != null && InvocationSettings.Host != null)
                 {
@@ -567,7 +589,7 @@ namespace System.Management.Automation.Runspaces
                     Microsoft.PowerShell.NativeCultureResolver.SetThreadUILanguage(0);
                 }
 
-                //Put Execution Context In TLS
+                // Put Execution Context In TLS
                 Runspace.DefaultRunspace = this.LocalRunspace;
 
                 FlowControlException flowControlException = InvokeHelper();
@@ -582,29 +604,6 @@ namespace System.Management.Automation.Runspaces
                     // Invoke finished successfully. Set state to Completed.
                     SetPipelineState(PipelineState.Completed);
                 }
-#if !CORECLR
-                }
-                finally
-                {
-                    // Impersonation is not supported in CoreCLR.
-                    // This finally block is needed to handle fxcop CA2124
-                    // If sensitive operations such as impersonation occur in the try block, and an
-                    // exception is thrown, the filter can execute before the finally block. For the
-                    // impersonation example, this means that the filter would execute as the impersonated user.
-                    if (null != oldImpersonationCtxt)
-                    {
-                        try
-                        {
-                            oldImpersonationCtxt.Undo();
-                            oldImpersonationCtxt.Dispose();
-                            oldImpersonationCtxt = null;
-                        }
-                        catch (System.Security.SecurityException)
-                        {
-                        }
-                    }
-                }
-#endif
             }
             catch (PipelineStoppedException ex)
             {
@@ -626,18 +625,11 @@ namespace System.Management.Automation.Runspaces
                 SetPipelineState(PipelineState.Failed, ex);
                 SetHadErrors(true);
             }
-#if !CORECLR // No ThreadAbortException In CoreCLR
-            catch (ThreadAbortException ex)
-            {
-                SetPipelineState(PipelineState.Failed, ex);
-                SetHadErrors(true);
-            }
-#endif
-            // 1021203-2005/05/09-JonN
-            // HaltCommandException will cause the command
-            // to stop, but not be reported as an error.
             catch (HaltCommandException)
             {
+                // 1021203-2005/05/09-JonN
+                // HaltCommandException will cause the command
+                // to stop, but not be reported as an error.
                 SetPipelineState(PipelineState.Completed);
             }
             finally
@@ -651,12 +643,12 @@ namespace System.Management.Automation.Runspaces
                     LocalRunspace.ExecutionContext.InternalHost.RevertHostRef();
                 }
 
-                //Remove Execution Context From TLS
+                // Remove Execution Context From TLS
                 Runspace.DefaultRunspace = previousDefaultRunspace;
 
-                //If incomplete parse exception is hit, we should not add to history.
-                //This is ensure that in case of multiline commands, command is in the
-                //history only once.
+                // If incomplete parse exception is hit, we should not add to history.
+                // This is ensure that in case of multiline commands, command is in the
+                // history only once.
                 if (!incompleteParseException)
                 {
                     try
@@ -683,7 +675,7 @@ namespace System.Management.Automation.Runspaces
                 // IsChild makes it possible for LocalPipeline to differentiate
                 // between a true v1 nested pipeline and the "Cmdlets Calling Cmdlets" case.
 
-                //Close the output stream if it is not closed.
+                // Close the output stream if it is not closed.
                 if (OutputStream.IsOpen && !IsChild)
                 {
                     try
@@ -695,7 +687,7 @@ namespace System.Management.Automation.Runspaces
                     }
                 }
 
-                //Close the error stream if it is not closed.
+                // Close the error stream if it is not closed.
                 if (ErrorStream.IsOpen && !IsChild)
                 {
                     try
@@ -707,7 +699,7 @@ namespace System.Management.Automation.Runspaces
                     }
                 }
 
-                //Close the input stream if it is not closed.
+                // Close the input stream if it is not closed.
                 if (InputStream.IsOpen && !IsChild)
                 {
                     try
@@ -722,19 +714,19 @@ namespace System.Management.Automation.Runspaces
                 // Clear stream links from ExecutionContext
                 ClearStreams();
 
-                //Runspace object maintains a list of pipelines in execution.
-                //Remove this pipeline from the list. This method also calls the
-                //pipeline finished event.
+                // Runspace object maintains a list of pipelines in execution.
+                // Remove this pipeline from the list. This method also calls the
+                // pipeline finished event.
                 LocalRunspace.RemoveFromRunningPipelineList(this);
 
-                //If async call raise the event here. For sync invoke call,
-                //thread on which invoke is called will raise the event.
+                // If async call raise the event here. For sync invoke call,
+                // thread on which invoke is called will raise the event.
                 if (!SyncInvokeCall)
                 {
-                    //This should be called after signaling PipelineFinishedEvent and
-                    //RemoveFromRunningPipelineList. If it is done before, and in the
-                    //Event, Runspace.Close is called which waits for pipeline to close.
-                    //We will have deadlock
+                    // This should be called after signaling PipelineFinishedEvent and
+                    // RemoveFromRunningPipelineList. If it is done before, and in the
+                    // Event, Runspace.Close is called which waits for pipeline to close.
+                    // We will have deadlock
                     RaisePipelineStateEvents();
                 }
             }
@@ -761,7 +753,7 @@ namespace System.Management.Automation.Runspaces
         }
 
         /// <summary>
-        /// Start method for asynchronous Stop
+        /// Start method for asynchronous Stop.
         /// </summary>
         private void StopThreadProc()
         {
@@ -772,7 +764,7 @@ namespace System.Management.Automation.Runspaces
 
         /// <summary>
         /// Gets PipelineStopper object which maintains stack of PipelineProcessor
-        /// for this pipeline
+        /// for this pipeline.
         /// </summary>
         /// <value></value>
         internal PipelineStopper Stopper
@@ -783,19 +775,19 @@ namespace System.Management.Automation.Runspaces
             }
         }
         /// <summary>
-        /// Helper method for Stop functionality
+        /// Helper method for Stop functionality.
         /// </summary>
         private void StopHelper()
         {
             // Ensure that any saved debugger stop is released
             LocalRunspace.ReleaseDebugger();
 
-            //first stop all child pipelines of this pipeline
+            // first stop all child pipelines of this pipeline
             LocalRunspace.StopNestedPipelines(this);
 
-            //close the input pipe if it hasn't been closed.
-            //This would release the pipeline thread if it is
-            //waiting for input.
+            // close the input pipe if it hasn't been closed.
+            // This would release the pipeline thread if it is
+            // waiting for input.
             if (InputStream.IsOpen)
             {
                 try
@@ -808,12 +800,12 @@ namespace System.Management.Automation.Runspaces
             }
 
             _stopper.Stop();
-            //Wait for pipeline to finish
+            // Wait for pipeline to finish
             PipelineFinishedEvent.WaitOne();
         }
 
         /// <summary>
-        /// Returns true if pipeline is stopping
+        /// Returns true if pipeline is stopping.
         /// </summary>
         /// <value></value>
         internal bool IsStopping
@@ -828,7 +820,7 @@ namespace System.Management.Automation.Runspaces
         /// <summary>
         /// Creates a PipelineProcessor object from LocalPipeline object.
         /// </summary>
-        /// <returns>Created PipelineProcessor object</returns>
+        /// <returns>Created PipelineProcessor object.</returns>
         private PipelineProcessor CreatePipelineProcessor()
         {
             CommandCollection commands = Commands;
@@ -854,7 +846,12 @@ namespace System.Management.Automation.Runspaces
                         try
                         {
                             CommandOrigin commandOrigin = command.CommandOrigin;
-                            if (IsNested)
+
+                            // Do not set command origin to internal if this is a script debugger originated command (which always
+                            // runs nested commands).  This prevents the script debugger command line from seeing private commands.
+                            if (IsNested &&
+                                !LocalRunspace.InNestedPrompt &&
+                                !((LocalRunspace.Debugger != null) && (LocalRunspace.Debugger.InBreakpoint)))
                             {
                                 commandOrigin = CommandOrigin.Internal;
                             }
@@ -903,6 +900,7 @@ namespace System.Management.Automation.Runspaces
                     commandProcessorBase.RedirectShellErrorOutputPipe = this.RedirectShellErrorOutputPipe;
                     pipelineProcessor.Add(commandProcessorBase);
                 }
+
                 return pipelineProcessor;
             }
             catch (RuntimeException)
@@ -928,9 +926,9 @@ namespace System.Management.Automation.Runspaces
         }
 
         /// <summary>
-        /// Resolves command.CommandInfo to an appropriate CommandProcessorBase implementation
+        /// Resolves command.CommandInfo to an appropriate CommandProcessorBase implementation.
         /// </summary>
-        /// <param name="command">command to resolve</param>
+        /// <param name="command">Command to resolve.</param>
         /// <returns></returns>
         private CommandProcessorBase CreateCommandProcessBase(Command command)
         {
@@ -990,11 +988,11 @@ namespace System.Management.Automation.Runspaces
             }
         }
 
-        //History object for this pipeline
+        // History object for this pipeline
         private DateTime _pipelineStartTime;
 
         /// <summary>
-        /// Adds an entry in history for this pipeline
+        /// Adds an entry in history for this pipeline.
         /// </summary>
         private void RecordPipelineStartTime()
         {
@@ -1007,7 +1005,7 @@ namespace System.Management.Automation.Runspaces
         /// </summary>
         private void AddHistoryEntry(bool skipIfLocked)
         {
-            //History id is greater than zero if entry was added to history
+            // History id is greater than zero if entry was added to history
             if (AddToHistory)
             {
                 LocalRunspace.History.AddEntry(InstanceId, HistoryString, PipelineState, _pipelineStartTime, DateTime.Now, skipIfLocked);
@@ -1028,14 +1026,15 @@ namespace System.Management.Automation.Runspaces
         internal
         void AddHistoryEntryFromAddHistoryCmdlet()
         {
-            //This method can be called by multiple times during a single
-            //pipeline execution. For ex: a script can execute add-history
-            //command multiple times. However we should add entry only
-            //once.
+            // This method can be called by multiple times during a single
+            // pipeline execution. For ex: a script can execute add-history
+            // command multiple times. However we should add entry only
+            // once.
             if (_historyIdForThisPipeline != -1)
             {
                 return;
             }
+
             if (AddToHistory)
             {
                 _historyIdForThisPipeline = LocalRunspace.History.AddEntry(InstanceId, HistoryString, PipelineState, _pipelineStartTime, DateTime.Now, false);
@@ -1057,9 +1056,9 @@ namespace System.Management.Automation.Runspaces
         }
 
         /// <summary>
-        /// sets the history string to the specified one
+        /// Sets the history string to the specified one.
         /// </summary>
-        /// <param name="historyString">history string to set to</param>
+        /// <param name="historyString">History string to set to.</param>
         internal override void SetHistoryString(string historyString)
         {
             HistoryString = historyString;
@@ -1069,7 +1068,7 @@ namespace System.Management.Automation.Runspaces
 
         /// <summary>
         /// Gets the execution context in the thread local storage of current
-        /// thread
+        /// thread.
         /// </summary>
         /// <returns>
         /// ExecutionContext, if it available in TLS
@@ -1082,6 +1081,7 @@ namespace System.Management.Automation.Runspaces
             {
                 return null;
             }
+
             return runspace.ExecutionContext;
         }
 
@@ -1093,7 +1093,7 @@ namespace System.Management.Automation.Runspaces
 
         /// <summary>
         /// Holds reference to LocalRunspace to which this pipeline is
-        /// associated with
+        /// associated with.
         /// </summary>
         private LocalRunspace LocalRunspace
         {
@@ -1103,43 +1103,21 @@ namespace System.Management.Automation.Runspaces
             }
         }
 
-        // NTRAID#Windows Out Of Band Releases-925566-2005/12/09-JonN
         private bool _useExternalInput;
 
         private PipelineWriter _oldExternalErrorOutput;
         private PipelineWriter _oldExternalSuccessOutput;
 
+#if !UNIX
+        private WindowsIdentity _identityToImpersonate;
+#endif
+
         #endregion private_fields
-
-        #region invoke_loop_detection
-
-        /// <summary>
-        /// This is list of HistoryInfo ids which have been executed in
-        /// this pipeline.
-        /// </summary>
-        private List<long> _invokeHistoryIds = new List<long>();
-
-        internal bool PresentInInvokeHistoryEntryList(HistoryInfo entry)
-        {
-            return _invokeHistoryIds.Contains(entry.Id);
-        }
-
-        internal void AddToInvokeHistoryEntryList(HistoryInfo entry)
-        {
-            _invokeHistoryIds.Add(entry.Id);
-        }
-
-        internal void RemoveFromInvokeHistoryEntryList(HistoryInfo entry)
-        {
-            _invokeHistoryIds.Remove(entry.Id);
-        }
-
-        #endregion invoke_loop_detection
 
         #region IDisposable Members
 
         /// <summary>
-        /// Set to true when object is disposed
+        /// Set to true when object is disposed.
         /// </summary>
         private bool _disposed;
 
@@ -1179,15 +1157,6 @@ namespace System.Management.Automation.Runspaces
         /// <summary>
         /// Creates the worker thread and waits for it to be ready.
         /// </summary>
-#if CORECLR
-        internal PipelineThread()
-        {
-            _worker = new Thread(WorkerProc, LocalPipeline.DefaultPipelineStackSize);
-            _workItem = null;
-            _workItemReady = new AutoResetEvent(false);
-            _closed = false;
-        }
-#else
         internal PipelineThread(ApartmentState apartmentState)
         {
             _worker = new Thread(WorkerProc, LocalPipeline.DefaultPipelineStackSize);
@@ -1195,15 +1164,16 @@ namespace System.Management.Automation.Runspaces
             _workItemReady = new AutoResetEvent(false);
             _closed = false;
 
-            if (apartmentState != ApartmentState.Unknown)
+#if !UNIX
+            if (apartmentState != ApartmentState.Unknown && !Platform.IsNanoServer && !Platform.IsIoT)
             {
                 _worker.SetApartmentState(apartmentState);
             }
-        }
 #endif
+        }
 
         /// <summary>
-        /// Returns the worker thread
+        /// Returns the worker thread.
         /// </summary>
         internal Thread Worker
         {
@@ -1214,7 +1184,7 @@ namespace System.Management.Automation.Runspaces
         }
 
         /// <summary>
-        /// Posts an item to the worker thread and wait for its completion
+        /// Posts an item to the worker thread and wait for its completion.
         /// </summary>
         internal void Start(ThreadStart workItem)
         {
@@ -1233,7 +1203,7 @@ namespace System.Management.Automation.Runspaces
         }
 
         /// <summary>
-        /// Shortcut for dispose
+        /// Shortcut for dispose.
         /// </summary>
         internal void Close()
         {
@@ -1241,7 +1211,7 @@ namespace System.Management.Automation.Runspaces
         }
 
         /// <summary>
-        /// Implementation of the worker thread
+        /// Implementation of the worker thread.
         /// </summary>
         private void WorkerProc()
         {
@@ -1257,7 +1227,7 @@ namespace System.Management.Automation.Runspaces
         }
 
         /// <summary>
-        /// Releases the worker thread
+        /// Releases the worker thread.
         /// </summary>
         public void Dispose()
         {
@@ -1281,7 +1251,7 @@ namespace System.Management.Automation.Runspaces
         }
 
         /// <summary>
-        /// Ensure we release the worker thread
+        /// Ensure we release the worker thread.
         /// </summary>
         ~PipelineThread()
         {
@@ -1303,18 +1273,18 @@ namespace System.Management.Automation.Runspaces
     internal class PipelineStopper
     {
         /// <summary>
-        /// stack of current executing pipeline processor
+        /// Stack of current executing pipeline processor.
         /// </summary>
         private Stack<PipelineProcessor> _stack = new Stack<PipelineProcessor>();
 
         /// <summary>
-        /// Object used for synchronization
+        /// Object used for synchronization.
         /// </summary>
         private object _syncRoot = new object();
         private LocalPipeline _localPipeline;
 
         /// <summary>
-        /// Default constructor
+        /// Default constructor.
         /// </summary>
         internal PipelineStopper(LocalPipeline localPipeline)
         {
@@ -1322,15 +1292,17 @@ namespace System.Management.Automation.Runspaces
         }
 
         /// <summary>
-        /// This is set true when stop is called
+        /// This is set true when stop is called.
         /// </summary>
         private bool _stopping;
+
         internal bool IsStopping
         {
             get
             {
                 return _stopping;
             }
+
             set
             {
                 _stopping = value;
@@ -1338,15 +1310,16 @@ namespace System.Management.Automation.Runspaces
         }
 
         /// <summary>
-        /// Push item in to PipelineProcessor stack
+        /// Push item in to PipelineProcessor stack.
         /// </summary>
         /// <param name="item"></param>
         internal void Push(PipelineProcessor item)
         {
             if (item == null)
             {
-                throw PSTraceSource.NewArgumentNullException("item");
+                throw PSTraceSource.NewArgumentNullException(nameof(item));
             }
+
             lock (_syncRoot)
             {
                 if (_stopping)
@@ -1354,13 +1327,15 @@ namespace System.Management.Automation.Runspaces
                     PipelineStoppedException e = new PipelineStoppedException();
                     throw e;
                 }
+
                 _stack.Push(item);
             }
+
             item.LocalPipeline = _localPipeline;
         }
 
         /// <summary>
-        /// Pop top item from PipelineProcessor stack
+        /// Pop top item from PipelineProcessor stack.
         /// </summary>
         internal void Pop(bool fromSteppablePipeline)
         {
@@ -1395,10 +1370,11 @@ namespace System.Management.Automation.Runspaces
             PipelineProcessor[] copyStack;
             lock (_syncRoot)
             {
-                if (_stopping == true)
+                if (_stopping)
                 {
                     return;
                 }
+
                 _stopping = true;
 
                 copyStack = _stack.ToArray();
@@ -1414,14 +1390,14 @@ namespace System.Management.Automation.Runspaces
                 }
             }
 
-            //Note: after _stopping is set to true, nothing can be pushed/popped
-            //from stack and it is safe to call stop on PipelineProcessors in stack
-            //outside the lock
-            //Note: you want to do below loop outside the lock so that
-            //pipeline execution thread doesn't get blocked on Push and Pop.
-            //Note: A copy of the stack is made because we "unstop" a stopped
-            //pipeline to execute finally blocks.  We don't want to stop pipelines
-            //in the finally block though.
+            // Note: after _stopping is set to true, nothing can be pushed/popped
+            // from stack and it is safe to call stop on PipelineProcessors in stack
+            // outside the lock
+            // Note: you want to do below loop outside the lock so that
+            // pipeline execution thread doesn't get blocked on Push and Pop.
+            // Note: A copy of the stack is made because we "unstop" a stopped
+            // pipeline to execute finally blocks.  We don't want to stop pipelines
+            // in the finally block though.
             foreach (PipelineProcessor pp in copyStack)
             {
                 pp.Stop();

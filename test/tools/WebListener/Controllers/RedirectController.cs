@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 using System;
 using System.Collections;
@@ -19,7 +19,7 @@ namespace mvc.Controllers
     {
         public IActionResult Index(int count)
         {
-            string url = Regex.Replace(input: Request.GetDisplayUrl(), pattern: "\\/Redirect.*", replacement: "", options: RegexOptions.IgnoreCase);
+            string url = Regex.Replace(input: Request.GetDisplayUrl(), pattern: "\\/Redirect.*", replacement: string.Empty, options: RegexOptions.IgnoreCase);
             if (count <= 1)
             {
                 url = $"{url}/Get/";
@@ -38,7 +38,7 @@ namespace mvc.Controllers
                 url = $"{url}?type={type.FirstOrDefault()}";
                 Response.Headers.Add("Location", url);
             }
-            else if (typeIsPresent && String.Equals(type.FirstOrDefault(), "relative", StringComparison.InvariantCultureIgnoreCase))
+            else if (typeIsPresent && string.Equals(type.FirstOrDefault(), "relative", StringComparison.InvariantCultureIgnoreCase))
             {
                 url = new Uri($"{url}?type={type.FirstOrDefault()}").PathAndQuery;
                 Response.Redirect(url, false);
@@ -52,6 +52,7 @@ namespace mvc.Controllers
 
             return View();
         }
+
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });

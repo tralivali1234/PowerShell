@@ -1,4 +1,4 @@
-# Copyright (c) Microsoft Corporation. All rights reserved.
+# Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 using namespace System.Management.Automation
 using namespace System.Collections.Generic
@@ -66,16 +66,102 @@ Describe "Type inference Tests" -tags "CI" {
         $res.Name | Should -Be 'System.object[]'
     }
 
+    It "Infers type from array expression with a single statement" {
+        $res = [AstTypeInference]::InferTypeOf( { @('test') }.Ast)
+        $res.Count | Should -Be 1
+        $res.Name | Should -Be 'System.String[]'
+    }
+
+    It "Infers type from array expression with multiple statements" {
+        $res = [AstTypeInference]::InferTypeOf( { @('test'; 'second test') }.Ast)
+        $res.Count | Should -Be 1
+        $res.Name | Should -Be 'System.String[]'
+    }
+
+    It "Infers type from array expression with mixed types" {
+        $res = [AstTypeInference]::InferTypeOf( { @('test'; 1) }.Ast)
+        $res.Count | Should -Be 1
+        $res.Name | Should -Be 'System.Object[]'
+    }
+
+    It "Infers type from array expression with nested arrays" {
+        $res = [AstTypeInference]::InferTypeOf( { @(@('test'); @('test2')) }.Ast)
+        $res.Count | Should -Be 1
+        $res.Name | Should -Be 'System.String[]'
+    }
+
+    It "Infers type from array expression with a non-generic dictionary enumerator" {
+        $res = [AstTypeInference]::InferTypeOf( { @(@{}.GetEnumerator()) }.Ast)
+        $res.Count | Should -Be 1
+        $res.Name | Should -Be 'System.Collections.DictionaryEntry[]'
+    }
+
+    It "Infers type from array expression with a generic dictionary enumerator" {
+        $res = [AstTypeInference]::InferTypeOf( { @([Dictionary[int, string]]::new().GetEnumerator()) }.Ast)
+        $res.Count | Should -Be 1
+        $res.Name | Should -Be ([KeyValuePair[int, string][]].FullName)
+    }
+
+    It "Infers type from array expression with nested non-array collections" {
+        $res = [AstTypeInference]::InferTypeOf( {
+            $list = [List[string]]::new()
+            $list2 = [List[string]]::new()
+            @($list; $list2)
+        }.Ast)
+        $res.Count | Should -Be 1
+        $res.Name | Should -Be 'System.String[]'
+    }
+
     It "Infers type from Array literal" {
         $res = [AstTypeInference]::InferTypeOf( { , 1 }.Ast)
         $res.Count | Should -Be 1
-        $res.Name | Should -Be 'System.object[]'
+        $res.Name | Should -Be 'System.Int32[]'
+    }
+
+    It "Infers type from Array literal with multiple elements" {
+        $res = [AstTypeInference]::InferTypeOf( { 0, 1 }.Ast)
+        $res.Count | Should -Be 1
+        $res.Name | Should -Be 'System.Int32[]'
+    }
+
+    It "Infers type from Array literal with mixed types" {
+        $res = [AstTypeInference]::InferTypeOf( { 'test', 1 }.Ast)
+        $res.Count | Should -Be 1
+        $res.Name | Should -Be 'System.Object[]'
+    }
+
+    It "Infers type from Array literal with nested arrays" {
+        $res = [AstTypeInference]::InferTypeOf( { @('test'), @('test2') }.Ast)
+        $res.Count | Should -Be 1
+        $res.Name | Should -Be 'System.String[]'
+    }
+
+    It "Infers type from array expression with a non-generic dictionary enumerator" {
+        $res = [AstTypeInference]::InferTypeOf( { , @{}.GetEnumerator() }.Ast)
+        $res.Count | Should -Be 1
+        $res.Name | Should -Be 'System.Collections.DictionaryEntry[]'
+    }
+
+    It "Infers type from array expression with a generic dictionary enumerator" {
+        $res = [AstTypeInference]::InferTypeOf( { , [Dictionary[int, string]]::new().GetEnumerator() }.Ast)
+        $res.Count | Should -Be 1
+        $res.Name | Should -Be ([KeyValuePair[int, string][]].FullName)
+    }
+
+    It "Infers type from Array literal with nested non-array collections" {
+        $res = [AstTypeInference]::InferTypeOf( {
+            $list = [List[string]]::new()
+            $list2 = [List[string]]::new()
+            $list, $list2
+        }.Ast.EndBlock.Statements[2].PipelineElements[0].Expression)
+        $res.Count | Should -Be 1
+        $res.Name | Should -Be 'System.String[]'
     }
 
     It "Infers type from array IndexExpresssion" {
         $res = [AstTypeInference]::InferTypeOf( { (1, 2, 3)[0] }.Ast)
         $res.Count | Should -Be 1
-        $res.Name | Should -Be 'System.object'
+        $res.Name | Should -Be 'System.Int32'
     }
 
     It "Infers type from generic container IndexExpression" {
@@ -140,7 +226,7 @@ Describe "Type inference Tests" -tags "CI" {
     }
 
     It "Infers type from using statement" {
-        $res = [AstTypeInference]::InferTypeOf( { $pid = 1; $using:pid }.Ast.EndBlock.Statements[1].PipelineElements[0].Expression)
+        $res = [AstTypeInference]::InferTypeOf( { $int = 1; $using:int }.Ast.EndBlock.Statements[1].PipelineElements[0].Expression)
         $res.Count | Should -Be 1
         $res.Name | Should -Be System.Int32
     }
@@ -242,6 +328,12 @@ Describe "Type inference Tests" -tags "CI" {
         $res.Name | Should -Be 'System.Type'
     }
 
+    It "Infers type from static member method" {
+        $res = [AstTypeInference]::InferTypeOf( { [powershell]::Create() }.Ast)
+        $res.Count | Should -Be 1
+        $res.Name | Should -Be 'System.Management.Automation.PowerShell'
+    }
+
     It "Infers type from integer * stringliteral" {
         $res = [AstTypeInference]::InferTypeOf( {  5 * "5" }.Ast)
         $res.Count | Should -Be 1
@@ -307,21 +399,21 @@ Describe "Type inference Tests" -tags "CI" {
     }
 
     It 'Infers typeof Foreach-Object -Member when Member is Property' {
-        $ast = {Get-Process | Foreach-Object -Member FileVersion}.Ast
+        $ast = {Get-Process | ForEach-Object -Member FileVersion}.Ast
         $typeNames = [AstTypeInference]::InferTypeof($ast, [TypeInferenceRuntimePermissions]::AllowSafeEval)
         $typeNames.Count | Should -Be 1
         $typeNames[0] | Should -Be 'System.String'
     }
 
     It 'Infers typeof Foreach-Object -Member when member is ScriptProperty' {
-        $ast = {Get-Process | Foreach-Object -Member Description}.Ast
+        $ast = {Get-Process | ForEach-Object -Member Description}.Ast
         $typeNames = [AstTypeInference]::InferTypeof($ast, [TypeInferenceRuntimePermissions]::AllowSafeEval)
         $typeNames.Count | Should -Be 1
         $typeNames[0] | Should -Be 'System.String'
     }
 
     It 'Infers typeof Foreach-Object -Member when Member is Alias' {
-        $ast = {Get-Process | Foreach-Object -Member Handles}.Ast
+        $ast = {Get-Process | ForEach-Object -Member Handles}.Ast
         $typeNames = [AstTypeInference]::InferTypeof($ast, [TypeInferenceRuntimePermissions]::AllowSafeEval)
         $typeNames.Count | Should -Be 1
         $typeNames[0] | Should -Be 'System.Int32'
@@ -341,7 +433,7 @@ Describe "Type inference Tests" -tags "CI" {
         Update-TypeData -TypeName InferScriptPropLevel1 -MemberName TheValue -MemberType ScriptProperty -Value { return $this.Value } -Force
         Update-TypeData -TypeName InferScriptPropLevel2 -MemberName XVal -MemberType ScriptProperty -Value {return $this.X } -Force
         try {
-            $ast = {[InferScriptPropLevel2]::new() | Foreach-Object -MemberName XVal | ForEach-Object -MemberName TheValue}.Ast
+            $ast = {[InferScriptPropLevel2]::new() | ForEach-Object -MemberName XVal | ForEach-Object -MemberName TheValue}.Ast
             $typeNames = [AstTypeInference]::InferTypeof($ast, [TypeInferenceRuntimePermissions]::AllowSafeEval)
             $typeNames.Count | Should -Be 1
             $typeNames[0] | Should -Be 'System.String'
@@ -350,6 +442,128 @@ Describe "Type inference Tests" -tags "CI" {
             Remove-TypeData -TypeName InferScriptPropLevel1
             Remove-TypeData -TypeName InferScriptPropLevel2
         }
+    }
+
+    It "Infers typeof pscustomobject" {
+
+        $res = [AstTypeInference]::InferTypeOf( { [pscustomobject] @{
+                    B = "X"
+                    A = 1
+                }}.Ast)
+        $res.Count | Should -Be 1
+        $res[0].GetType().Name | Should -Be "PSSyntheticTypeName"
+        $res[0].Name | Should -Be "System.Management.Automation.PSObject#A:B"
+        $res[0].Members[0].Name | Should -Be "A"
+        $res[0].Members[0].PSTypeName | Should -Be "System.Int32"
+        $res[0].Members[1].Name | Should -Be "B"
+        $res[0].Members[1].PSTypeName | Should -Be "System.String"
+    }
+
+    It "Infers typeof pscustomobject with PSTypeName" {
+
+        $res = [AstTypeInference]::InferTypeOf( { [pscustomobject] @{
+                    A          = 1
+                    B          = "X"
+                    PSTypeName = "MyType"
+                }}.Ast)
+        $res.Count | Should -Be 1
+        $res[0].GetType().Name | Should -Be "PSSyntheticTypeName"
+        $res.Members.Count  | Should -Be 2
+        $res[0].Name | Should -Be "MyType#A:B"
+        $res[0].Members[0].Name | Should -Be "A"
+        $res[0].Members[0].PSTypeName | Should -Be "System.Int32"
+    }
+
+    It "Infers typeof Select-Object when Parameter is Property" {
+        $res = [AstTypeInference]::InferTypeOf( { [io.fileinfo]::new("file") | Select-Object -Property Directory }.Ast)
+        $res.Count | Should -Be 1
+        $res[0].GetType().Name | Should -Be "PSSyntheticTypeName"
+        $res[0].Name | Should -Be "System.Management.Automation.PSObject#Directory"
+        $res[0].Members[0].Name | Should -Be "Directory"
+        $res[0].Members[0].PSTypeName | Should -Be "System.IO.DirectoryInfo"
+    }
+
+    It "Infers typeof Select-Object when PSObject and Parameter is Property" {
+        $res = [AstTypeInference]::InferTypeOf( { [PSCustomObject] @{A = 1; B = "2"} | Select-Object -Property A}.Ast)
+        $res.Count | Should -Be 1
+        $res[0].Name | Should -Be "System.Management.Automation.PSObject#A"
+        $res[0].Members[0].Name | Should -Be "A"
+        $res[0].Members[0].PSTypeName | Should -Be "System.Int32"
+    }
+
+    It "Infers typeof Select-Object when Parameter is Properties" {
+        $res = [AstTypeInference]::InferTypeOf( {  [io.fileinfo]::new("file")  | Select-Object -Property Director*, Name }.Ast)
+        $res.Count | Should -Be 1
+        $res[0].Name | Should -Be "System.Management.Automation.PSObject#Directory:DirectoryName:Name"
+        $res[0].Members[0].Name | Should -Be "Directory"
+        $res[0].Members[0].PSTypeName | Should -Be "System.IO.DirectoryInfo"
+        $res[0].Members[1].Name | Should -Be "DirectoryName"
+        $res[0].Members[1].PSTypeName | Should -Be "System.String"
+    }
+
+    It "Infers typeof Select-Object when Parameter is ExcludeProperty" {
+        $res = [AstTypeInference]::InferTypeOf( {  [io.fileinfo]::new("file")  |  Select-Object -ExcludeProperty *Time*, E* }.Ast)
+        $res.Count | Should -Be 1
+        $res[0].Name | Should -BeExactly "System.Management.Automation.PSObject#Attributes:BaseName:Directory:DirectoryName:FullName:IsReadOnly:Length:LengthString:LinkType:Mode:ModeWithoutHardLink:Name:NameString:Target:VersionInfo"
+        $names = $res[0].Members.Name
+        $names -contains "BaseName" | Should -BeTrue
+        $names -contains "Name" | Should -BeTrue
+        $names -contains "Mode" | Should -BeTrue
+        $names -contains "Exits" | Should -BeFalse
+    }
+
+    It "Infers typeof Select-Object when Parameter is ExpandProperty" {
+        $res = [AstTypeInference]::InferTypeOf( { [io.fileinfo]::new("file")  | Select-Object -ExpandProperty Directory }.Ast)
+        $res.Count | Should -Be 1
+        $res.Name | Should -Be "System.IO.DirectoryInfo"
+    }
+
+    It "Infers typeof Select-Object when No projection is done" {
+        $res = [AstTypeInference]::InferTypeOf( { "Hello" | Select-Object -First 1}.Ast)
+        $res.Count | Should -Be 1
+        $res.Name | Should -Be "System.String"
+    }
+
+    It "Infers typeof Group-Object Group" {
+        $res = [AstTypeInference]::InferTypeOf( { Get-ChildItem | Group-Object | ForEach-Object Group  }.Ast)
+        $res.Count | Should -Be 3
+        ($res.Name | Sort-Object)[1,2] -join ', ' | Should -Be "System.IO.DirectoryInfo, System.IO.FileInfo"
+    }
+
+    It "Infers typeof Group-Object Values" {
+        $res = [AstTypeInference]::InferTypeOf( { Get-ChildItem | Group-Object | ForEach-Object Values  }.Ast)
+        $res.Count | Should -Be 3
+        ($res.Name | Sort-Object)[1,2] -join ', ' | Should -Be "System.IO.DirectoryInfo, System.IO.FileInfo"
+    }
+
+    It "Infers typeof Group-Object Group with Property" {
+        $res = [AstTypeInference]::InferTypeOf( { Get-ChildItem | Group-Object -Property Name | ForEach-Object Group  }.Ast)
+        $res.Count | Should -Be 3
+        ($res.Name | Sort-Object)[1,2] -join ', ' | Should -Be "System.IO.DirectoryInfo, System.IO.FileInfo"
+    }
+
+    It "Infers typeof Group-Object Values with Property" {
+        $res = [AstTypeInference]::InferTypeOf( { Get-ChildItem | Group-Object -Property Name | ForEach-Object Values  }.Ast)
+        $res.Count | Should -Be 2
+        $res.Name -join ', ' | Should -Be "System.String, System.Collections.ArrayList"
+    }
+
+    It "Infers typeof Group-Object Group with NoElement" {
+        $res = [AstTypeInference]::InferTypeOf( { Get-ChildItem | Group-Object -Property Name -NoElement | ForEach-Object Group  }.Ast)
+        $res.Count | Should -Be 1
+        $res.Name | Should -BeLike "*Collection*PSObject*"
+    }
+
+    It "Infers typeof Group-Object Values with Properties" {
+        $res = [AstTypeInference]::InferTypeOf( { Get-ChildItem | Group-Object -Property Name,CreationTime | ForEach-Object Values  }.Ast)
+        $res.Count | Should -Be 3
+        ($res.Name | Sort-Object)  -join ', ' | Should -Be "System.Collections.ArrayList, System.DateTime, System.String"
+    }
+
+    It "ignores Group-Object Group with Scriptblock" {
+        $res = [AstTypeInference]::InferTypeOf( { Get-ChildItem | Group-Object -Property {$_.Name} | ForEach-Object Values  }.Ast)
+        $res.Count | Should -Be 1
+        $res.Name | Should -Be "System.Collections.ArrayList"
     }
 
     It "Infers type from OutputTypeAttribute" {
@@ -436,6 +650,51 @@ Describe "Type inference Tests" -tags "CI" {
         foreach ($r in $res) {
             $r.Name -In 'System.Type', 'System.Int32', 'System.String' | Should -BeTrue
         }
+    }
+
+    It 'Infers type of a Foreach statement current value variable' {
+        $res = [AstTypeInference]::InferTypeOf( {
+            foreach ($intValue in 1, 2, 3) {
+                $intValue
+            }
+        }.Ast.EndBlock.Statements[0].Body.Statements[0].PipelineElements[0].Expression)
+
+        $res.Count | Should -Be 1
+        $res.Name | Should -BeExactly 'System.Int32'
+    }
+
+    It 'Infers type of a Foreach statement current value variable with hashtable enumerator' {
+        $res = [AstTypeInference]::InferTypeOf( {
+            foreach ($dictionaryEntry in @{}.GetEnumerator()) {
+                $dictionaryEntry
+            }
+        }.Ast.EndBlock.Statements[0].Body.Statements[0].PipelineElements[0].Expression)
+
+        $res.Count | Should -Be 2
+        $res.Name | Should -Be 'System.Collections.DictionaryEntry', 'System.Object'
+    }
+
+    It 'Infers type of a Foreach statement current value variable with dictionary enumerator' {
+        $res = [AstTypeInference]::InferTypeOf( {
+            foreach ($keyValuePair in [Dictionary[int, string]]::new().GetEnumerator()) {
+                $keyValuePair
+            }
+        }.Ast.EndBlock.Statements[0].Body.Statements[0].PipelineElements[0].Expression)
+
+        $res.Count | Should -Be 3
+        $res.Name | Should -Be ([KeyValuePair[int, string]].FullName), 'System.Object', 'System.Collections.DictionaryEntry'
+    }
+
+    It 'Infers type of a Foreach statement current value variable with generic IEnumerable' {
+        $res = [AstTypeInference]::InferTypeOf( {
+            $debugger = [Debugger]$Host.Runspace.Debugger
+            foreach ($subscriber in $debugger.GetCallStack()) {
+                $subscriber
+            }
+        }.Ast.EndBlock.Statements[1].Body.Statements[0].PipelineElements[0].Expression)
+
+        $res.Count | Should -Be 1
+        $res.Name | Should -BeExactly 'System.Management.Automation.CallStackFrame'
     }
 
     It 'Infers type from While statement' {
@@ -582,7 +841,7 @@ Describe "Type inference Tests" -tags "CI" {
         class X {
             [int] $Length
         }
-        Update-TypeData -Typename X -MemberType AliasProperty -MemberName AliasLength -Value Length -Force
+        Update-TypeData -TypeName X -MemberType AliasProperty -MemberName AliasLength -Value Length -Force
         $res = [AstTypeInference]::InferTypeOf( {
                 [x]::new().AliasLength
             }.Ast)
@@ -732,7 +991,7 @@ Describe "Type inference Tests" -tags "CI" {
         BeforeAll {
             $errors = $null
             $tokens = $null
-            $p = Resolve-path TestDrive:/
+            $p = Resolve-Path TestDrive:/
         }
         It 'Infers type of command parameter' {
             $ast = [Language.Parser]::ParseInput("Get-ChildItem -Path $p/foo.txt", [ref] $tokens, [ref] $errors)
@@ -773,7 +1032,7 @@ Describe "Type inference Tests" -tags "CI" {
     }
 
     It 'Infers type of variable $_ in hashtable in command parameter' {
-        $variableAst = {1..10 | Format-table @{n = 'x'; ex = {$_}}}.ast.Find( {param($a) $a -is [System.Management.Automation.Language.VariableExpressionAst]}, $true)
+        $variableAst = {1..10 | Format-Table @{n = 'x'; ex = {$_}}}.ast.Find( {param($a) $a -is [System.Management.Automation.Language.VariableExpressionAst]}, $true)
         $res = [AstTypeInference]::InferTypeOf( $variableAst)
 
         $res.Count | Should -Be 1
@@ -781,7 +1040,7 @@ Describe "Type inference Tests" -tags "CI" {
     }
 
     It 'Infers type of variable $_ in hashtable from Array' {
-        $variableAst = { [int[]]::new(10) | Format-table @{n = 'x'; ex = {$_}}}.ast.Find( {param($a) $a -is [System.Management.Automation.Language.VariableExpressionAst]}, $true)
+        $variableAst = { [int[]]::new(10) | Format-Table @{n = 'x'; ex = {$_}}}.ast.Find( {param($a) $a -is [System.Management.Automation.Language.VariableExpressionAst]}, $true)
         $res = [AstTypeInference]::InferTypeOf( $variableAst)
 
         $res.Count | Should -Be 1
@@ -789,7 +1048,7 @@ Describe "Type inference Tests" -tags "CI" {
     }
 
     It 'Infers type of variable $_ in hashtable from generic IEnumerable ' {
-        $variableAst = { [System.Collections.Generic.List[int]]::new() | Format-table @{n = 'x'; ex = {$_}}}.ast.Find( {param($a) $a -is [System.Management.Automation.Language.VariableExpressionAst]}, $true)
+        $variableAst = { [System.Collections.Generic.List[int]]::new() | Format-Table @{n = 'x'; ex = {$_}}}.ast.Find( {param($a) $a -is [System.Management.Automation.Language.VariableExpressionAst]}, $true)
         $res = [AstTypeInference]::InferTypeOf( $variableAst)
 
         $res.Count | Should -Be 1
@@ -802,6 +1061,90 @@ Describe "Type inference Tests" -tags "CI" {
 
         $res.Count | Should -Be 1
         $res.Name | Should -Be System.Int32
+    }
+
+    It 'Infers type of variable $_ in catch block' {
+        $variableAst = { try {} catch { $_ } }.Ast.Find({ param($a) $a -is [System.Management.Automation.Language.VariableExpressionAst] }, $true)
+        $res = [AstTypeInference]::InferTypeOf($variableAst)
+
+        $res | Should -HaveCount 1
+        $res.Name | Should -Be System.Management.Automation.ErrorRecord
+    }
+
+    It 'Infers type of untyped $_.Exception in catch block' {
+        $memberAst = { try {} catch { $_.Exception } }.Ast.Find({ param($a) $a -is [System.Management.Automation.Language.MemberExpressionAst] }, $true)
+        $res = [AstTypeInference]::InferTypeOf($memberAst)
+
+        $res | Should -HaveCount 1
+        $res.Name | Should -Be System.Exception
+    }
+
+    $catchClauseTypes = @(
+        @{ Type = 'System.ArgumentException' }
+        @{ Type = 'System.ArgumentNullException' }
+        @{ Type = 'System.ArgumentOutOfRangeException' }
+        @{ Type = 'System.Collections.Generic.KeyNotFoundException' }
+        @{ Type = 'System.DivideByZeroException' }
+        @{ Type = 'System.FormatException' }
+        @{ Type = 'System.IndexOutOfRangeException' }
+        @{ Type = 'System.InvalidOperationException' }
+        @{ Type = 'System.IO.DirectoryNotFoundException' }
+        @{ Type = 'System.IO.DriveNotFoundException' }
+        @{ Type = 'System.IO.FileNotFoundException' }
+        @{ Type = 'System.IO.PathTooLongException' }
+        @{ Type = 'System.Management.Automation.CommandNotFoundException' }
+        @{ Type = 'System.Management.Automation.JobFailedException' }
+        @{ Type = 'System.Management.Automation.RuntimeException' }
+        @{ Type = 'System.Management.Automation.ValidationMetadataException' }
+        @{ Type = 'System.NotImplementedException' }
+        @{ Type = 'System.NotSupportedException' }
+        @{ Type = 'System.ObjectDisposedException' }
+        @{ Type = 'System.OverflowException' }
+        @{ Type = 'System.PlatformNotSupportedException' }
+        @{ Type = 'System.RankException' }
+        @{ Type = 'System.TimeoutException' }
+        @{ Type = 'System.UriFormatException' }
+    )
+
+    It 'Infers type of $_.Exception in [<Type>] typed catch block' -TestCases $catchClauseTypes {
+        param($Type)
+
+        $memberAst = [scriptblock]::Create("try {} catch [$Type] { `$_.Exception }").Ast.Find(
+            { param($a) $a -is [System.Management.Automation.Language.MemberExpressionAst] },
+            $true
+        )
+        $res = [AstTypeInference]::InferTypeOf($memberAst)
+
+        $res | Should -HaveCount 1
+        $res.Name | Should -Be $Type
+    }
+
+    It 'Infers possible types of $_.Exception in multi-typed catch block' {
+        $memberAst = { try {} catch [System.ArgumentException], [System.NotImplementedException] { $_.Exception } }.Ast.Find(
+            { param($a) $a -is [System.Management.Automation.Language.MemberExpressionAst] },
+            $true
+        )
+        $res = [AstTypeInference]::InferTypeOf($memberAst)
+
+        $res | Should -HaveCount 2
+        $res[0].Name | Should -Be System.ArgumentException
+        $res[1].Name | Should -Be System.NotImplementedException
+    }
+
+    It 'Infers type of $_.Exception in each successive catch block' {
+        $memberAst = {
+            try {}
+            catch [System.ArgumentException] { $_.Exception }
+            catch { $_.Exception }
+        }.Ast.FindAll(
+            { param($a) $a -is [System.Management.Automation.Language.MemberExpressionAst] },
+            $true
+        )
+        $res = foreach ($item in $memberAst) { [AstTypeInference]::InferTypeOf($item) }
+
+        $res | Should -HaveCount 2
+        $res[0].Name | Should -Be System.ArgumentException
+        $res[1].Name | Should -Be System.Exception
     }
 
     It 'Infers type of function member' {

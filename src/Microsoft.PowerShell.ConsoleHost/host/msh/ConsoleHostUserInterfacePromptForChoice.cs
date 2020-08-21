@@ -1,14 +1,14 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
 using System;
-using System.Globalization;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Text;
+using System.Globalization;
 using System.Management.Automation;
-using System.Management.Automation.Internal;
 using System.Management.Automation.Host;
+using System.Management.Automation.Internal;
+using System.Text;
 
 using Dbg = System.Management.Automation.Diagnostics;
 using ConsoleHandle = Microsoft.Win32.SafeHandles.SafeFileHandle;
@@ -19,9 +19,7 @@ namespace Microsoft.PowerShell
     internal partial class ConsoleHostUserInterface : PSHostUserInterface, IHostUISupportsMultipleChoiceSelection
     {
         /// <summary>
-        ///
-        /// See base class
-        ///
+        /// See base class.
         /// </summary>
         /// <param name="caption"></param>
         /// <param name="message"></param>
@@ -29,25 +27,17 @@ namespace Microsoft.PowerShell
         /// <param name="defaultChoice"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException">
-        ///
         /// If <paramref name="choices"/> is null.
-        ///
         /// </exception>
         /// <exception cref="ArgumentException">
-        ///
         /// If <paramref name="choices"/>.Count is 0.
-        ///
         /// </exception>
         /// <exception cref="ArgumentOutOfRangeException">
-        ///
         /// If <paramref name="defaultChoice"/> is greater than
         ///     the length of <paramref name="choices"/>.
-        ///
         /// </exception>
         /// <exception cref="PromptingException">
-        ///
         ///  when prompt is canceled by, for example, Ctrl-c.
-        ///
         /// </exception>
 
         public override int PromptForChoice(string caption, string message, Collection<ChoiceDescription> choices, int defaultChoice)
@@ -56,18 +46,18 @@ namespace Microsoft.PowerShell
 
             if (choices == null)
             {
-                throw PSTraceSource.NewArgumentNullException("choices");
+                throw PSTraceSource.NewArgumentNullException(nameof(choices));
             }
 
             if (choices.Count == 0)
             {
-                throw PSTraceSource.NewArgumentException("choices",
+                throw PSTraceSource.NewArgumentException(nameof(choices),
                     ConsoleHostUserInterfaceStrings.EmptyChoicesErrorTemplate, "choices");
             }
 
             if ((defaultChoice < -1) || (defaultChoice >= choices.Count))
             {
-                throw PSTraceSource.NewArgumentOutOfRangeException("defaultChoice", defaultChoice,
+                throw PSTraceSource.NewArgumentOutOfRangeException(nameof(defaultChoice), defaultChoice,
                     ConsoleHostUserInterfaceStrings.InvalidDefaultChoiceErrorTemplate, "defaultChoice", "choice");
             }
 
@@ -80,8 +70,7 @@ namespace Microsoft.PowerShell
                     // Should be a skin lookup
 
                     WriteLineToConsole();
-                    WriteToConsole(PromptColor, RawUI.BackgroundColor, WrapToCurrentWindowWidth(caption));
-                    WriteLineToConsole();
+                    WriteLineToConsole(PromptColor, RawUI.BackgroundColor, WrapToCurrentWindowWidth(caption));
                 }
 
                 if (!string.IsNullOrEmpty(message))
@@ -102,12 +91,12 @@ namespace Microsoft.PowerShell
                     defaultChoiceKeys.Add(defaultChoice, true);
                 }
 
-                do
+                while (true)
                 {
                     WriteChoicePrompt(hotkeysAndPlainLabels, defaultChoiceKeys, false);
 
                     ReadLineResult rlResult;
-                    string response = ReadLine(false, "", out rlResult, true, true);
+                    string response = ReadChoiceResponse(out rlResult);
 
                     if (rlResult == ReadLineResult.endedOnBreak)
                     {
@@ -151,7 +140,6 @@ namespace Microsoft.PowerShell
 
                     // their input matched none of the choices, so prompt again
                 }
-                while (true);
 
                 return result;
             }
@@ -186,18 +174,18 @@ namespace Microsoft.PowerShell
 
             if (choices == null)
             {
-                throw PSTraceSource.NewArgumentNullException("choices");
+                throw PSTraceSource.NewArgumentNullException(nameof(choices));
             }
 
             if (choices.Count == 0)
             {
-                throw PSTraceSource.NewArgumentException("choices",
+                throw PSTraceSource.NewArgumentException(nameof(choices),
                     ConsoleHostUserInterfaceStrings.EmptyChoicesErrorTemplate, "choices");
             }
 
             Dictionary<int, bool> defaultChoiceKeys = new Dictionary<int, bool>();
 
-            if (null != defaultChoices)
+            if (defaultChoices != null)
             {
                 foreach (int defaultChoice in defaultChoices)
                 {
@@ -210,10 +198,7 @@ namespace Microsoft.PowerShell
                             defaultChoice);
                     }
 
-                    if (!defaultChoiceKeys.ContainsKey(defaultChoice))
-                    {
-                        defaultChoiceKeys.Add(defaultChoice, true);
-                    }
+                    defaultChoiceKeys.TryAdd(defaultChoice, true);
                 }
             }
 
@@ -226,8 +211,7 @@ namespace Microsoft.PowerShell
                 {
                     // Should be a skin lookup
                     WriteLineToConsole();
-                    WriteToConsole(PromptColor, RawUI.BackgroundColor, WrapToCurrentWindowWidth(caption));
-                    WriteLineToConsole();
+                    WriteLineToConsole(PromptColor, RawUI.BackgroundColor, WrapToCurrentWindowWidth(caption));
                 }
                 // write message
                 if (!string.IsNullOrEmpty(message))
@@ -246,14 +230,14 @@ namespace Microsoft.PowerShell
 
                 // used to display ChoiceMessage like Choice[0],Choice[1] etc
                 int choicesSelected = 0;
-                do
+                while (true)
                 {
                     // write the current prompt
                     string choiceMsg = StringUtil.Format(ConsoleHostUserInterfaceStrings.ChoiceMessage, choicesSelected);
                     WriteToConsole(PromptColor, RawUI.BackgroundColor, WrapToCurrentWindowWidth(choiceMsg));
 
                     ReadLineResult rlResult;
-                    string response = ReadLine(false, "", out rlResult, true, true);
+                    string response = ReadChoiceResponse(out rlResult);
 
                     if (rlResult == ReadLineResult.endedOnBreak)
                     {
@@ -301,7 +285,6 @@ namespace Microsoft.PowerShell
                     }
                     // prompt for multiple choices
                 }
-                while (true);
 
                 return result;
             }
@@ -330,7 +313,7 @@ namespace Microsoft.PowerShell
                 }
 
                 string choice =
-                    String.Format(
+                    string.Format(
                         CultureInfo.InvariantCulture,
                         choiceTemplate,
                         hotkeysAndPlainLabels[0, i],
@@ -353,10 +336,10 @@ namespace Microsoft.PowerShell
                 WriteLineToConsole();
             }
 
-            string defaultPrompt = "";
+            string defaultPrompt = string.Empty;
             if (defaultChoiceKeys.Count > 0)
             {
-                string prepend = "";
+                string prepend = string.Empty;
                 StringBuilder defaultChoicesBuilder = new StringBuilder();
                 foreach (int defaultChoice in defaultChoiceKeys.Keys)
                 {
@@ -370,6 +353,7 @@ namespace Microsoft.PowerShell
                         "{0}{1}", prepend, defaultStr));
                     prepend = ",";
                 }
+
                 string defaultChoices = defaultChoicesBuilder.ToString();
 
                 if (defaultChoiceKeys.Count == 1)
@@ -412,6 +396,19 @@ namespace Microsoft.PowerShell
             WriteToConsole(fg, bg, trimEnd ? text.TrimEnd(null) : text);
         }
 
+        private string ReadChoiceResponse(out ReadLineResult result)
+        {
+            result = ReadLineResult.endedOnEnter;
+            return InternalTestHooks.ForcePromptForChoiceDefaultOption
+                   ? string.Empty
+                   : ReadLine(
+                       endOnTab: false,
+                       initialContent: string.Empty,
+                       result: out result,
+                       calledFromPipeline: true,
+                       transcribeResult: true);
+        }
+
         private void ShowChoiceHelp(Collection<ChoiceDescription> choices, string[,] hotkeysAndPlainLabels)
         {
             Dbg.Assert(choices != null, "choices: expected a value");
@@ -434,7 +431,7 @@ namespace Microsoft.PowerShell
 
                 WriteLineToConsole(
                     WrapToCurrentWindowWidth(
-                        String.Format(CultureInfo.InvariantCulture, "{0} - {1}", s, choices[i].HelpMessage)));
+                        string.Format(CultureInfo.InvariantCulture, "{0} - {1}", s, choices[i].HelpMessage)));
             }
         }
 
@@ -473,4 +470,3 @@ namespace Microsoft.PowerShell
         }
     }
 }   // namespace
-

@@ -1,17 +1,18 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using Dbg = System.Management.Automation;
 using System;
-using System.Management.Automation;
-using System.Management.Automation.Security;
-using System.Management.Automation.Internal;
-using System.IO;
 using System.Collections.ObjectModel;
+using System.IO;
+using System.Management.Automation;
 using System.Management.Automation.Host;
+using System.Management.Automation.Internal;
 using System.Management.Automation.Language;
+using System.Management.Automation.Security;
 using System.Security;
 using System.Security.Cryptography.X509Certificates;
+
+using Dbg = System.Management.Automation;
 
 namespace Microsoft.PowerShell
 {
@@ -48,8 +49,7 @@ namespace Microsoft.PowerShell
     ///    internet, Monad provides a warning prompt to alert the user.  To
     ///    suppress this warning message, right-click on the file in File Explorer,
     ///    select "Properties," and then "Unblock."  Requires Shell.
-    /// Bypass - No files must be signed, and internet origin is not verified
-    ///
+    /// Bypass - No files must be signed, and internet origin is not verified.
     /// </summary>
     public sealed class PSAuthorizationManager : AuthorizationManager
     {
@@ -67,7 +67,7 @@ namespace Microsoft.PowerShell
         // execution policy that dictates what can run in msh
         private ExecutionPolicy _executionPolicy;
 
-        //shellId supplied by runspace configuration
+        // shellId supplied by runspace configuration
         private string _shellId;
 
         /// <summary>
@@ -83,8 +83,9 @@ namespace Microsoft.PowerShell
         {
             if (string.IsNullOrEmpty(shellId))
             {
-                throw PSTraceSource.NewArgumentNullException("shellId");
+                throw PSTraceSource.NewArgumentNullException(nameof(shellId));
             }
+
             _shellId = shellId;
         }
 
@@ -141,7 +142,7 @@ namespace Microsoft.PowerShell
             // See if they want to bypass the authorization manager
             if (_executionPolicy == ExecutionPolicy.Bypass)
                 return true;
-#if !CORECLR
+
             // Always check the SAFER APIs if code integrity isn't being handled system-wide through
             // WLDP or AppLocker. In those cases, the scripts will be run in ConstrainedLanguage.
             // Otherwise, block.
@@ -181,7 +182,7 @@ namespace Microsoft.PowerShell
                     return false;
                 }
             }
-#endif
+
             if (_executionPolicy == ExecutionPolicy.Unrestricted)
             {
                 // Product binaries are always trusted
@@ -194,7 +195,7 @@ namespace Microsoft.PowerShell
                 if (!IsLocalFile(fi.FullName))
                 {
                     // Get the signature of the file.
-                    if (String.IsNullOrEmpty(script.ScriptContents))
+                    if (string.IsNullOrEmpty(script.ScriptContents))
                     {
                         reasonMessage = StringUtil.Format(Authenticode.Reason_FileContentUnavailable, path);
                         reason = new UnauthorizedAccessException(reasonMessage);
@@ -265,7 +266,7 @@ namespace Microsoft.PowerShell
                 // make it so.
 
                 // Get the signature of the file.
-                if (String.IsNullOrEmpty(script.ScriptContents))
+                if (string.IsNullOrEmpty(script.ScriptContents))
                 {
                     reasonMessage = StringUtil.Format(Authenticode.Reason_FileContentUnavailable, path);
                     reason = new UnauthorizedAccessException(reasonMessage);
@@ -320,7 +321,7 @@ namespace Microsoft.PowerShell
                 // But accept mshxml files from publishers that we
                 // trust, or files in the system protected directories
                 bool reasonSet = false;
-                if (String.Equals(fi.Extension, ".ps1xml", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(fi.Extension, ".ps1xml", StringComparison.OrdinalIgnoreCase))
                 {
                     string[] trustedDirectories = new string[]
                         { Platform.GetFolderPath(Environment.SpecialFolder.System),
@@ -382,7 +383,7 @@ namespace Microsoft.PowerShell
                     {
                         TrustPublisher(signature);
                         policyCheckPassed = true;
-                    }; break;
+                    } break;
                 case RunPromptDecision.DoNotRun:
                     policyCheckPassed = false;
                     reasonMessage = StringUtil.Format(Authenticode.Reason_DoNotRun, path);
@@ -394,7 +395,7 @@ namespace Microsoft.PowerShell
                         reasonMessage = StringUtil.Format(Authenticode.Reason_NeverRun, path);
                         reason = new UnauthorizedAccessException(reasonMessage);
                         policyCheckPassed = false;
-                    }; break;
+                    } break;
             }
 
             return policyCheckPassed;
@@ -432,7 +433,7 @@ namespace Microsoft.PowerShell
 
             foreach (X509Certificate2 trustedCertificate in trustedPublishers.Certificates)
             {
-                if (String.Equals(trustedCertificate.Thumbprint, thumbprint, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(trustedCertificate.Thumbprint, thumbprint, StringComparison.OrdinalIgnoreCase))
                     if (!IsUntrustedPublisher(signature, file)) return true;
             }
 
@@ -451,7 +452,7 @@ namespace Microsoft.PowerShell
 
             foreach (X509Certificate2 trustedCertificate in trustedPublishers.Certificates)
             {
-                if (String.Equals(trustedCertificate.Thumbprint, thumbprint, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(trustedCertificate.Thumbprint, thumbprint, StringComparison.OrdinalIgnoreCase))
                     return true;
             }
 
@@ -459,7 +460,7 @@ namespace Microsoft.PowerShell
         }
 
         /// <summary>
-        /// Trust a publisher by adding it to the "Trusted Publishers" store
+        /// Trust a publisher by adding it to the "Trusted Publishers" store.
         /// </summary>
         /// <param name="signature"></param>
         private void TrustPublisher(Signature signature)
@@ -536,7 +537,6 @@ namespace Microsoft.PowerShell
         /// class summary for an overview of the semantics enforced by this
         /// authorization manager.
         /// </summary>
-        ///
         /// <param name="commandInfo">
         /// The command to be run.
         /// </param>
@@ -550,20 +550,16 @@ namespace Microsoft.PowerShell
         /// If access is denied, this parameter provides a specialized
         /// Exception as the reason.
         /// </param>
-        ///
         /// <returns>
         /// True if the command should be run.  False otherwise.
         /// </returns>
-        ///
         /// <exception cref="System.ArgumentException">
         /// CommandInfo is invalid. This may occur if
         /// commandInfo.Name is null or empty.
         /// </exception>
-        ///
         /// <exception cref="System.ArgumentNullException">
         /// CommandInfo is null.
         /// </exception>
-        ///
         /// <exception cref="System.IO.FileNotFoundException">
         /// The file specified by commandInfo.Path is not found.
         /// </exception>
@@ -597,7 +593,6 @@ namespace Microsoft.PowerShell
 
                 case CommandTypes.Function:
                 case CommandTypes.Filter:
-                case CommandTypes.Workflow:
                 case CommandTypes.Configuration:
                     //
                     // we do not check functions/filters.
@@ -627,6 +622,7 @@ namespace Microsoft.PowerShell
                         allowRun = CheckPolicy(si, host, out reason);
                         if (etwEnabled) ParserEventSource.Log.CheckSecurityStop(si.Path);
                     }
+
                     break;
 
                 case CommandTypes.Application:

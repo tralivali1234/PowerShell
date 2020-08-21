@@ -1,4 +1,4 @@
-# Copyright (c) Microsoft Corporation. All rights reserved.
+# Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
 Describe "WSMan Config Provider" -Tag Feature,RequireAdminOnWindows {
@@ -58,7 +58,7 @@ Describe "WSMan Config Provider" -Tag Feature,RequireAdminOnWindows {
         It "Can remove and add wsman drive" {
             $wsmanDrive = Get-PSDrive -Name WSMan
             Remove-PSDrive -Name wsman
-            { Get-PSDrive -Name wsman -ErrorAction Stop } | ShouldBeErrorId "GetLocationNoMatchingDrive,Microsoft.PowerShell.Commands.GetPSDriveCommand"
+            { Get-PSDrive -Name wsman -ErrorAction Stop } | Should -Throw -ErrorId "GetLocationNoMatchingDrive,Microsoft.PowerShell.Commands.GetPSDriveCommand"
             $wsmanDrive2 = $wsmanDrive | New-PSDrive -PSProvider WSMan
             $wsmanDrive2 | Should -BeOfType System.Management.Automation.PSDriveInfo
             $wsmanDrive2.Name | Should -BeExactly "WSMan"
@@ -76,6 +76,10 @@ Describe "WSMan Config Provider" -Tag Feature,RequireAdminOnWindows {
                     Start-Service WinRM
                 }
             }
+        }
+
+        It "Container check works" {
+            Test-Path wsman:\foo -PathType container | Should -BeFalse
         }
     }
 
@@ -130,7 +134,7 @@ Describe "WSMan Config Provider" -Tag Feature,RequireAdminOnWindows {
 
     Context "Set-Item tests" {
         It "Set-Item should fail for `$null value" {
-            { Set-Item WSMan:\localhost\Client\TrustedHosts $null } | ShouldBeErrorId "System.ArgumentException,Microsoft.PowerShell.Commands.SetItemCommand"
+            { Set-Item WSMan:\localhost\Client\TrustedHosts $null } | Should -Throw -ErrorId "System.ArgumentException,Microsoft.PowerShell.Commands.SetItemCommand"
         }
 
         It "Set-Item should fail for <path>" -TestCases @(
@@ -138,7 +142,7 @@ Describe "WSMan Config Provider" -Tag Feature,RequireAdminOnWindows {
             @{path="WSMan:\localhost"}
         ) {
             param ($path)
-            { Set-Item $path "foo" } | ShouldBeErrorId "System.InvalidOperationException,Microsoft.PowerShell.Commands.SetItemCommand"
+            { Set-Item $path "foo" } | Should -Throw -ErrorId "System.InvalidOperationException,Microsoft.PowerShell.Commands.SetItemCommand"
         }
 
         It "Set-Item -WhatIf should work" {
@@ -164,7 +168,7 @@ Describe "WSMan Config Provider" -Tag Feature,RequireAdminOnWindows {
             #[SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="Demo/doc/test secret.")]
             $password = ConvertTo-SecureString "My voice is my passport, verify me" -AsPlainText -Force
             $creds = [pscredential]::new((Get-Random),$password)
-            $exception = { Set-Item $testPluginPath\RunAsUser $creds } | ShouldBeErrorId "System.InvalidOperationException,Microsoft.PowerShell.Commands.SetItemCommand"
+            $exception = { Set-Item $testPluginPath\RunAsUser $creds } | Should -Throw -ErrorId "System.InvalidOperationException,Microsoft.PowerShell.Commands.SetItemCommand" -PassThru
             $exception.Exception.Message | Should -Match ".*$badCredentialError.*"
         }
 
@@ -183,7 +187,7 @@ Describe "WSMan Config Provider" -Tag Feature,RequireAdminOnWindows {
             #[SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="Demo/doc/test secret.")]
             $password = ConvertTo-SecureString "My voice is my passport, verify me" -AsPlainText -Force
             $creds = [pscredential]::new($testUser,$password)
-            $exception = { Set-Item $testPluginPath\RunAsUser $creds } | ShouldBeErrorId "System.InvalidOperationException,Microsoft.PowerShell.Commands.SetItemCommand"
+            $exception = { Set-Item $testPluginPath\RunAsUser $creds } | Should -Throw -ErrorId "System.InvalidOperationException,Microsoft.PowerShell.Commands.SetItemCommand" -PassThru
             $exception.Exception.Message | Should -Match ".*$badCredentialError.*"
         }
 
@@ -195,7 +199,7 @@ Describe "WSMan Config Provider" -Tag Feature,RequireAdminOnWindows {
         ) {
             param($password)
             Clear-Item $testPluginPath\RunAsUser -WarningAction SilentlyContinue
-            { Set-Item $testPluginPath\RunAsPassword $password } | ShouldBeErrorId "System.InvalidOperationException,Microsoft.PowerShell.Commands.SetItemCommand"
+            { Set-Item $testPluginPath\RunAsPassword $password } | Should -Throw -ErrorId "System.InvalidOperationException,Microsoft.PowerShell.Commands.SetItemCommand"
         }
 
         It "Set-Item on plugin XmlRenderingType property should succeed for '<type>'" -TestCases @(
@@ -210,7 +214,7 @@ Describe "WSMan Config Provider" -Tag Feature,RequireAdminOnWindows {
         }
 
         It "Set-Item on non-existent property should fail" {
-            { Set-Item $testPluginPath\foo "bar" } | ShouldBeErrorId "System.InvalidOperationException,Microsoft.PowerShell.Commands.SetItemCommand"
+            { Set-Item $testPluginPath\foo "bar" } | Should -Throw -ErrorId "System.InvalidOperationException,Microsoft.PowerShell.Commands.SetItemCommand"
         }
 
         It "Set-Item on plugin Resource '<property>' property with '<value>' should succeed" -TestCases @(
@@ -243,7 +247,7 @@ Describe "WSMan Config Provider" -Tag Feature,RequireAdminOnWindows {
             param($property, $value, $expected)
             $resource = Get-ChildItem "$testPluginPath\Resources" | Select-Object -First 1
             $security = Get-ChildItem "$($resource.PSPath)\Security" | Select-Object -First 1
-            { Set-Item "$($security.PSPath)\$property" $value -Force } | ShouldBeErrorId "System.InvalidOperationException,Microsoft.PowerShell.Commands.SetItemCommand"
+            { Set-Item "$($security.PSPath)\$property" $value -Force } | Should -Throw -ErrorId "System.InvalidOperationException,Microsoft.PowerShell.Commands.SetItemCommand"
         }
 
         It "Set-Item on plugin InitializationParameters '<property>' property with '<value>' should succeed" -TestCases @(
@@ -271,7 +275,7 @@ Describe "WSMan Config Provider" -Tag Feature,RequireAdminOnWindows {
             @{property="MaxShells"; value=0}
         ) {
             param($property, $value)
-            { Set-Item "$testPluginPath\Quotas\$property" $value -WarningAction SilentlyContinue } | ShouldBeErrorId "System.InvalidOperationException,Microsoft.PowerShell.Commands.SetItemCommand"
+            { Set-Item "$testPluginPath\Quotas\$property" $value -WarningAction SilentlyContinue } | Should -Throw -ErrorId "System.InvalidOperationException,Microsoft.PowerShell.Commands.SetItemCommand"
         }
     }
 
@@ -281,7 +285,7 @@ Describe "WSMan Config Provider" -Tag Feature,RequireAdminOnWindows {
             @{property="Quotas\IdleTimeoutms"},
             @{property="InitializationParameters\PSVersion"}
         ) {
-            { Clear-Item "$testPluginPath\$property" -WarningAction SilentlyContinue } | ShouldBeErrorId "System.InvalidOperationException,Microsoft.PowerShell.Commands.ClearItemCommand"
+            { Clear-Item "$testPluginPath\$property" -WarningAction SilentlyContinue } | Should -Throw -ErrorId "System.InvalidOperationException,Microsoft.PowerShell.Commands.ClearItemCommand"
         }
     }
 
@@ -362,10 +366,18 @@ Describe "WSMan Config Provider" -Tag Feature,RequireAdminOnWindows {
             <Capability Type="Shell"></Capability>
         </Resource>
     </Resources>
-    <Quotas MaxIdleTimeoutms="2147483646" MaxConcurrentUsers="2147483646" IdleTimeoutms="6200000" MaxProcessesPerShell="2147483646"
+    <Quotas MaxIdleTimeoutms="2147483646" MaxConcurrentUsers="{0}" IdleTimeoutms="6200000" MaxProcessesPerShell="2147483646"
         MaxMemoryPerShellMB="2147483646" MaxConcurrentCommandsPerShell="2147483646" MaxShells="2147483646" MaxShellsPerUser="2147483646"></Quotas>
 </PlugInConfiguration>
 "@
+            $osInfo = [System.Environment]::OSVersion.Version
+            $isSrv2k12R2 = $osInfo.Major -eq 6 -and $osInfo.Minor -eq 3
+
+            # On Windows Server 2012R2 MaxConcurrentUsers is limited to 100.
+            $maxConcurrentUsers = if ($isSrv2k12R2) { '50' } else { '2147483646' }
+
+            $fileXml = $fileXml -f $maxConcurrentUsers
+
             Set-Content -Path $testdrive\plugin.xml -Value $fileXml
             try {
                 $plugin = New-Item -Path WSMan:\localhost\Plugin -File $testdrive\plugin.xml -Name TestPlugin2
@@ -437,6 +449,19 @@ Describe "WSMan Config Provider" -Tag Feature,RequireAdminOnWindows {
             finally {
                 Pop-Location
             }
+        }
+    }
+
+    Context 'ItemSeparator properties' {
+        It 'WSMan provider has ItemSeparator properties' {
+
+            (Get-PSProvider WSMan).ItemSeparator | Should -Be '\'
+            (Get-PSProvider WSMan).AltItemSeparator | Should -Be '/'
+        }
+
+        It 'ItemSeparator properties is read-only in WSMan provider' {
+            { (Get-PSProvider WSMan).ItemSeparator = $null } | Should -Throw
+            { (Get-PSProvider WSMan).AltItemSeparator = $null } | Should -Throw
         }
     }
 }

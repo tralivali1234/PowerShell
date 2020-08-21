@@ -1,10 +1,11 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Globalization;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Management.Automation.Host;
 using System.Management.Automation.Tracing;
+
 using Microsoft.PowerShell;
 using Microsoft.PowerShell.Commands;
 
@@ -16,7 +17,7 @@ namespace System.Management.Automation.Runspaces
     public static class RunspaceFactory
     {
         /// <summary>
-        /// Static constructor
+        /// Static constructor.
         /// </summary>
         static RunspaceFactory()
         {
@@ -61,7 +62,7 @@ namespace System.Management.Automation.Runspaces
         {
             if (host == null)
             {
-                throw PSTraceSource.NewArgumentNullException("host");
+                throw PSTraceSource.NewArgumentNullException(nameof(host));
             }
 
             return new LocalRunspace(host, InitialSessionState.CreateDefault());
@@ -84,7 +85,7 @@ namespace System.Management.Automation.Runspaces
         {
             if (initialSessionState == null)
             {
-                throw PSTraceSource.NewArgumentNullException("initialSessionState");
+                throw PSTraceSource.NewArgumentNullException(nameof(initialSessionState));
             }
 
             PSHost host = new DefaultHost(CultureInfo.CurrentCulture, CultureInfo.CurrentUICulture);
@@ -93,7 +94,7 @@ namespace System.Management.Automation.Runspaces
         }
 
         /// <summary>
-        /// Creates a runspace using specified PSHost and InitialSessionState
+        /// Creates a runspace using specified PSHost and InitialSessionState.
         /// </summary>
         /// <param name="host">
         /// Host implementation for runspace.
@@ -115,19 +116,19 @@ namespace System.Management.Automation.Runspaces
         {
             if (host == null)
             {
-                throw PSTraceSource.NewArgumentNullException("host");
+                throw PSTraceSource.NewArgumentNullException(nameof(host));
             }
 
             if (initialSessionState == null)
             {
-                throw PSTraceSource.NewArgumentNullException("initialSessionState");
+                throw PSTraceSource.NewArgumentNullException(nameof(initialSessionState));
             }
 
             return new LocalRunspace(host, initialSessionState);
         }
 
         /// <summary>
-        /// Creates a runspace using specified PSHost and InitialSessionState
+        /// Creates a runspace using specified PSHost and InitialSessionState.
         /// </summary>
         /// <param name="host">
         /// Host implementation for runspace.
@@ -149,12 +150,12 @@ namespace System.Management.Automation.Runspaces
         {
             if (host == null)
             {
-                throw PSTraceSource.NewArgumentNullException("host");
+                throw PSTraceSource.NewArgumentNullException(nameof(host));
             }
 
             if (initialSessionState == null)
             {
-                throw PSTraceSource.NewArgumentNullException("initialSessionState");
+                throw PSTraceSource.NewArgumentNullException(nameof(initialSessionState));
             }
 
             return new LocalRunspace(host, initialSessionState, true);
@@ -453,11 +454,11 @@ namespace System.Management.Automation.Runspaces
         public static RunspacePool CreateRunspacePool(int minRunspaces,
             int maxRunspaces, RunspaceConnectionInfo connectionInfo, PSHost host, TypeTable typeTable, PSPrimitiveDictionary applicationArguments)
         {
-            if ((!(connectionInfo is WSManConnectionInfo)) &&
-                (!(connectionInfo is NewProcessConnectionInfo)) &&
-                (!(connectionInfo is NamedPipeConnectionInfo)) &&
-                (!(connectionInfo is VMConnectionInfo)) &&
-                (!(connectionInfo is ContainerConnectionInfo)))
+            if (connectionInfo is not WSManConnectionInfo &&
+                connectionInfo is not NewProcessConnectionInfo &&
+                connectionInfo is not NamedPipeConnectionInfo &&
+                connectionInfo is not VMConnectionInfo &&
+                connectionInfo is not ContainerConnectionInfo)
             {
                 throw new NotSupportedException();
             }
@@ -475,7 +476,6 @@ namespace System.Management.Automation.Runspaces
         #region Runspace - Remote Factory
 
         /// <summary>
-        ///
         /// </summary>
         /// <param name="typeTable">
         /// The TypeTable to use while deserializing/serializing remote objects.
@@ -496,7 +496,6 @@ namespace System.Management.Automation.Runspaces
         }
 
         /// <summary>
-        ///
         /// </summary>
         /// <param name="typeTable">
         /// The TypeTable to use while deserializing/serializing remote objects.
@@ -520,7 +519,6 @@ namespace System.Management.Automation.Runspaces
         }
 
         /// <summary>
-        ///
         /// </summary>
         /// <param name="connectionInfo"></param>
         /// <param name="host"></param>
@@ -541,12 +539,12 @@ namespace System.Management.Automation.Runspaces
         /// <returns></returns>
         public static Runspace CreateRunspace(RunspaceConnectionInfo connectionInfo, PSHost host, TypeTable typeTable, PSPrimitiveDictionary applicationArguments, string name)
         {
-            if ((!(connectionInfo is WSManConnectionInfo)) &&
-                (!(connectionInfo is NewProcessConnectionInfo)) &&
-                (!(connectionInfo is NamedPipeConnectionInfo)) &&
-                (!(connectionInfo is SSHConnectionInfo)) &&
-                (!(connectionInfo is VMConnectionInfo)) &&
-                (!(connectionInfo is ContainerConnectionInfo)))
+            if (connectionInfo is not WSManConnectionInfo &&
+                connectionInfo is not NewProcessConnectionInfo &&
+                connectionInfo is not NamedPipeConnectionInfo &&
+                connectionInfo is not SSHConnectionInfo &&
+                connectionInfo is not VMConnectionInfo &&
+                connectionInfo is not ContainerConnectionInfo)
             {
                 throw new NotSupportedException();
             }
@@ -560,7 +558,6 @@ namespace System.Management.Automation.Runspaces
         }
 
         /// <summary>
-        ///
         /// </summary>
         /// <param name="host"></param>
         /// <param name="connectionInfo"></param>
@@ -571,7 +568,6 @@ namespace System.Management.Automation.Runspaces
         }
 
         /// <summary>
-        ///
         /// </summary>
         /// <param name="connectionInfo"></param>
         /// <returns></returns>
@@ -585,7 +581,6 @@ namespace System.Management.Automation.Runspaces
         #region V3 Extensions
 
         /// <summary>
-        ///
         /// </summary>
         /// <param name="typeTable"></param>
         /// <returns></returns>
@@ -597,7 +592,6 @@ namespace System.Management.Automation.Runspaces
         }
 
         /// <summary>
-        ///
         /// </summary>
         /// <param name="typeTable"></param>
         /// <param name="processInstance"></param>
@@ -612,4 +606,3 @@ namespace System.Management.Automation.Runspaces
         #endregion V3 Extensions
     }
 }
-

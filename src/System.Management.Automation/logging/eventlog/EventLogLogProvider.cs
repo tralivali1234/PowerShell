@@ -1,12 +1,12 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Resources;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Globalization;
+using System.Resources;
 using System.Text;
 using System.Threading;
 
@@ -20,7 +20,6 @@ namespace System.Management.Automation
     ///
     /// EventLogLogProvider will be packaged in the same dll as Msh Log Engine since EventLog should
     /// always be available.
-    ///
     /// </summary>
     internal class EventLogLogProvider : LogProvider
     {
@@ -43,7 +42,7 @@ namespace System.Management.Automation
             string source;
 
             // In case shellId == null, use the "Default" source.
-            if (String.IsNullOrEmpty(shellId))
+            if (string.IsNullOrEmpty(shellId))
             {
                 source = "Default";
             }
@@ -58,7 +57,7 @@ namespace System.Management.Automation
 
                 // There may be a situation where ShellId ends with a '.'.
                 // In that case, use the default source.
-                if (String.IsNullOrEmpty(source))
+                if (string.IsNullOrEmpty(source))
                     source = "Default";
             }
 
@@ -67,12 +66,12 @@ namespace System.Management.Automation
                 return source;
             }
 
-            string message = String.Format(Thread.CurrentThread.CurrentCulture, "Event source '{0}' is not registered", source);
+            string message = string.Format(Thread.CurrentThread.CurrentCulture, "Event source '{0}' is not registered", source);
             throw new InvalidOperationException(message);
         }
 
         /// <summary>
-        /// This represent a handle to EventLog
+        /// This represent a handle to EventLog.
         /// </summary>
         private EventLog _eventLog;
         private ResourceManager _resourceManager;
@@ -89,18 +88,18 @@ namespace System.Management.Automation
         private const int PipelineExecutionDetailCategoryId = 8;
 
         /// <summary>
-        /// Log engine health event
+        /// Log engine health event.
         /// </summary>
         /// <param name="logContext"></param>
         /// <param name="eventId"></param>
         /// <param name="exception"></param>
         /// <param name="additionalInfo"></param>
-        internal override void LogEngineHealthEvent(LogContext logContext, int eventId, Exception exception, Dictionary<String, String> additionalInfo)
+        internal override void LogEngineHealthEvent(LogContext logContext, int eventId, Exception exception, Dictionary<string, string> additionalInfo)
         {
             Hashtable mapArgs = new Hashtable();
 
             IContainsErrorRecord icer = exception as IContainsErrorRecord;
-            if (null != icer && null != icer.ErrorRecord)
+            if (icer != null && icer.ErrorRecord != null)
             {
                 mapArgs["ExceptionClass"] = exception.GetType().Name;
                 mapArgs["ErrorCategory"] = icer.ErrorRecord.CategoryInfo.Category;
@@ -118,8 +117,8 @@ namespace System.Management.Automation
             else
             {
                 mapArgs["ExceptionClass"] = exception.GetType().Name;
-                mapArgs["ErrorCategory"] = "";
-                mapArgs["ErrorId"] = "";
+                mapArgs["ErrorCategory"] = string.Empty;
+                mapArgs["ErrorId"] = string.Empty;
                 mapArgs["ErrorMessage"] = exception.Message;
             }
 
@@ -151,7 +150,7 @@ namespace System.Management.Automation
         }
 
         /// <summary>
-        /// Log engine lifecycle event
+        /// Log engine lifecycle event.
         /// </summary>
         /// <param name="logContext"></param>
         /// <param name="newState"></param>
@@ -183,7 +182,7 @@ namespace System.Management.Automation
         private const int _invalidEventId = -1;
 
         /// <summary>
-        /// Get engine lifecycle event id based on engine state
+        /// Get engine lifecycle event id based on engine state.
         /// </summary>
         /// <param name="engineState"></param>
         /// <returns></returns>
@@ -209,11 +208,10 @@ namespace System.Management.Automation
         private const int _commandHealthEventId = 200;
 
         /// <summary>
-        /// Provider interface function for logging command health event
+        /// Provider interface function for logging command health event.
         /// </summary>
         /// <param name="logContext"></param>
         /// <param name="exception"></param>
-        ///
         internal override void LogCommandHealthEvent(LogContext logContext, Exception exception)
         {
             int eventId = _commandHealthEventId;
@@ -221,7 +219,7 @@ namespace System.Management.Automation
             Hashtable mapArgs = new Hashtable();
 
             IContainsErrorRecord icer = exception as IContainsErrorRecord;
-            if (null != icer && null != icer.ErrorRecord)
+            if (icer != null && icer.ErrorRecord != null)
             {
                 mapArgs["ExceptionClass"] = exception.GetType().Name;
                 mapArgs["ErrorCategory"] = icer.ErrorRecord.CategoryInfo.Category;
@@ -239,8 +237,8 @@ namespace System.Management.Automation
             else
             {
                 mapArgs["ExceptionClass"] = exception.GetType().Name;
-                mapArgs["ErrorCategory"] = "";
-                mapArgs["ErrorId"] = "";
+                mapArgs["ErrorCategory"] = string.Empty;
+                mapArgs["ErrorId"] = string.Empty;
                 mapArgs["ErrorMessage"] = exception.Message;
             }
 
@@ -287,7 +285,7 @@ namespace System.Management.Automation
         private const int _baseCommandLifecycleEventId = 500;
 
         /// <summary>
-        /// Get command lifecycle event id based on command state
+        /// Get command lifecycle event id based on command state.
         /// </summary>
         /// <param name="commandState"></param>
         /// <returns></returns>
@@ -315,9 +313,9 @@ namespace System.Management.Automation
         /// </summary>
         /// <param name="logContext"></param>
         /// <param name="pipelineExecutionDetail"></param>
-        internal override void LogPipelineExecutionDetailEvent(LogContext logContext, List<String> pipelineExecutionDetail)
+        internal override void LogPipelineExecutionDetailEvent(LogContext logContext, List<string> pipelineExecutionDetail)
         {
-            List<String> details = GroupMessages(pipelineExecutionDetail);
+            List<string> details = GroupMessages(pipelineExecutionDetail);
 
             for (int i = 0; i < details.Count; i++)
             {
@@ -327,9 +325,9 @@ namespace System.Management.Automation
 
         private const int MaxLength = 16000;
 
-        private List<String> GroupMessages(List<String> messages)
+        private List<string> GroupMessages(List<string> messages)
         {
-            List<String> result = new List<string>();
+            List<string> result = new List<string>();
 
             if (messages == null || messages.Count == 0)
                 return result;
@@ -361,7 +359,7 @@ namespace System.Management.Automation
         /// <param name="pipelineExecutionDetail"></param>
         /// <param name="detailSequence"></param>
         /// <param name="detailTotal"></param>
-        private void LogPipelineExecutionDetailEvent(LogContext logContext, String pipelineExecutionDetail, int detailSequence, int detailTotal)
+        private void LogPipelineExecutionDetailEvent(LogContext logContext, string pipelineExecutionDetail, int detailSequence, int detailTotal)
         {
             int eventId = _pipelineExecutionDetailEventId;
 
@@ -384,12 +382,11 @@ namespace System.Management.Automation
 
         private const int _providerHealthEventId = 300;
         /// <summary>
-        /// Provider interface function for logging provider health event
+        /// Provider interface function for logging provider health event.
         /// </summary>
         /// <param name="logContext"></param>
         /// <param name="providerName"></param>
         /// <param name="exception"></param>
-        ///
         internal override void LogProviderHealthEvent(LogContext logContext, string providerName, Exception exception)
         {
             int eventId = _providerHealthEventId;
@@ -399,14 +396,14 @@ namespace System.Management.Automation
             mapArgs["ProviderName"] = providerName;
 
             IContainsErrorRecord icer = exception as IContainsErrorRecord;
-            if (null != icer && null != icer.ErrorRecord)
+            if (icer != null && icer.ErrorRecord != null)
             {
                 mapArgs["ExceptionClass"] = exception.GetType().Name;
                 mapArgs["ErrorCategory"] = icer.ErrorRecord.CategoryInfo.Category;
                 mapArgs["ErrorId"] = icer.ErrorRecord.FullyQualifiedErrorId;
 
                 if (icer.ErrorRecord.ErrorDetails != null
-                    && !String.IsNullOrEmpty(icer.ErrorRecord.ErrorDetails.Message))
+                    && !string.IsNullOrEmpty(icer.ErrorRecord.ErrorDetails.Message))
                 {
                     mapArgs["ErrorMessage"] = icer.ErrorRecord.ErrorDetails.Message;
                 }
@@ -418,8 +415,8 @@ namespace System.Management.Automation
             else
             {
                 mapArgs["ExceptionClass"] = exception.GetType().Name;
-                mapArgs["ErrorCategory"] = "";
-                mapArgs["ErrorId"] = "";
+                mapArgs["ErrorCategory"] = string.Empty;
+                mapArgs["ErrorId"] = string.Empty;
                 mapArgs["ErrorMessage"] = exception.Message;
             }
 
@@ -552,8 +549,8 @@ namespace System.Management.Automation
         ///
         /// In EventLog Api, arguments are passed in as an array of objects.
         /// </summary>
-        /// <param name="mapArgs">An ArrayList to contain the event arguments</param>
-        /// <param name="logContext">The log context containing the info to fill in</param>
+        /// <param name="mapArgs">An ArrayList to contain the event arguments.</param>
+        /// <param name="logContext">The log context containing the info to fill in.</param>
         private static void FillEventArgs(Hashtable mapArgs, LogContext logContext)
         {
             mapArgs["Severity"] = logContext.Severity;
@@ -577,9 +574,9 @@ namespace System.Management.Automation
         /// <summary>
         /// Fill event arguments with additionalInfo stored in a string dictionary.
         /// </summary>
-        /// <param name="mapArgs">An arraylist to contain the event arguments</param>
-        /// <param name="additionalInfo">A string dictionary to fill in</param>
-        private static void FillEventArgs(Hashtable mapArgs, Dictionary<String, String> additionalInfo)
+        /// <param name="mapArgs">An arraylist to contain the event arguments.</param>
+        /// <param name="additionalInfo">A string dictionary to fill in.</param>
+        private static void FillEventArgs(Hashtable mapArgs, Dictionary<string, string> additionalInfo)
         {
             if (additionalInfo == null)
             {
@@ -587,8 +584,8 @@ namespace System.Management.Automation
                 {
                     string id = ((int)(i + 1)).ToString("d1", CultureInfo.CurrentCulture);
 
-                    mapArgs["AdditionalInfo_Name" + id] = "";
-                    mapArgs["AdditionalInfo_Value" + id] = "";
+                    mapArgs["AdditionalInfo_Name" + id] = string.Empty;
+                    mapArgs["AdditionalInfo_Value" + id] = string.Empty;
                 }
 
                 return;
@@ -610,8 +607,8 @@ namespace System.Management.Automation
                 }
                 else
                 {
-                    mapArgs["AdditionalInfo_Name" + id] = "";
-                    mapArgs["AdditionalInfo_Value" + id] = "";
+                    mapArgs["AdditionalInfo_Name" + id] = string.Empty;
+                    mapArgs["AdditionalInfo_Value" + id] = string.Empty;
                 }
             }
 
@@ -630,12 +627,12 @@ namespace System.Management.Automation
         private string GetMessage(string messageId, Hashtable mapArgs)
         {
             if (_resourceManager == null)
-                return "";
+                return string.Empty;
 
             string messageTemplate = _resourceManager.GetString(messageId);
 
-            if (String.IsNullOrEmpty(messageTemplate))
-                return "";
+            if (string.IsNullOrEmpty(messageTemplate))
+                return string.Empty;
 
             return FillMessageTemplate(messageTemplate, mapArgs);
         }

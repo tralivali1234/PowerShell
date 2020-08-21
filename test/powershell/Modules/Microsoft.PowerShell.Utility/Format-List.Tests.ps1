@@ -1,4 +1,4 @@
-# Copyright (c) Microsoft Corporation. All rights reserved.
+# Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 Describe "Format-List" -Tags "CI" {
     $nl = [Environment]::NewLine
@@ -23,7 +23,7 @@ Describe "Format-List" -Tags "CI" {
     }
 
     It "Should produce the expected output" {
-        $expected = "${nl}${nl}testName : testValue${nl}${nl}${nl}${nl}"
+        $expected = "${nl}testName : testValue${nl}${nl}${nl}"
         $in = New-Object PSObject
         Add-Member -InputObject $in -MemberType NoteProperty -Name testName -Value testValue
 
@@ -75,7 +75,7 @@ Describe "Format-List DRT basic functionality" -Tags "CI" {
         $info = @{}
         $info.array = $al
         $result = $info | Format-List | Out-String
-        $result | Should -Match "Name  : array\s+Value : {0, 1, 2, 3...}"
+        $result | Should -Match "Name  : array\s+Value : {0, 1, 2, 3`u{2026}}" # ellipsis
     }
 
 	It "Format-List with No Objects for End-To-End should work"{
@@ -158,5 +158,28 @@ Describe "Format-List DRT basic functionality" -Tags "CI" {
         $result = Get-ChildItem -File $testdrive\test.txt | Format-List | Out-String
         $result | Should -Match "Name\s*:\s*test.txt"
         $result | Should -Match "Length\s*:\s*5"
+    }
+
+    It "Format-List should work with double byte wide chars" {
+        $obj = [pscustomobject]@{
+            "哇" = "62";
+            "dbda" = "KM";
+            "消息" = "千"
+        }
+
+        $expected = @"
+
+哇   : 62
+dbda : KM
+消息 : 千
+
+
+
+"@
+        $expected = $expected -replace "`r`n", "`n"
+
+        $actual = $obj | Format-List | Out-String
+        $actual = $actual -replace "`r`n", "`n"
+        $actual | Should -BeExactly $expected
     }
 }

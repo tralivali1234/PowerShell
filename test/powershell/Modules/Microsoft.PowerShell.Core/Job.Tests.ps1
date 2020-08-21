@@ -1,4 +1,4 @@
-# Copyright (c) Microsoft Corporation. All rights reserved.
+# Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 Describe "Job Cmdlet Tests" -Tag "CI" {
     Context "Simple Jobs" {
@@ -9,11 +9,11 @@ Describe "Job Cmdlet Tests" -Tag "CI" {
             Get-Job | Remove-Job -Force
         }
         It "Start-Job produces a job object" {
-            $j | Should -BeOfType "System.Management.Automation.Job"
+            $j | Should -BeOfType System.Management.Automation.Job
             $j.Name | Should -BeExactly "My Job"
         }
         It "Get-Job retrieves a job object" {
-            (Get-Job -Id $j.Id) | Should -BeOfType "System.Management.Automation.Job"
+            (Get-Job -Id $j.Id) | Should -BeOfType System.Management.Automation.Job
         }
         It "Get-Job retrieves an array of job objects" {
             Start-Job -ScriptBlock { 2 * 2 }
@@ -21,30 +21,37 @@ Describe "Job Cmdlet Tests" -Tag "CI" {
             $jobs.Count | Should -Be 2
             foreach ($job in $jobs)
             {
-                $job | Should -BeOfType "System.Management.Automation.Job"
+                $job | Should -BeOfType System.Management.Automation.Job
             }
         }
         It "Remove-Job can remove a job" {
             Remove-Job $j -Force
-            { Get-Job $j -ErrorAction Stop } | ShouldBeErrorId "JobWithSpecifiedNameNotFound,Microsoft.PowerShell.Commands.GetJobCommand"
+            { Get-Job $j -ErrorAction Stop } | Should -Throw -ErrorId "JobWithSpecifiedNameNotFound,Microsoft.PowerShell.Commands.GetJobCommand"
         }
         It "Receive-Job can retrieve job results" {
-            Wait-Job -Timeout 60 -id $j.id | Should -Not -BeNullOrEmpty
-            receive-job -id $j.id | Should -Be 2
+            Wait-Job -Timeout 60 -Id $j.id | Should -Not -BeNullOrEmpty
+            Receive-Job -Id $j.id | Should -Be 2
+        }
+        It "-RunAs32 not supported from 64-bit pwsh" -Skip:(-not [System.Environment]::Is64BitProcess) {
+            { Start-Job -ScriptBlock {} -RunAs32 } | Should -Throw -ErrorId "RunAs32NotSupported,Microsoft.PowerShell.Commands.StartJobCommand"
+        }
+        It "-RunAs32 supported in 32-bit pwsh" -Skip:([System.Environment]::Is64BitProcess) {
+            $job = Start-Job -ScriptBlock { 1+1 } -RunAs32
+            Receive-Job $job -Wait | Should -Be 2
         }
     }
     Context "Jobs with arguments" {
         It "Start-Job accepts arguments" {
             $sb = { Write-Output $args[1]; Write-Output $args[0] }
             $j = Start-Job -ScriptBlock $sb -ArgumentList "$TestDrive", 42
-            Wait-job -Timeout (5 * 60) $j | Should -Be $j
+            Wait-Job -Timeout (5 * 60) $j | Should -Be $j
             $r = Receive-Job $j
             $r -Join "," | Should -Be "42,$TestDrive"
         }
     }
     Context "jobs which take time" {
         BeforeEach {
-            $j = Start-Job -ScriptBlock { Start-Sleep 15 }
+            $j = Start-Job -ScriptBlock { Start-Sleep -Seconds 8 }
         }
         AfterEach {
             Get-Job | Remove-Job -Force
@@ -60,6 +67,9 @@ Describe "Job Cmdlet Tests" -Tag "CI" {
         }
         It "Stop-Job will stop a job" {
             Stop-Job -Id $j.Id
+            $out = Receive-Job $j -ErrorVariable err
+            $out | Should -BeNullOrEmpty
+            $err | Should -BeNullOrEmpty
             $j.State | Should -BeExactly "Stopped"
         }
         It "Remove-Job will not remove a running job" {
@@ -90,7 +100,7 @@ Describe "Job Cmdlet Tests" -Tag "CI" {
                         throw "Receive-Job behaves suspiciously: Cannot receive $n results in 5 minutes."
                     }
 
-                    # sleep for 300 ms to allow data to be produced
+                    # Wait to allow data to be produced
                     Start-Sleep -Milliseconds 300
 
                     if ($keep)
@@ -140,7 +150,7 @@ Describe "Job Cmdlet Tests" -Tag "CI" {
         }
     }
 }
-Describe "Debug-job test" -tag "Feature" {
+Describe "Debug-job test" -Tag "Feature" {
     BeforeAll {
         $rs = [runspacefactory]::CreateRunspace()
         $rs.Open()
@@ -155,8 +165,8 @@ Describe "Debug-job test" -tag "Feature" {
     }
     # we check this via implication.
     # if we're debugging a job, then the debugger will have a callstack
-    It "Debug-Job will break into debugger" -pending {
-        $ps.AddScript('$job = start-job { 1..300 | ForEach-Object { sleep 1 } }').Invoke()
+    It "Debug-Job will break into debugger" -Pending {
+        $ps.AddScript('$job = start-job { 1..300 | ForEach-Object { Start-Sleep 1 } }').Invoke()
         $ps.Commands.Clear()
         $ps.Runspace.Debugger.GetCallStack() | Should -BeNullOrEmpty
         Start-Sleep 3
@@ -168,7 +178,7 @@ Describe "Debug-job test" -tag "Feature" {
     }
 }
 
-Describe "Ampersand background test" -tag "CI","Slow" {
+Describe "Ampersand background test" -Tag "CI","Slow" {
     Context "Simple background job" {
         AfterEach {
             Get-Job | Remove-Job -Force
@@ -184,7 +194,7 @@ Describe "Ampersand background test" -tag "CI","Slow" {
         }
         It "doesn't cause error when variable is missing" {
             Remove-Item variable:name -ErrorAction Ignore
-            $j = write-output "Hi $name" &
+            $j = Write-Output "Hi $name" &
             Receive-Job $j -Wait | Should -BeExactly "Hi "
         }
         It "Copies variables to the child process" {
@@ -195,18 +205,18 @@ Describe "Ampersand background test" -tag "CI","Slow" {
             Receive-Job $j -Wait | Should -BeExactly "Hi Bob! Hi Mary! Hi Bill!"
         }
         It 'Make sure that $PID from the parent process does not overwrite $PID in the child process' {
-            $j = Write-Output $pid &
+            $j = Write-Output $PID &
             $cpid = Receive-Job $j -Wait
-            $pid | Should -Not -BeExactly $cpid
+            $PID | Should -Not -BeExactly $cpid
         }
         It 'Make sure that $global:PID from the parent process does not overwrite $global:PID in the child process' {
             $j = Write-Output $global:pid &
             $cpid = Receive-Job -Wait $j
-            $pid | Should -Not -BeExactly $cpid
+            $PID | Should -Not -BeExactly $cpid
         }
         It "starts in the current directory" {
-            $j = Get-Location | Foreach-Object -MemberName Path &
-            Receive-Job -Wait $j | Should -Be ($pwd.Path)
+            $j = Get-Location | ForEach-Object -MemberName Path &
+            Receive-Job -Wait $j | Should -Be ($PWD.Path)
         }
         It "Test that output redirection is done in the background job" {
             $j = Write-Output hello > $TESTDRIVE/hello.txt &

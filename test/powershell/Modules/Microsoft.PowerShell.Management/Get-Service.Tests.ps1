@@ -1,4 +1,4 @@
-# Copyright (c) Microsoft Corporation. All rights reserved.
+# Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 Describe "Get-Service cmdlet tests" -Tags "CI" {
   # Service cmdlet is currently working on windows only
@@ -21,26 +21,16 @@ Describe "Get-Service cmdlet tests" -Tags "CI" {
   Context 'Check null or empty value to the -Name parameter' {
     It 'Should throw if <value> is passed to -Name parameter' -TestCases $testCases {
       param($data)
-      try {
-        $null = Get-Service -Name $data -ErrorAction Stop
-        throw 'Expected error on previous command'
-      }
-      catch {
-        $_.FullyQualifiedErrorId | Should -Be 'ParameterArgumentValidationError,Microsoft.Powershell.Commands.GetServiceCommand'
-      }
+      { $null = Get-Service -Name $data -ErrorAction Stop } |
+        Should -Throw -ErrorId 'ParameterArgumentValidationError,Microsoft.Powershell.Commands.GetServiceCommand'
     }
   }
 
   Context 'Check null or empty value to the -Name parameter via pipeline' {
     It 'Should throw if <value> is passed through pipeline to -Name parameter' -TestCases $testCases {
       param($data)
-      try {
-        $null = Get-Service -Name $data -ErrorAction Stop
-        throw 'Expected error on previous command'
-      }
-      catch {
-        $_.FullyQualifiedErrorId | Should -Be 'ParameterArgumentValidationError,Microsoft.Powershell.Commands.GetServiceCommand'
-      }
+      { $null = Get-Service -Name $data -ErrorAction Stop } |
+        Should -Throw -ErrorId 'ParameterArgumentValidationError,Microsoft.Powershell.Commands.GetServiceCommand'
     }
   }
 
@@ -65,10 +55,10 @@ Describe "Get-Service cmdlet tests" -Tags "CI" {
     @{ script = { Get-Service -DisplayName Net* }               ; expected = { Get-Service | Where-Object { $_.DisplayName -like 'Net*' } } },
     @{ script = { Get-Service -Include Net* -Exclude *logon }   ; expected = { Get-Service | Where-Object { $_.Name -match '^net.*?(?<!logon)$' } } }
     @{ script = { Get-Service -Name Net* | Get-Service }        ; expected = { Get-Service -Name Net* } },
-    @{ script = { Get-Service -Name "$(new-guid)*" }            ; expected = $null },
-    @{ script = { Get-Service -DisplayName "$(new-guid)*" }     ; expected = $null },
+    @{ script = { Get-Service -Name "$(New-Guid)*" }            ; expected = $null },
+    @{ script = { Get-Service -DisplayName "$(New-Guid)*" }     ; expected = $null },
     @{ script = { Get-Service -DependentServices -Name winmgmt }; expected = { (Get-Service -Name winmgmt).DependentServices } },
-    @{ script = { Get-Service -RequiredServices -Name winmgmt } ; expected = { (Get-Service -name winmgmt).RequiredServices } }
+    @{ script = { Get-Service -RequiredServices -Name winmgmt } ; expected = { (Get-Service -Name winmgmt).RequiredServices } }
   ) {
     param($script, $expected)
     $services = & $script
@@ -76,19 +66,19 @@ Describe "Get-Service cmdlet tests" -Tags "CI" {
       $servicesCheck = & $expected
     }
     if ($servicesCheck -ne $null) {
-      Compare-object $services $servicesCheck | Out-String | Should -BeNullOrEmpty
+      Compare-Object $services $servicesCheck | Out-String | Should -BeNullOrEmpty
     } else {
       $services | Should -BeNullOrEmpty
     }
   }
 
   It "Get-Service fails for non-existing service using '<script>'" -TestCases @(
-    @{ script  = { Get-Service -Name (new-guid) -ErrorAction Stop}       ;
+    @{ script  = { Get-Service -Name (New-Guid) -ErrorAction Stop}       ;
        ErrorId = "NoServiceFoundForGivenName,Microsoft.PowerShell.Commands.GetServiceCommand" },
-    @{ script  = { Get-Service -DisplayName (new-guid) -ErrorAction Stop};
+    @{ script  = { Get-Service -DisplayName (New-Guid) -ErrorAction Stop};
        ErrorId = "NoServiceFoundForGivenDisplayName,Microsoft.PowerShell.Commands.GetServiceCommand" }
   ) {
     param($script,$errorid)
-    { & $script } | ShouldBeErrorId $errorid
+    { & $script } | Should -Throw -ErrorId $errorid
   }
 }

@@ -1,12 +1,13 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Management.Automation.Internal;
-using System.Reflection;
 using System.Management.Automation.Language;
+using System.Reflection;
+
 using Dbg = System.Management.Automation.Diagnostics;
 
 namespace System.Management.Automation
@@ -17,10 +18,9 @@ namespace System.Management.Automation
     internal abstract class ScriptCommandProcessorBase : CommandProcessorBase
     {
         protected ScriptCommandProcessorBase(ScriptBlock scriptBlock, ExecutionContext context, bool useLocalScope, CommandOrigin origin, SessionStateInternal sessionState)
+            : base(new ScriptInfo(string.Empty, scriptBlock, context))
         {
             this._dontUseScopeCommandOrigin = false;
-            this.CommandInfo = new ScriptInfo(String.Empty, scriptBlock, context);
-
             this._fromScriptFile = false;
 
             CommonInitialization(scriptBlock, context, useLocalScope, origin, sessionState);
@@ -66,6 +66,7 @@ namespace System.Management.Automation
         protected ScriptBlock _scriptBlock;
 
         private ScriptParameterBinderController _scriptParameterBinderController;
+
         internal ScriptParameterBinderController ScriptParameterBinderController
         {
             get
@@ -79,6 +80,7 @@ namespace System.Management.Automation
                     _scriptParameterBinderController.CommandLineParameters.UpdateInvocationInfo(this.Command.MyInvocation);
                     this.Command.MyInvocation.UnboundArguments = _scriptParameterBinderController.DollarArgs;
                 }
+
                 return _scriptParameterBinderController;
             }
         }
@@ -127,9 +129,9 @@ namespace System.Management.Automation
         /// Checks if user has requested help (for example passing "-?" parameter for a cmdlet)
         /// and if yes, then returns the help target to display.
         /// </summary>
-        /// <param name="helpTarget">help target to request</param>
-        /// <param name="helpCategory">help category to request</param>
-        /// <returns><c>true</c> if user requested help; <c>false</c> otherwise</returns>
+        /// <param name="helpTarget">Help target to request.</param>
+        /// <param name="helpCategory">Help category to request.</param>
+        /// <returns><c>true</c> if user requested help; <c>false</c> otherwise.</returns>
         internal override bool IsHelpRequested(out string helpTarget, out HelpCategory helpCategory)
         {
             if (arguments != null && CommandInfo != null && !string.IsNullOrEmpty(CommandInfo.Name) && _scriptBlock != null)
@@ -163,7 +165,6 @@ namespace System.Management.Automation
     /// This class implements a command processor for script related commands.
     /// </summary>
     /// <remarks>
-    ///
     /// 1. Usage scenarios
     ///
     /// ScriptCommandProcessor is used for four kinds of commands.
@@ -227,16 +228,23 @@ namespace System.Management.Automation
     /// If the command processor is created based on a script file, its exit exception
     /// handling is different in the sense that it indicates an exitcode instead of killing
     /// current powershell session.
-    ///
     /// </remarks>
     internal sealed class DlrScriptCommandProcessor : ScriptCommandProcessorBase
     {
-        private new ScriptBlock _scriptBlock;
         private readonly ArrayList _input = new ArrayList();
+        private readonly object _dollarUnderbar = AutomationNull.Value;
+        private new ScriptBlock _scriptBlock;
         private MutableTuple _localsTuple;
         private bool _runOptimizedCode;
         private bool _argsBound;
         private FunctionContext _functionContext;
+
+        internal DlrScriptCommandProcessor(ScriptBlock scriptBlock, ExecutionContext context, bool useNewScope, CommandOrigin origin, SessionStateInternal sessionState, object dollarUnderbar)
+            : base(scriptBlock, context, useNewScope, origin, sessionState)
+        {
+            Init();
+            _dollarUnderbar = dollarUnderbar;
+        }
 
         internal DlrScriptCommandProcessor(ScriptBlock scriptBlock, ExecutionContext context, bool useNewScope, CommandOrigin origin, SessionStateInternal sessionState)
             : base(scriptBlock, context, useNewScope, origin, sessionState)
@@ -277,12 +285,13 @@ namespace System.Management.Automation
         }
 
         /// <summary>
-        /// Get the ObsoleteAttribute of the current command
+        /// Get the ObsoleteAttribute of the current command.
         /// </summary>
         internal override ObsoleteAttribute ObsoleteAttribute
         {
             get { return _obsoleteAttribute; }
         }
+
         private ObsoleteAttribute _obsoleteAttribute;
 
         internal override void Prepare(IDictionary psDefaultParameterValues)
@@ -479,7 +488,26 @@ namespace System.Management.Automation
                         Context.LanguageMode = newLanguageMode.Value;
                     }
 
-                    EnterScope();
+                    bool? oldLangModeTransitionStatus = null;
+                    try
+                    {
+                        // If it's from ConstrainedLanguage to FullLanguage, indicate the transition before parameter binding takes place.
+                        if (oldLanguageMode == PSLanguageMode.ConstrainedLanguage && newLanguageMode == PSLanguageMode.FullLanguage)
+                        {
+                            oldLangModeTransitionStatus = Context.LanguageModeTransitionInParameterBinding;
+                            Context.LanguageModeTransitionInParameterBinding = true;
+                        }
+
+                        EnterScope();
+                    }
+                    finally
+                    {
+                        if (oldLangModeTransitionStatus.HasValue)
+                        {
+                            // Revert the transition state to old value after doing the parameter binding
+                            Context.LanguageModeTransitionInParameterBinding = oldLangModeTransitionStatus.Value;
+                        }
+                    }
 
                     if (commandRuntime.ErrorMergeTo == MshCommandRuntime.MergeDataStream.Output)
                     {
@@ -493,6 +521,10 @@ namespace System.Management.Automation
                     if (dollarUnderbar != AutomationNull.Value)
                     {
                         _localsTuple.SetAutomaticVariable(AutomaticVariable.Underbar, dollarUnderbar, _context);
+                    }
+                    else if (_dollarUnderbar != AutomationNull.Value)
+                    {
+                        _localsTuple.SetAutomaticVariable(AutomaticVariable.Underbar, _dollarUnderbar, _context);
                     }
 
                     if (inputToProcess != AutomationNull.Value)

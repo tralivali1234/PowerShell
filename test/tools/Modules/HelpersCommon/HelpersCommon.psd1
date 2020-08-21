@@ -12,9 +12,33 @@ GUID = 'cc1c8e94-51d1-4bc1-b508-62bc09f02f54'
 
 CompanyName = 'Microsoft Corporation'
 
-Copyright = 'Copyright (c) Microsoft Corporation. All rights reserved.'
+Copyright = 'Copyright (c) Microsoft Corporation.'
 
 Description = 'Temporary module contains functions for using in tests'
 
-FunctionsToExport = 'Wait-UntilTrue', 'Test-IsElevated', 'ShouldBeErrorId', 'Wait-FileToBePresent', 'Get-RandomFileName', 'Enable-Testhook', 'Disable-Testhook', 'Set-TesthookResult', 'Test-TesthookIsSet'
+FunctionsToExport = @(
+        'Add-TestDynamicType'
+        'Test-CanWriteToPsHome'
+        'Disable-Testhook'
+        'Enable-Testhook'
+        'Get-RandomFileName'
+        'New-RandomHexString'
+        'New-ComplexPassword'
+        'Send-VstsLogFile'
+        'Set-TesthookResult'
+        'Start-NativeExecution'
+        'Test-IsElevated'
+        'Test-IsRoot'
+        'Test-IsVstsLinux'
+        'Test-IsVstsWindows'
+        'Test-TesthookIsSet'
+        'Wait-FileToBePresent'
+        'Wait-UntilTrue'
+        'Get-PlatformInfo'
+    )
+
+CmdletsToExport= @()
+
+AliasesToExport= @()
+
 }

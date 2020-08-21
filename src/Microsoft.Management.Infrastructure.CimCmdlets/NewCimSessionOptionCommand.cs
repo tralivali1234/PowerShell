@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
 #region Using directives
@@ -18,8 +18,10 @@ namespace Microsoft.Management.Infrastructure.CimCmdlets
     public enum ProtocolType
     {
         Default,
+
         [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly")]
         Dcom,
+
         [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly")]
         Wsman
     };
@@ -35,6 +37,7 @@ namespace Microsoft.Management.Infrastructure.CimCmdlets
     /// DComSessionOptions or WSManSessionOptions, which derive from
     /// CimSessionOptions.
     /// </summary>
+    [Alias("ncso")]
     [Cmdlet(VerbsCommon.New, "CimSessionOption", DefaultParameterSetName = ProtocolNameParameterSet, HelpUri = "https://go.microsoft.com/fwlink/?LinkId=227969")]
     [OutputType(typeof(CimSessionOptions))]
     public sealed class NewCimSessionOptionCommand : CimBaseCommand
@@ -42,7 +45,7 @@ namespace Microsoft.Management.Infrastructure.CimCmdlets
         #region constructor
 
         /// <summary>
-        /// constructor
+        /// Constructor.
         /// </summary>
         public NewCimSessionOptionCommand()
             : base(parameters, parameterSets)
@@ -62,6 +65,7 @@ namespace Microsoft.Management.Infrastructure.CimCmdlets
         public SwitchParameter NoEncryption
         {
             get { return noEncryption; }
+
             set
             {
                 noEncryption = value;
@@ -69,18 +73,20 @@ namespace Microsoft.Management.Infrastructure.CimCmdlets
                 base.SetParameter(value, nameNoEncryption);
             }
         }
+
         private SwitchParameter noEncryption;
         private bool noEncryptionSet = false;
 
         /// <summary>
         /// The following is the definition of the input parameter "CertificateCACheck".
-        /// Switch indicating if Certificate Authority should be validated
+        /// Switch indicating if Certificate Authority should be validated.
         /// </summary>
         [Parameter(ValueFromPipelineByPropertyName = true,
                    ParameterSetName = WSManParameterSet)]
         public SwitchParameter SkipCACheck
         {
             get { return skipCACheck; }
+
             set
             {
                 skipCACheck = value;
@@ -88,18 +94,20 @@ namespace Microsoft.Management.Infrastructure.CimCmdlets
                 base.SetParameter(value, nameSkipCACheck);
             }
         }
+
         private SwitchParameter skipCACheck;
         private bool skipCACheckSet = false;
 
         /// <summary>
         /// The following is the definition of the input parameter "CertificateCNCheck".
-        /// Switch indicating if Certificate Name should be validated
+        /// Switch indicating if Certificate Name should be validated.
         /// </summary>
         [Parameter(ValueFromPipelineByPropertyName = true,
                    ParameterSetName = WSManParameterSet)]
         public SwitchParameter SkipCNCheck
         {
             get { return skipCNCheck; }
+
             set
             {
                 skipCNCheck = value;
@@ -107,6 +115,7 @@ namespace Microsoft.Management.Infrastructure.CimCmdlets
                 base.SetParameter(value, nameSkipCNCheck);
             }
         }
+
         private SwitchParameter skipCNCheck;
         private bool skipCNCheckSet = false;
 
@@ -119,6 +128,7 @@ namespace Microsoft.Management.Infrastructure.CimCmdlets
         public SwitchParameter SkipRevocationCheck
         {
             get { return skipRevocationCheck; }
+
             set
             {
                 skipRevocationCheck = value;
@@ -126,18 +136,20 @@ namespace Microsoft.Management.Infrastructure.CimCmdlets
                 base.SetParameter(value, nameSkipRevocationCheck);
             }
         }
+
         private SwitchParameter skipRevocationCheck;
         private bool skipRevocationCheckSet = false;
 
         /// <summary>
         /// The following is the definition of the input parameter "EncodePortInServicePrincipalName".
-        /// Switch indicating if to encode Port In Service Principal Name
+        /// Switch indicating if to encode Port In Service Principal Name.
         /// </summary>
         [Parameter(ValueFromPipelineByPropertyName = true,
                    ParameterSetName = WSManParameterSet)]
         public SwitchParameter EncodePortInServicePrincipalName
         {
             get { return encodeportinserviceprincipalname; }
+
             set
             {
                 encodeportinserviceprincipalname = value;
@@ -145,6 +157,7 @@ namespace Microsoft.Management.Infrastructure.CimCmdlets
                 base.SetParameter(value, nameEncodePortInServicePrincipalName);
             }
         }
+
         private SwitchParameter encodeportinserviceprincipalname;
         private bool encodeportinserviceprincipalnameSet = false;
 
@@ -159,6 +172,7 @@ namespace Microsoft.Management.Infrastructure.CimCmdlets
         public PacketEncoding Encoding
         {
             get { return encoding; }
+
             set
             {
                 encoding = value;
@@ -166,6 +180,7 @@ namespace Microsoft.Management.Infrastructure.CimCmdlets
                 base.SetParameter(value, nameEncoding);
             }
         }
+
         private PacketEncoding encoding;
         private bool encodingSet = false;
 
@@ -179,12 +194,14 @@ namespace Microsoft.Management.Infrastructure.CimCmdlets
         public Uri HttpPrefix
         {
             get { return httpprefix; }
+
             set
             {
                 httpprefix = value;
                 base.SetParameter(value, nameHttpPrefix);
             }
         }
+
         private Uri httpprefix;
 
         /// <summary>
@@ -196,6 +213,7 @@ namespace Microsoft.Management.Infrastructure.CimCmdlets
         public UInt32 MaxEnvelopeSizeKB
         {
             get { return maxenvelopesizekb; }
+
             set
             {
                 maxenvelopesizekb = value;
@@ -203,6 +221,7 @@ namespace Microsoft.Management.Infrastructure.CimCmdlets
                 base.SetParameter(value, nameMaxEnvelopeSizeKB);
             }
         }
+
         private UInt32 maxenvelopesizekb;
         private bool maxenvelopesizekbSet = false;
 
@@ -215,6 +234,7 @@ namespace Microsoft.Management.Infrastructure.CimCmdlets
         public PasswordAuthenticationMechanism ProxyAuthentication
         {
             get { return proxyAuthentication; }
+
             set
             {
                 proxyAuthentication = value;
@@ -222,6 +242,7 @@ namespace Microsoft.Management.Infrastructure.CimCmdlets
                 base.SetParameter(value, nameProxyAuthentication);
             }
         }
+
         private PasswordAuthenticationMechanism proxyAuthentication;
         private bool proxyauthenticationSet = false;
 
@@ -230,16 +251,18 @@ namespace Microsoft.Management.Infrastructure.CimCmdlets
         /// </summary>
         [Parameter(ValueFromPipelineByPropertyName = true,
                    ParameterSetName = WSManParameterSet)]
-        public String ProxyCertificateThumbprint
+        public string ProxyCertificateThumbprint
         {
             get { return proxycertificatethumbprint; }
+
             set
             {
                 proxycertificatethumbprint = value;
                 base.SetParameter(value, nameProxyCertificateThumbprint);
             }
         }
-        private String proxycertificatethumbprint;
+
+        private string proxycertificatethumbprint;
 
         /// <summary>
         /// The following is the definition of the input parameter "ProxyCredential".
@@ -250,12 +273,14 @@ namespace Microsoft.Management.Infrastructure.CimCmdlets
         public PSCredential ProxyCredential
         {
             get { return proxycredential; }
+
             set
             {
                 proxycredential = value;
                 base.SetParameter(value, nameProxyCredential);
             }
         }
+
         private PSCredential proxycredential;
 
         /// <summary>
@@ -268,6 +293,7 @@ namespace Microsoft.Management.Infrastructure.CimCmdlets
         public ProxyType ProxyType
         {
             get { return proxytype; }
+
             set
             {
                 proxytype = value;
@@ -275,6 +301,7 @@ namespace Microsoft.Management.Infrastructure.CimCmdlets
                 base.SetParameter(value, nameProxyType);
             }
         }
+
         private ProxyType proxytype;
         private bool proxytypeSet = false;
 
@@ -287,6 +314,7 @@ namespace Microsoft.Management.Infrastructure.CimCmdlets
         public SwitchParameter UseSsl
         {
             get { return usessl; }
+
             set
             {
                 usessl = value;
@@ -294,6 +322,7 @@ namespace Microsoft.Management.Infrastructure.CimCmdlets
                 base.SetParameter(value, nameUseSsl);
             }
         }
+
         private SwitchParameter usessl;
         private bool usesslSet = false;
 
@@ -306,6 +335,7 @@ namespace Microsoft.Management.Infrastructure.CimCmdlets
         public ImpersonationType Impersonation
         {
             get { return impersonation; }
+
             set
             {
                 impersonation = value;
@@ -313,6 +343,7 @@ namespace Microsoft.Management.Infrastructure.CimCmdlets
                 base.SetParameter(value, nameImpersonation);
             }
         }
+
         private ImpersonationType impersonation;
         private bool impersonationSet = false;
 
@@ -325,6 +356,7 @@ namespace Microsoft.Management.Infrastructure.CimCmdlets
         public SwitchParameter PacketIntegrity
         {
             get { return packetintegrity; }
+
             set
             {
                 packetintegrity = value;
@@ -332,6 +364,7 @@ namespace Microsoft.Management.Infrastructure.CimCmdlets
                 base.SetParameter(value, namePacketIntegrity);
             }
         }
+
         private SwitchParameter packetintegrity;
         private bool packetintegritySet = false;
 
@@ -344,6 +377,7 @@ namespace Microsoft.Management.Infrastructure.CimCmdlets
         public SwitchParameter PacketPrivacy
         {
             get { return packetprivacy; }
+
             set
             {
                 packetprivacy = value;
@@ -351,12 +385,13 @@ namespace Microsoft.Management.Infrastructure.CimCmdlets
                 base.SetParameter(value, namePacketPrivacy);
             }
         }
+
         private SwitchParameter packetprivacy;
         private bool packetprivacySet = false;
 
         /// <summary>
         /// The following is the definition of the input parameter "Protocol".
-        /// Switch indicating if to encode Port In Service Principal Name
+        /// Switch indicating if to encode Port In Service Principal Name.
         /// </summary>
         [Parameter(
             Mandatory = true,
@@ -366,36 +401,42 @@ namespace Microsoft.Management.Infrastructure.CimCmdlets
         public ProtocolType Protocol
         {
             get { return protocol; }
+
             set
             {
                 protocol = value;
                 base.SetParameter(value, nameProtocol);
             }
         }
+
         private ProtocolType protocol;
 
         /// <summary>
         /// The following is the definition of the input parameter "UICulture".
-        /// Specifies the UI Culture to use. i.e. en-us, ar-sa
+        /// Specifies the UI Culture to use. i.e. en-us, ar-sa.
         /// </summary>
         [Parameter(ValueFromPipelineByPropertyName = true)]
         public CultureInfo UICulture
         {
             get { return uiculture; }
+
             set { uiculture = value; }
         }
+
         private CultureInfo uiculture;
 
         /// <summary>
         /// The following is the definition of the input parameter "Culture".
-        /// Specifies the culture to use. i.e. en-us, ar-sa
+        /// Specifies the culture to use. i.e. en-us, ar-sa.
         /// </summary>
         [Parameter(ValueFromPipelineByPropertyName = true)]
         public CultureInfo Culture
         {
             get { return culture; }
+
             set { culture = value; }
         }
+
         private CultureInfo culture;
 
         #endregion
@@ -409,7 +450,7 @@ namespace Microsoft.Management.Infrastructure.CimCmdlets
         {
             this.CmdletOperation = new CmdletOperationBase(this);
             this.AtBeginProcess = false;
-        }//End BeginProcessing()
+        }
 
         /// <summary>
         /// ProcessRecord method.
@@ -424,11 +465,13 @@ namespace Microsoft.Management.Infrastructure.CimCmdlets
                     {
                         options = CreateWSMANSessionOptions();
                     }
+
                     break;
                 case DcomParameterSet:
                     {
                         options = CreateDComSessionOptions();
                     }
+
                     break;
                 case ProtocolNameParameterSet:
                     switch (Protocol)
@@ -441,36 +484,40 @@ namespace Microsoft.Management.Infrastructure.CimCmdlets
                             options = CreateWSMANSessionOptions();
                             break;
                     }
+
                     break;
                 default:
                     return;
             }
+
             if (options != null)
             {
                 if (this.Culture != null)
                 {
                     options.Culture = this.Culture;
                 }
+
                 if (this.UICulture != null)
                 {
                     options.UICulture = this.UICulture;
                 }
+
                 this.WriteObject(options);
             }
-        }//End ProcessRecord()
+        }
 
         /// <summary>
         /// EndProcessing method.
         /// </summary>
         protected override void EndProcessing()
         {
-        }//End EndProcessing()
+        }
 
         #endregion
 
         #region helper functions
         /// <summary>
-        /// Create DComSessionOptions
+        /// Create DComSessionOptions.
         /// </summary>
         /// <returns></returns>
         internal DComSessionOptions CreateDComSessionOptions()
@@ -485,6 +532,7 @@ namespace Microsoft.Management.Infrastructure.CimCmdlets
             {
                 dcomoptions.Impersonation = ImpersonationType.Impersonate;
             }
+
             if (this.packetintegritySet)
             {
                 dcomoptions.PacketIntegrity = this.packetintegrity;
@@ -494,6 +542,7 @@ namespace Microsoft.Management.Infrastructure.CimCmdlets
             {
                 dcomoptions.PacketIntegrity = true;
             }
+
             if (this.packetprivacySet)
             {
                 dcomoptions.PacketPrivacy = this.PacketPrivacy;
@@ -503,11 +552,12 @@ namespace Microsoft.Management.Infrastructure.CimCmdlets
             {
                 dcomoptions.PacketPrivacy = true;
             }
+
             return dcomoptions;
         }
 
         /// <summary>
-        /// Create WSMANSessionOptions
+        /// Create WSMANSessionOptions.
         /// </summary>
         /// <returns></returns>
         internal WSManSessionOptions CreateWSMANSessionOptions()
@@ -522,6 +572,7 @@ namespace Microsoft.Management.Infrastructure.CimCmdlets
             {
                 wsmanoptions.NoEncryption = false;
             }
+
             if (this.skipCACheckSet)
             {
                 wsmanoptions.CertCACheck = false;
@@ -531,6 +582,7 @@ namespace Microsoft.Management.Infrastructure.CimCmdlets
             {
                 wsmanoptions.CertCACheck = true;
             }
+
             if (this.skipCNCheckSet)
             {
                 wsmanoptions.CertCNCheck = false;
@@ -540,6 +592,7 @@ namespace Microsoft.Management.Infrastructure.CimCmdlets
             {
                 wsmanoptions.CertCNCheck = true;
             }
+
             if (this.skipRevocationCheckSet)
             {
                 wsmanoptions.CertRevocationCheck = false;
@@ -549,6 +602,7 @@ namespace Microsoft.Management.Infrastructure.CimCmdlets
             {
                 wsmanoptions.CertRevocationCheck = true;
             }
+
             if (this.encodeportinserviceprincipalnameSet)
             {
                 wsmanoptions.EncodePortInServicePrincipalName = this.EncodePortInServicePrincipalName;
@@ -558,6 +612,7 @@ namespace Microsoft.Management.Infrastructure.CimCmdlets
             {
                 wsmanoptions.EncodePortInServicePrincipalName = false;
             }
+
             if (this.encodingSet)
             {
                 wsmanoptions.PacketEncoding = this.Encoding;
@@ -566,10 +621,12 @@ namespace Microsoft.Management.Infrastructure.CimCmdlets
             {
                 wsmanoptions.PacketEncoding = PacketEncoding.Utf8;
             }
+
             if (this.HttpPrefix != null)
             {
                 wsmanoptions.HttpUrlPrefix = this.HttpPrefix;
             }
+
             if (this.maxenvelopesizekbSet)
             {
                 wsmanoptions.MaxEnvelopeSize = this.MaxEnvelopeSizeKB;
@@ -578,11 +635,13 @@ namespace Microsoft.Management.Infrastructure.CimCmdlets
             {
                 wsmanoptions.MaxEnvelopeSize = 0;
             }
-            if (!String.IsNullOrWhiteSpace(this.ProxyCertificateThumbprint))
+
+            if (!string.IsNullOrWhiteSpace(this.ProxyCertificateThumbprint))
             {
                 CimCredential credentials = new CimCredential(CertificateAuthenticationMechanism.Default, this.ProxyCertificateThumbprint);
                 wsmanoptions.AddProxyCredentials(credentials);
             }
+
             if (this.proxyauthenticationSet)
             {
                 this.proxyauthenticationSet = false;
@@ -598,10 +657,11 @@ namespace Microsoft.Management.Infrastructure.CimCmdlets
                     catch (Exception ex)
                     {
                         DebugHelper.WriteLogEx(ex.ToString(), 1);
-                        throw ex;
+                        throw;
                     }
                 }
             }
+
             if (this.proxytypeSet)
             {
                 wsmanoptions.ProxyType = this.ProxyType;
@@ -611,6 +671,7 @@ namespace Microsoft.Management.Infrastructure.CimCmdlets
             {
                 wsmanoptions.ProxyType = Options.ProxyType.WinHttp;
             }
+
             if (this.usesslSet)
             {
                 wsmanoptions.UseSsl = this.UseSsl;
@@ -620,6 +681,7 @@ namespace Microsoft.Management.Infrastructure.CimCmdlets
             {
                 wsmanoptions.UseSsl = false;
             }
+
             wsmanoptions.DestinationPort = 0;
             return wsmanoptions;
         }
@@ -648,9 +710,9 @@ namespace Microsoft.Management.Infrastructure.CimCmdlets
         #endregion
 
         /// <summary>
-        /// static parameter definition entries
+        /// Static parameter definition entries.
         /// </summary>
-        static Dictionary<string, HashSet<ParameterDefinitionEntry>> parameters = new Dictionary<string, HashSet<ParameterDefinitionEntry>>
+        private static Dictionary<string, HashSet<ParameterDefinitionEntry>> parameters = new Dictionary<string, HashSet<ParameterDefinitionEntry>>
         {
             {
                 nameNoEncryption, new HashSet<ParameterDefinitionEntry> {
@@ -749,14 +811,14 @@ namespace Microsoft.Management.Infrastructure.CimCmdlets
         };
 
         /// <summary>
-        /// static parameter set entries
+        /// Static parameter set entries.
         /// </summary>
-        static Dictionary<string, ParameterSetEntry> parameterSets = new Dictionary<string, ParameterSetEntry>
+        private static Dictionary<string, ParameterSetEntry> parameterSets = new Dictionary<string, ParameterSetEntry>
         {
             {   CimBaseCommand.ProtocolNameParameterSet, new ParameterSetEntry(1, true)     },
             {   CimBaseCommand.DcomParameterSet, new ParameterSetEntry(0)     },
             {   CimBaseCommand.WSManParameterSet, new ParameterSetEntry(0)     },
         };
         #endregion
-    }//End Class
-}//End namespace
+    }
+}

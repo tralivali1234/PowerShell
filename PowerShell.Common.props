@@ -56,12 +56,15 @@
       <ProductVersion>$(PSCoreFormattedVersion)</ProductVersion>
 
       <!--
-            We have explicitly assign 'PackageVersion'
-            because there is a bug: 'PackageVersion' is correctly assigned as 'Version' in 'NuGet.targets'
-            but then immediately redefined as '1.0.0'.
-            Tracking Issue https://github.com/dotnet/sdk/issues/1557
+        We have to explicitly assign 'PackageVersion' here because we're changing 'Version' in a target.
+        Before any targets have run (during static evaluation), 'Version' will have defaulted to '1.0.0' and PackageVersion will have defaulted to 'Version'.
+        See https://github.com/dotnet/sdk/issues/1557
       -->
       <PackageVersion>$(PSCoreBuildVersion)</PackageVersion>
+
+      <ApplicationIcon Condition="$(ProductVersion.Contains('preview'))">..\..\assets\Powershell_av_colors.ico</ApplicationIcon>
+      <ApplicationIcon Condition="$(ProductVersion.Contains('daily'))">..\..\assets\Powershell_avatar.ico</ApplicationIcon>
+      <ApplicationIcon Condition="!$(ProductVersion.Contains('preview')) And !$(ProductVersion.Contains('daily'))">..\..\assets\Powershell_black.ico</ApplicationIcon>
 
     </PropertyGroup>
 
@@ -89,17 +92,18 @@
   </Target>
 
   <PropertyGroup>
-    <Product>PowerShell Core</Product>
+    <Product>PowerShell</Product>
     <Company>Microsoft Corporation</Company>
-    <Copyright>(c) Microsoft Corporation. All rights reserved.</Copyright>
+    <Copyright>(c) Microsoft Corporation.</Copyright>
 
-    <TargetFramework>netcoreapp2.0</TargetFramework>
-    <RuntimeFrameworkVersion>2.0.6</RuntimeFrameworkVersion>
-    <LangVersion>Latest</LangVersion>
+    <TargetFramework>net5.0</TargetFramework>
+    <LangVersion>preview</LangVersion>
+    <PublishReadyToRun Condition=" '$(Configuration)' != 'Debug' ">true</PublishReadyToRun>
 
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
     <NeutralLanguage>en-US</NeutralLanguage>
 
     <DelaySign>true</DelaySign>
@@ -108,4 +112,45 @@
     <HighEntropyVA>true</HighEntropyVA>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <DefineConstants>$(DefineConstants);CORECLR</DefineConstants>
+    <IsWindows Condition="'$(IsWindows)' =='true' or ( '$(IsWindows)' == '' and '$(OS)' == 'Windows_NT')">true</IsWindows>
+  </PropertyGroup>
+
+  <!-- Define non-windows, all configuration properties -->
+  <PropertyGroup Condition=" '$(IsWindows)' != 'true' ">
+    <DefineConstants>$(DefineConstants);UNIX</DefineConstants>
+  </PropertyGroup>
+
+  <!-- Define all OS, debug configuration properties -->
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <DebugType>portable</DebugType>
+  </PropertyGroup>
+
+  <!-- Define all OS, release configuration properties -->
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <Optimize>true</Optimize>
+  </PropertyGroup>
+
+  <!-- Define windows, release configuration properties -->
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' And '$(IsWindows)' == 'true' ">
+    <Optimize>true</Optimize>
+    <!-- This is required to be full for compliance tools !-->
+    <DebugType>full</DebugType>
+  </PropertyGroup>
+
+  <!-- Define non-windows, release configuration properties -->
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' And '$(IsWindows)' != 'true' ">
+    <!-- Set-Date fails with optimize enabled in NonWindowsSetDate
+         Debugging the issues resolves the problem
+     -->
+    <Optimize>false</Optimize>
+    <DebugType>portable</DebugType>
+  </PropertyGroup>
+
+  <!-- Define all OS, CodeCoverage configuration properties -->
+  <PropertyGroup Condition=" '$(Configuration)' == 'CodeCoverage' ">
+    <!-- This is required to be portable to Coverlet tool !-->
+    <DebugType>portable</DebugType>
+  </PropertyGroup>
 </Project>

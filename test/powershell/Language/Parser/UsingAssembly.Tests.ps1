@@ -1,11 +1,11 @@
-# Copyright (c) Microsoft Corporation. All rights reserved.
+# Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
 Describe "Using assembly" -Tags "CI" {
 
     try
     {
-        pushd $PSScriptRoot
+        Push-Location $PSScriptRoot
         $guid = [Guid]::NewGuid()
 
         Add-Type -OutputAssembly $PSScriptRoot\UsingAssemblyTest$guid.dll -TypeDefinition @"
@@ -44,7 +44,7 @@ public class ABC {}
             $err[0].ErrorId | Should -Be CannotLoadAssemblyWithUriSchema
         }
 
-        It "parse does not load the assembly" -pending {
+        It "parse does not load the assembly" -Pending {
             $assemblies = [Appdomain]::CurrentDomain.GetAssemblies().GetName().Name
             $assemblies -contains "UsingAssemblyTest$guid" | Should -BeFalse
 
@@ -69,37 +69,30 @@ public class ABC {}
         }
 
         It "reports runtime error about non-existing assembly with relative path" {
-            $failed = $true
-            try {
-                [scriptblock]::Create("using assembly .\NonExistingAssembly.dll")
-                $failed = $false
-            } catch {
-                $_.FullyQualifiedErrorId | Should -Be 'ParseException'
-                $_.Exception.InnerException.ErrorRecord.FullyQualifiedErrorId | Should -Be 'ErrorLoadingAssembly'
-            }
-            $failed | Should -BeTrue
+            $e = { [scriptblock]::Create("using assembly .\NonExistingAssembly.dll") } | Should -Throw -ErrorId 'ParseException' -PassThru
+            $e.Exception.InnerException.ErrorRecord.FullyQualifiedErrorId | Should -Be 'ErrorLoadingAssembly'
         }
 #>
-        It "Assembly loaded at runtime" -pending {
-            $assemblies = pwsh -noprofile -command @"
+        It "Assembly loaded at runtime" -Pending {
+            $assemblies = & "$PSHOME/pwsh" -noprofile -command @"
     using assembly .\UsingAssemblyTest$guid.dll
     [Appdomain]::CurrentDomain.GetAssemblies().GetName().Name
 "@
             $assemblies -contains "UsingAssemblyTest$guid" | Should -BeTrue
 
-            $assemblies = pwsh -noprofile -command @"
+            $assemblies = & "$PSHOME/pwsh" -noprofile -command @"
     using assembly $PSScriptRoot\UsingAssemblyTest$guid.dll
     [Appdomain]::CurrentDomain.GetAssemblies().GetName().Name
 "@
             $assemblies -contains "UsingAssemblyTest$guid" | Should -BeTrue
 
-            $assemblies = pwsh -noprofile -command @"
+            $assemblies = & "$PSHOME/pwsh" -noprofile -command @"
     using assembly System.Drawing
     [Appdomain]::CurrentDomain.GetAssemblies().GetName().Name
 "@
             $assemblies -contains "System.Drawing" | Should -BeTrue
 
-            $assemblies = pwsh -noprofile -command @"
+            $assemblies = & "$PSHOME/pwsh" -noprofile -command @"
     using assembly 'System.Drawing, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'
     [Appdomain]::CurrentDomain.GetAssemblies().GetName().Name
 "@
@@ -109,6 +102,6 @@ public class ABC {}
     finally
     {
         Remove-Item .\UsingAssemblyTest$guid.dll
-        popd
+        Pop-Location
     }
 }

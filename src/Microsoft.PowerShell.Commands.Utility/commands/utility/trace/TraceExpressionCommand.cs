@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
 using System;
@@ -9,6 +9,7 @@ using System.Management.Automation;
 using System.Management.Automation.Internal;
 using System.Management.Automation.Runspaces;
 using System.Threading;
+
 using Dbg = System.Management.Automation.Diagnostics;
 
 namespace Microsoft.PowerShell.Commands
@@ -17,13 +18,13 @@ namespace Microsoft.PowerShell.Commands
     /// A cmdlet that traces the specified categories and flags for the duration of the
     /// specified expression.
     /// </summary>
-    [Cmdlet(VerbsDiagnostic.Trace, "Command", DefaultParameterSetName = "expressionSet", HelpUri = "https://go.microsoft.com/fwlink/?LinkID=113419")]
+    [Cmdlet(VerbsDiagnostic.Trace, "Command", DefaultParameterSetName = "expressionSet", HelpUri = "https://go.microsoft.com/fwlink/?LinkID=2097136")]
     public class TraceCommandCommand : TraceListenerCommandBase, IDisposable
     {
         #region Parameters
 
         /// <summary>
-        /// This parameter specifies the current pipeline object
+        /// This parameter specifies the current pipeline object.
         /// </summary>
         [Parameter(ValueFromPipeline = true)]
         public PSObject InputObject { set; get; } = AutomationNull.Value;
@@ -32,27 +33,28 @@ namespace Microsoft.PowerShell.Commands
         /// The TraceSource parameter determines which TraceSource categories the
         /// operation will take place on.
         /// </summary>
-        ///
         [Parameter(Position = 0, Mandatory = true)]
         public string[] Name
         {
             get { return base.NameInternal; }
+
             set { base.NameInternal = value; }
         }
 
         /// <summary>
-        /// The flags to be set on the TraceSource
+        /// The flags to be set on the TraceSource.
         /// </summary>
         /// <value></value>
         [Parameter(Position = 2)]
         public PSTraceSourceOptions Option
         {
             get { return base.OptionsInternal; }
+
             set
             {
                 base.OptionsInternal = value;
             }
-        } // Options
+        }
 
         /// <summary>
         /// The parameter for the expression that should be traced.
@@ -70,21 +72,20 @@ namespace Microsoft.PowerShell.Commands
 
         /// <summary>
         /// When set, this parameter is the arguments to pass to the command specified by
-        /// the -Command parameter
+        /// the -Command parameter.
         /// </summary>
         [Parameter(ParameterSetName = "commandSet", ValueFromRemainingArguments = true)]
         [Alias("Args")]
         public object[] ArgumentList { get; set; }
 
         /// <summary>
-        /// The parameter which determines the options for output from the
-        /// trace listeners.
+        /// The parameter which determines the options for output from the trace listeners.
         /// </summary>
-        ///
         [Parameter]
         public TraceOptions ListenerOption
         {
             get { return base.ListenerOptionsInternal; }
+
             set
             {
                 base.ListenerOptionsInternal = value;
@@ -92,50 +93,52 @@ namespace Microsoft.PowerShell.Commands
         }
 
         /// <summary>
-        /// Adds the file trace listener using the specified file
+        /// Adds the file trace listener using the specified file.
         /// </summary>
         /// <value></value>
         [Parameter]
-        [Alias("PSPath","Path")]
+        [Alias("PSPath", "Path")]
         public string FilePath
         {
             get { return base.FileListener; }
+
             set { base.FileListener = value; }
-        } // File
+        }
 
         /// <summary>
-        /// Force parameter to control read-only files
+        /// Force parameter to control read-only files.
         /// </summary>
         [Parameter]
         public SwitchParameter Force
         {
             get { return base.ForceWrite; }
+
             set { base.ForceWrite = value; }
         }
 
         /// <summary>
-        /// If this parameter is specified the Debugger trace listener
-        /// will be added.
+        /// If this parameter is specified the Debugger trace listener will be added.
         /// </summary>
         /// <value></value>
         [Parameter]
         public SwitchParameter Debugger
         {
             get { return base.DebuggerListener; }
+
             set { base.DebuggerListener = value; }
-        } // Debugger
+        }
 
         /// <summary>
-        /// If this parameter is specified the Msh Host trace listener
-        /// will be added.
+        /// If this parameter is specified the Msh Host trace listener will be added.
         /// </summary>
         /// <value></value>
         [Parameter]
         public SwitchParameter PSHost
         {
             get { return base.PSHostListener; }
+
             set { base.PSHostListener = value; }
-        } // PSHost
+        }
 
         #endregion Parameters
 
@@ -182,13 +185,13 @@ namespace Microsoft.PowerShell.Commands
                 _pipeline.ExternalErrorOutput = new TracePipelineWriter(this, true, _matchingSources);
                 _pipeline.ExternalSuccessOutput = new TracePipelineWriter(this, false, _matchingSources);
             }
+
             ResetTracing(_matchingSources);
         }
 
         /// <summary>
         /// Executes the expression.
-        ///
-        /// Note, this was taken from apply-expression
+        /// Note, this was taken from apply-expression.
         /// </summary>
         protected override void ProcessRecord()
         {
@@ -205,6 +208,7 @@ namespace Microsoft.PowerShell.Commands
                     result = StepCommand();
                     break;
             }
+
             ResetTracing(_matchingSources);
 
             if (result == null)
@@ -216,7 +220,7 @@ namespace Microsoft.PowerShell.Commands
             {
                 WriteObject(result, true);
             }
-        } // ProcessRecord
+        }
 
         /// <summary>
         /// Finishes running the command if specified and then sets the
@@ -234,13 +238,13 @@ namespace Microsoft.PowerShell.Commands
 
                 WriteObject(results, true);
             }
+
             this.Dispose();
         }
 
         /// <summary>
         /// Ensures that the sub-pipeline we created gets stopped as well.
         /// </summary>
-        ///
         protected override void StopProcessing()
         {
             if (_pipeline != null)
@@ -259,7 +263,7 @@ namespace Microsoft.PowerShell.Commands
                 dollarUnder: InputObject,
                 input: new object[] { InputObject },
                 scriptThis: AutomationNull.Value,
-                args: Utils.EmptyArray<object>());
+                args: Array.Empty<object>());
         }
 
         private object StepCommand()
@@ -268,6 +272,7 @@ namespace Microsoft.PowerShell.Commands
             {
                 _pipeline.Step(InputObject);
             }
+
             return null;
         }
 
@@ -306,9 +311,11 @@ namespace Microsoft.PowerShell.Commands
                         fileStream.Dispose();
                     }
                 }
+
                 GC.SuppressFinalize(this);
             }
-        } // Dispose
+        }
+
         private bool _disposed;
         #endregion IDisposable
     }
@@ -318,7 +325,6 @@ namespace Microsoft.PowerShell.Commands
     /// cmdlet.  It gets attached to the sub-pipelines success or error pipeline and redirects
     /// all objects written to these pipelines to trace-command pipeline.
     /// </summary>
-    ///
     internal class TracePipelineWriter : PipelineWriter
     {
         internal TracePipelineWriter(
@@ -328,12 +334,12 @@ namespace Microsoft.PowerShell.Commands
         {
             if (cmdlet == null)
             {
-                throw new ArgumentNullException("cmdlet");
+                throw new ArgumentNullException(nameof(cmdlet));
             }
 
             if (matchingSources == null)
             {
-                throw new ArgumentNullException("matchingSources");
+                throw new ArgumentNullException(nameof(matchingSources));
             }
 
             _cmdlet = cmdlet;
@@ -342,8 +348,7 @@ namespace Microsoft.PowerShell.Commands
         }
 
         /// <summary>
-        /// Get the wait handle signaled when buffer space is available
-        /// in the underlying stream.
+        /// Get the wait handle signaled when buffer space is available in the underlying stream.
         /// </summary>
         public override WaitHandle WaitHandle
         {
@@ -367,7 +372,7 @@ namespace Microsoft.PowerShell.Commands
         }
 
         /// <summary>
-        /// Returns the number of objects in the underlying stream
+        /// Returns the number of objects in the underlying stream.
         /// </summary>
         public override int Count
         {
@@ -375,7 +380,7 @@ namespace Microsoft.PowerShell.Commands
         }
 
         /// <summary>
-        /// Get the capacity of the stream
+        /// Get the capacity of the stream.
         /// </summary>
         /// <value>
         /// The capacity of the stream.
@@ -391,7 +396,7 @@ namespace Microsoft.PowerShell.Commands
         }
 
         /// <summary>
-        /// Close the stream
+        /// Close the stream.
         /// </summary>
         /// <remarks>
         /// Causes subsequent calls to IsOpen to return false and calls to
@@ -399,7 +404,7 @@ namespace Microsoft.PowerShell.Commands
         /// All calls to Close() after the first call are silently ignored.
         /// </remarks>
         /// <exception cref="ObjectDisposedException">
-        /// The stream is already disposed
+        /// The stream is already disposed.
         /// </exception>
         public override void Close()
         {
@@ -415,23 +420,23 @@ namespace Microsoft.PowerShell.Commands
         /// but disposed streams may not.
         /// </summary>
         /// <exception cref="ObjectDisposedException">
-        /// The underlying stream is disposed
+        /// The underlying stream is disposed.
         /// </exception>
         public override void Flush()
         {
         }
 
         /// <summary>
-        /// Write a single object into the underlying stream
+        /// Write a single object into the underlying stream.
         /// </summary>
-        /// <param name="obj">The object to add to the stream</param>
+        /// <param name="obj">The object to add to the stream.</param>
         /// <returns>
         /// One, if the write was successful, otherwise;
         /// zero if the stream was closed before the object could be written,
         /// or if the object was AutomationNull.Value.
         /// </returns>
         /// <exception cref="ObjectDisposedException">
-        /// The underlying stream is closed
+        /// The underlying stream is closed.
         /// </exception>
         public override int Write(object obj)
         {
@@ -456,9 +461,9 @@ namespace Microsoft.PowerShell.Commands
         }
 
         /// <summary>
-        /// Write objects to the underlying stream
+        /// Write objects to the underlying stream.
         /// </summary>
-        /// <param name="obj">object or enumeration to read from</param>
+        /// <param name="obj">Object or enumeration to read from.</param>
         /// <param name="enumerateCollection">
         /// If enumerateCollection is true, and <paramref name="obj"/>
         /// is an enumeration according to LanguagePrimitives.GetEnumerable,
@@ -466,9 +471,9 @@ namespace Microsoft.PowerShell.Commands
         /// written separately.  Otherwise, <paramref name="obj"/>
         /// will be written as a single object.
         /// </param>
-        /// <returns>The number of objects written</returns>
+        /// <returns>The number of objects written.</returns>
         /// <exception cref="ObjectDisposedException">
-        /// The underlying stream is closed
+        /// The underlying stream is closed.
         /// </exception>
         /// <exception cref="ArgumentException">
         /// <paramref name="obj"/> contains AutomationNull.Value
@@ -520,7 +525,7 @@ namespace Microsoft.PowerShell.Commands
             if (mshobj != null)
             {
                 object baseObject = mshobj.BaseObject;
-                if (!(baseObject is PSCustomObject))
+                if (baseObject is not PSCustomObject)
                 {
                     obj = baseObject;
                 }

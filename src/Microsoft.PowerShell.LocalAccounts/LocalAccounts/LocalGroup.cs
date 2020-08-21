@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
 using System;
@@ -17,7 +17,7 @@ namespace Microsoft.PowerShell.Commands
         /// <summary>
         /// A short description of the Group.
         /// </summary>
-        public String Description { get; set; }
+        public string Description { get; set; }
         #endregion Public Properties
 
         #region Construction
@@ -40,7 +40,7 @@ namespace Microsoft.PowerShell.Commands
         }
 
         /// <summary>
-        /// Construct a new LocalGroup object that is a copy of another
+        /// Construct a new LocalGroup object that is a copy of another.
         /// </summary>
         /// <param name="other"></param>
         private LocalGroup(LocalGroup other)
@@ -70,10 +70,6 @@ namespace Microsoft.PowerShell.Commands
         /// </returns>
         public LocalGroup Clone()
         {
-            if (null == this)
-            {
-                throw new NullReferenceException();
-            }
             return new LocalGroup(this);
         }
         #endregion Public Methods

@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
 // this file contains the data structures for the in memory database
@@ -13,18 +13,18 @@ namespace Microsoft.PowerShell.Commands.Internal.Format
     #region Complex View Definitions
 
     /// <summary>
-    /// in line definition of a complex control
+    /// In line definition of a complex control.
     /// </summary>
     internal sealed class ComplexControlBody : ControlBody
     {
         /// <summary>
-        /// default list entry definition
-        /// It's mandatory
+        /// Default list entry definition
+        /// It's mandatory.
         /// </summary>
         internal ComplexControlEntryDefinition defaultEntry;
 
         /// <summary>
-        /// optional list of list entry definition overrides. It can be empty if there are no overrides
+        /// Optional list of list entry definition overrides. It can be empty if there are no overrides.
         /// </summary>
         internal List<ComplexControlEntryDefinition> optionalEntryList = new List<ComplexControlEntryDefinition>();
     }
@@ -32,13 +32,13 @@ namespace Microsoft.PowerShell.Commands.Internal.Format
     internal sealed class ComplexControlEntryDefinition
     {
         /// <summary>
-        /// applicability clause
-        /// Only valid if not the default definition
+        /// Applicability clause
+        /// Only valid if not the default definition.
         /// </summary>
         internal AppliesTo appliesTo = null;
 
         /// <summary>
-        /// item associated with this entry definition
+        /// Item associated with this entry definition.
         /// </summary>
         internal ComplexControlItemDefinition itemDefinition = new ComplexControlItemDefinition();
     }
@@ -46,7 +46,7 @@ namespace Microsoft.PowerShell.Commands.Internal.Format
     internal sealed class ComplexControlItemDefinition
     {
         /// <summary>
-        /// list of tokens the item can contain
+        /// List of tokens the item can contain.
         /// </summary>
         internal List<FormatToken> formatTokenList = new List<FormatToken>();
     }
@@ -202,10 +202,12 @@ namespace System.Management.Automation
                 {
                     frame.FirstLineHanging = (uint)-firstLine;
                 }
+
                 foreach (var frameItemToken in frameToken.itemDefinition.formatTokenList)
                 {
                     frame.CustomItems.Add(CustomItemBase.Create(frameItemToken));
                 }
+
                 return frame;
             }
 
@@ -418,13 +420,13 @@ namespace System.Management.Automation
             // Mutually exclusive
             if (leftIndent != 0 && rightIndent != 0)
             {
-                throw PSTraceSource.NewArgumentException("leftIndent");
+                throw PSTraceSource.NewArgumentException(nameof(leftIndent));
             }
 
             // Mutually exclusive
             if (firstLineHanging != 0 && firstLineIndent != 0)
             {
-                throw PSTraceSource.NewArgumentException("firstLineHanging");
+                throw PSTraceSource.NewArgumentException(nameof(firstLineHanging));
             }
 
             var frame = new CustomItemFrame
@@ -446,6 +448,7 @@ namespace System.Management.Automation
             {
                 throw PSTraceSource.NewInvalidOperationException();
             }
+
             _entryStack.Pop();
             return this;
         }
@@ -457,6 +460,7 @@ namespace System.Management.Automation
             {
                 throw PSTraceSource.NewInvalidOperationException();
             }
+
             _entryStack.Pop();
             return _controlBuilder;
         }

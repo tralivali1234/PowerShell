@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
 //
@@ -21,7 +21,7 @@ namespace Microsoft.PowerShell.Commands.Internal
      *
      * @security(checkClassLinking=on)
      */
-    //This class contains only static members and does not need to be serializable.
+    // This class contains only static members and does not need to be serializable.
     [ComVisible(true)]
     // Suppressed because these objects need to be accessed from CmdLets.
     [SuppressMessage("Microsoft.MSInternal", "CA903:InternalNamespaceShouldNotContainPublicTypes")]

@@ -1,9 +1,9 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Text;
-using System.Globalization;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
+using System.Text;
 
 namespace System.Diagnostics.Eventing
 {
@@ -20,10 +20,13 @@ namespace System.Diagnostics.Eventing
         //
         //
         private EventProvider _provider;
+
         private const string s_nullStringValue = "null";
         private const string s_nullStringComaValue = "null,";
         private const string s_nullCStringValue = ": null";
+
         private string _delimiter = ";";
+
         private const uint s_keyWordMask = 0xFFFFFF00;
         private const int s_defaultPayloadSize = 512;
 
@@ -70,7 +73,7 @@ namespace System.Diagnostics.Eventing
             : base(name)
         {
             if (delimiter == null)
-                throw new ArgumentNullException("delimiter");
+                throw new ArgumentNullException(nameof(delimiter));
 
             if (delimiter.Length == 0)
                 throw new ArgumentException(DotNetEventingStrings.Argument_NeedNonemptyDelimiter);
@@ -161,7 +164,7 @@ namespace System.Diagnostics.Eventing
                             (long)eventType & s_keyWordMask);
         }
 
-        public sealed override void TraceData(TraceEventCache eventCache, String source, TraceEventType eventType, int id, params object[] data)
+        public sealed override void TraceData(TraceEventCache eventCache, string source, TraceEventType eventType, int id, params object[] data)
         {
             if (!_provider.IsEnabled())
             {
@@ -222,7 +225,7 @@ namespace System.Diagnostics.Eventing
                 return;
             }
 
-            _provider.WriteMessageEvent(String.Empty,
+            _provider.WriteMessageEvent(string.Empty,
                             (byte)eventType,
                             (long)eventType & s_keyWordMask);
         }
@@ -267,7 +270,7 @@ namespace System.Diagnostics.Eventing
             }
             else
             {
-                _provider.WriteMessageEvent(String.Format(CultureInfo.InvariantCulture, format, args),
+                _provider.WriteMessageEvent(string.Format(CultureInfo.InvariantCulture, format, args),
                                 (byte)eventType,
                                 (long)eventType & s_keyWordMask);
             }

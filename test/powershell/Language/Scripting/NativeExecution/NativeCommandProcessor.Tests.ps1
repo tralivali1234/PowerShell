@@ -1,4 +1,4 @@
-# Copyright (c) Microsoft Corporation. All rights reserved.
+# Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 Describe 'Native pipeline should have proper encoding' -tags 'CI' {
     It '$OutputEncoding should be set to UTF8 without BOM' {
@@ -10,7 +10,7 @@ Describe 'Native pipeline should have proper encoding' -tags 'CI' {
 Describe 'native commands with pipeline' -tags 'Feature' {
 
     BeforeAll {
-        $powershell = Join-Path -Path $PsHome -ChildPath "pwsh"
+        $powershell = Join-Path -Path $PSHOME -ChildPath "pwsh"
     }
 
     It "native | ps | native doesn't block" {
@@ -128,6 +128,22 @@ Describe "Native Command Processor" -tags "Feature" {
             $ps.Dispose()
         }
     }
+
+    It "OutputEncoding should be used" -Skip:(!$IsWindows -or !(Get-Command sfc.exe)) {
+
+        $originalOutputEncoding = [Console]::OutputEncoding
+        try {
+            [Console]::OutputEncoding = [System.Text.Encoding]::Unicode
+            sfc | Out-String | Should -Not -Match "`0"
+        }
+        finally {
+            [Console]::OutputEncoding = $originalOutputEncoding
+        }
+    }
+
+    It '$ErrorActionPreference does not apply to redirected stderr output' -Skip:(!$EnabledExperimentalFeatures.Contains('PSNotApplyErrorActionToStderr')) {
+        pwsh -noprofile -command '$ErrorActionPreference = ''Stop''; testexe -stderr stop 2>$null; ''hello''; $error; $?' | Should -BeExactly 'hello','True'
+    }
 }
 
 Describe "Open a text file with NativeCommandProcessor" -tags @("Feature", "RequireAdminOnWindows") {
@@ -186,6 +202,7 @@ Categories=Application;
 
     It "Should open text file without error" -Skip:(!$supportedEnvironment) {
         if ($IsMacOS) {
+            Set-TestInconclusive -Message "AppleScript is not currently reliable on Az Pipelines"
             $expectedTitle = Split-Path $TestFile -Leaf
             open -F -a TextEdit
             $beforeCount = [int]('tell application "TextEdit" to count of windows' | osascript)
@@ -206,18 +223,17 @@ Categories=Application;
             # Validate on Linux by reassociating default app for text file
             & $TestFile
             # It may take time for handler to start
-            Wait-FileToBePresent -File "$HOME/nativeCommandProcessor.Success" -TimeoutInSeconds 10 -IntervalInMilliseconds 100
+            Wait-FileToBePresent -File "$HOME/nativeCommandProcessor.Success" -TimeoutInSeconds 10 -IntervalInMilliseconds 100 | Should -BeTrue
             Get-Content $HOME/nativeCommandProcessor.Success | Should -BeExactly $TestFile
         }
         else {
             & $TestFile
-            Wait-FileToBePresent -File $TestDrive\foo.txt -TimeoutInSeconds 10 -IntervalInMilliseconds 100
-            "$TestDrive\foo.txt" | Should -Exist
+            Wait-FileToBePresent -File $TestDrive\foo.txt -TimeoutInSeconds 10 -IntervalInMilliseconds 100 | Should -BeTrue
             Get-Content $TestDrive\foo.txt | Should -BeExactly $TestFile
         }
     }
 
     It "Opening a file with an unregistered extension on Windows should fail" -Skip:(!$IsWindows) {
-        { $dllFile = "$PSHOME\System.Management.Automation.dll"; & $dllFile } | ShouldBeErrorId "NativeCommandFailed"
+        { $dllFile = "$PSHOME\System.Management.Automation.dll"; & $dllFile } | Should -Throw -ErrorId "NativeCommandFailed"
     }
 }

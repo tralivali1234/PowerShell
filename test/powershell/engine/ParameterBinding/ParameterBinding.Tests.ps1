@@ -1,4 +1,4 @@
-# Copyright (c) Microsoft Corporation. All rights reserved.
+# Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 Describe "Parameter Binding Tests" -Tags "CI" {
     It "Should throw a parameter binding exception when two parameters have the same position" {
@@ -14,15 +14,7 @@ Describe "Parameter Binding Tests" -Tags "CI" {
             }
         }
 
-        try
-        {
-            test-PositionalBinding1 1
-            throw "No Exception!"
-        }
-        catch
-        {
-            $_.FullyQualifiedErrorId | should -Be "AmbiguousPositionalParameterNoName,test-PositionalBinding1"
-        }
+        { test-PositionalBinding1 1 } | Should -Throw -ErrorId "AmbiguousPositionalParameterNoName,test-PositionalBinding1"
     }
 
     It "a mandatory parameter can't be passed a null if it doesn't have AllowNullAttribute" {
@@ -64,17 +56,10 @@ Describe "Parameter Binding Tests" -Tags "CI" {
             }
         }
 
-        try
-        {
-            test-allownullattributes -Parameter2 1 -Parameter3 $null -ShowMe 1
-            throw "No Exception!"
-        }
-        catch
-        {
-            $_.FullyQualifiedErrorId | should -Be "ParameterArgumentValidationErrorEmptyStringNotAllowed,test-allownullattributes"
-            $_.CategoryInfo | Should -Match "ParameterBindingValidationException"
-            $_.Exception.Message | should -Match "Parameter3"
-        }
+        $e = { test-allownullattributes -Parameter2 1 -Parameter3 $null -ShowMe 1 } |
+            Should -Throw -ErrorId "ParameterArgumentValidationErrorEmptyStringNotAllowed,test-allownullattributes" -PassThru
+        $e.CategoryInfo | Should -Match "ParameterBindingValidationException"
+        $e.Exception.Message | Should -Match "Parameter3"
     }
 
     It "can't pass an argument that looks like a boolean parameter to a named string parameter" {
@@ -90,17 +75,9 @@ Describe "Parameter Binding Tests" -Tags "CI" {
             }
         }
 
-        try
-        {
-            test-namedwithboolishargument -Parameter2 -Parameter1
-            throw "No Exception!"
-        }
-        catch
-        {
-            $_.FullyQualifiedErrorId | should -Be "MissingArgument,test-namedwithboolishargument"
-            $_.CategoryInfo | Should -Match "ParameterBindingException"
-            $_.Exception.Message | should -Match "Parameter2"
-        }
+        $e = { test-namedwithboolishargument -Parameter2 -Parameter1 } | Should -Throw -ErrorId "MissingArgument,test-namedwithboolishargument" -PassThru
+        $e.CategoryInfo | Should -Match "ParameterBindingException"
+        $e.Exception.Message | Should -Match "Parameter2"
     }
 
     It "Verify that a SwitchParameter's IsPresent member is false if the parameter is not specified" {
@@ -150,18 +127,11 @@ Describe "Parameter Binding Tests" -Tags "CI" {
             }
         }
 
-        try
-        {
-            test-singleintparameter -Parameter1 'exampleInvalidParam'
-            throw "No Exception!"
-        }
-        catch
-        {
-            $_.FullyQualifiedErrorId | should -Be "ParameterArgumentTransformationError,test-singleintparameter"
-            $_.CategoryInfo | Should -Match "ParameterBindingArgumentTransformationException"
-            $_.Exception.Message | should -Match "Input string was not in a correct format"
-            $_.Exception.Message | should -Match "Parameter1"
-        }
+        $e = { test-singleintparameter -Parameter1 'exampleInvalidParam' } |
+            Should -Throw -ErrorId "ParameterArgumentTransformationError,test-singleintparameter" -PassThru
+        $e.CategoryInfo | Should -Match "ParameterBindingArgumentTransformationException"
+        $e.Exception.Message | Should -Match "Input string was not in a correct format"
+        $e.Exception.Message | Should -Match "Parameter1"
     }
 
     It "Verify that WhatIf is available when SupportShouldProcess is true" {
@@ -269,18 +239,10 @@ Describe "Parameter Binding Tests" -Tags "CI" {
             )
         }
 
-        try
-        {
-            test-nameconflicts6 -Parameter2 1
-            throw "No Exception!"
-        }
-        catch
-        {
-            $_.FullyQualifiedErrorId | should -Be "ParameterNameConflictsWithAlias"
-            $_.CategoryInfo | Should -Match "MetadataException"
-            $_.Exception.Message | should -Match "Parameter1"
-            $_.Exception.Message | should -Match "Parameter2"
-        }
+        $e = { test-nameconflicts6 -Parameter2 1 } | Should -Throw -ErrorId "ParameterNameConflictsWithAlias" -PassThru
+        $e.CategoryInfo | Should -Match "MetadataException"
+        $e.Exception.Message | Should -Match "Parameter1"
+        $e.Exception.Message | Should -Match "Parameter2"
     }
 
     It "PipelineVariable shouldn't cause a NullRef exception when 'DynamicParam' block is present" {
@@ -315,7 +277,7 @@ Describe "Parameter Binding Tests" -Tags "CI" {
             $test2File = Join-Path -Path $tempDir -ChildPath "test2.ps1"
 
             $expected = "[$tempDir]"
-            $psPath = "$PSHOME\pwsh"
+            $pwsh = "$PSHOME\pwsh"
 
             $null = New-Item -Path $tempDir -ItemType Directory -Force
             Set-Content -Path $test1File -Value $test1 -Force
@@ -335,10 +297,10 @@ Describe "Parameter Binding Tests" -Tags "CI" {
         }
 
         It "Test 'powershell -File' should evaluate '`$PSScriptRoot' for parameter default value" {
-            $result = & $psPath -NoProfile -File $test1File
+            $result = & $pwsh -NoProfile -File $test1File
             $result | Should -Be $expected
 
-            $result = & $psPath -NoProfile -File $test2File
+            $result = & $pwsh -NoProfile -File $test2File
             $result | Should -Be $expected
         }
     }
@@ -371,7 +333,7 @@ Describe "Parameter Binding Tests" -Tags "CI" {
 
             $dllPath = Join-Path $tempDir TestBindingCmdlet.dll
 
-            Add-Type -OutputAssembly $dllPath -TypeDefinition '
+            $typeDefinition = '
                 using System;
                 using System.Management.Automation;
 
@@ -392,6 +354,10 @@ Describe "Parameter Binding Tests" -Tags "CI" {
                     }
                 }
             '
+            if ( !(Test-Path $dllPath))
+            {
+                Add-Type -OutputAssembly $dllPath -TypeDefinition $typeDefinition
+            }
 
             Import-Module $dllPath
         }

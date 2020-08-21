@@ -1,10 +1,10 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
+using System;
 
 namespace System.Management.Automation
 {
-    using System;
-
     /// <summary>
     /// Possible types of CompletionResults.
     /// </summary>
@@ -98,6 +98,7 @@ namespace System.Management.Automation
                 {
                     throw PSTraceSource.NewInvalidOperationException(TabCompletionStrings.NoAccessToProperties);
                 }
+
                 return _completionText;
             }
         }
@@ -113,6 +114,7 @@ namespace System.Management.Automation
                 {
                     throw PSTraceSource.NewInvalidOperationException(TabCompletionStrings.NoAccessToProperties);
                 }
+
                 return _listItemText;
             }
         }
@@ -128,6 +130,7 @@ namespace System.Management.Automation
                 {
                     throw PSTraceSource.NewInvalidOperationException(TabCompletionStrings.NoAccessToProperties);
                 }
+
                 return _resultType;
             }
         }
@@ -143,6 +146,7 @@ namespace System.Management.Automation
                 {
                     throw PSTraceSource.NewInvalidOperationException(TabCompletionStrings.NoAccessToProperties);
                 }
+
                 return _toolTip;
             }
         }
@@ -164,24 +168,24 @@ namespace System.Management.Automation
         /// <param name="toolTip">The text for the tooltip with details to be displayed about the object.</param>
         public CompletionResult(string completionText, string listItemText, CompletionResultType resultType, string toolTip)
         {
-            if (String.IsNullOrEmpty(completionText))
+            if (string.IsNullOrEmpty(completionText))
             {
-                throw PSTraceSource.NewArgumentNullException("completionText");
+                throw PSTraceSource.NewArgumentNullException(nameof(completionText));
             }
 
-            if (String.IsNullOrEmpty(listItemText))
+            if (string.IsNullOrEmpty(listItemText))
             {
-                throw PSTraceSource.NewArgumentNullException("listItemText");
+                throw PSTraceSource.NewArgumentNullException(nameof(listItemText));
             }
 
             if (resultType < CompletionResultType.Text || resultType > CompletionResultType.DynamicKeyword)
             {
-                throw PSTraceSource.NewArgumentOutOfRangeException("resultType", resultType);
+                throw PSTraceSource.NewArgumentOutOfRangeException(nameof(resultType), resultType);
             }
 
-            if (String.IsNullOrEmpty(toolTip))
+            if (string.IsNullOrEmpty(toolTip))
             {
-                throw PSTraceSource.NewArgumentNullException("toolTip");
+                throw PSTraceSource.NewArgumentNullException(nameof(toolTip));
             }
 
             _completionText = completionText;
@@ -202,7 +206,6 @@ namespace System.Management.Automation
         /// <summary>
         /// An null instance of CompletionResult.
         /// </summary>
-        ///
         /// <remarks>
         /// This can be used in argument completion, to indicate that the completion attempt has gone through the
         /// native command argument completion methods.

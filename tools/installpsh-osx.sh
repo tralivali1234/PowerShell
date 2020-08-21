@@ -5,15 +5,16 @@
 #bash <(wget -O - https://raw.githubusercontent.com/PowerShell/PowerShell/master/tools/installpsh-osx.sh) ARGUMENTS
 #bash <(curl -s https://raw.githubusercontent.com/PowerShell/PowerShell/master/tools/installpsh-osx.sh) <ARGUMENTS>
 
-#Usage - if you do not have the ability to run scripts directly from the web, 
+#Usage - if you do not have the ability to run scripts directly from the web,
 #        pull all files in this repo folder and execute, this script
 #        automatically prefers local copies of sub-scripts
 
 #Completely automated install requires a root account or sudo with a password requirement
 
 #Switches
-#  -includeide - the script is being run headless, do not perform actions that require response from the console
-#  -interactivetests - requires a human user in front of the machine - loads a script into the ide to test with F5 to ensure the IDE can run scripts
+# -includeide         - installs vscode and vscode PowerShell extension (only relevant to machines with desktop environment)
+# -interactivetesting - do a quick launch test of vscode (only relevant when used with -includeide)
+# -preview            - installs the latest preview release of PowerShell side-by-side with any existing production releases
 
 #gitrepo paths are overrideable to run from your own fork or branch for testing or private distribution
 
@@ -24,9 +25,9 @@ gitreposcriptroot="https://raw.githubusercontent.com/$gitreposubpath/tools"
 thisinstallerdistro=osx
 repobased=true
 gitscriptname="installpsh-osx.sh"
+powershellpackageid=powershell
 
-echo "*** PowerShell Core Development Environment Installer $VERSION for $thisinstallerdistro"
-echo "***    Current PowerShell Core Version: $currentpshversion"
+echo "*** PowerShell Development Environment Installer $VERSION for $thisinstallerdistro"
 echo "***    Original script is at: $gitreposcriptroot/$gitscriptname"
 echo "*** Arguments used: $*"
 
@@ -39,11 +40,10 @@ trap '
 
 #Verify The Installer Choice (for direct runs of this script)
 lowercase(){
-    echo "$1" | tr [A-Z] [a-z]
+    echo "$1" | tr "[:upper:]" "[:lower:]"
 }
 
-OS=`lowercase \`uname\``
-
+OS=$(lowercase "$(uname)")
 if [ "${OS}" == "windowsnt" ]; then
     OS=windows
     DistroBasedOn=windows
@@ -51,18 +51,22 @@ elif [ "${OS}" == "darwin" ]; then
     OS=osx
     DistroBasedOn=osx
 else
-    OS=`uname`
+    OS=$(uname)
     if [ "${OS}" == "SunOS" ] ; then
         OS=solaris
-        ARCH=`uname -p`
-        OSSTR="${OS} ${REV}(${ARCH} `uname -v`)"
         DistroBasedOn=sunos
     elif [ "${OS}" == "AIX" ] ; then
-        OSSTR="${OS} `oslevel` (`oslevel -r`)"
         DistroBasedOn=aix
     elif [ "${OS}" == "Linux" ] ; then
         if [ -f /etc/redhat-release ] ; then
             DistroBasedOn='redhat'
+        elif [ -f /etc/system-release ] ; then
+            DIST=$(sed s/\ release.*// < /etc/system-release)
+            if [[ $DIST == *"Amazon Linux"* ]] ; then
+                DistroBasedOn='amazonlinux'
+            else
+                DistroBasedOn='redhat'
+            fi
         elif [ -f /etc/SuSE-release ] ; then
             DistroBasedOn='suse'
         elif [ -f /etc/mandrake-release ] ; then
@@ -71,47 +75,28 @@ else
             DistroBasedOn='debian'
         fi
         if [ -f /etc/UnitedLinux-release ] ; then
-            DIST="${DIST}[`cat /etc/UnitedLinux-release | tr "\n" ' ' | sed s/VERSION.*//`]"
+            DIST="${DIST}[$( (tr "\n" ' ' | sed s/VERSION.*//) < /etc/UnitedLinux-release )]"
             DistroBasedOn=unitedlinux
         fi
-        OS=`lowercase $OS`
-        DistroBasedOn=`lowercase $DistroBasedOn`
+        OS=$(lowercase "$OS")
+        DistroBasedOn=$(lowercase "$DistroBasedOn")
     fi
 fi
 
 if [ "$DistroBasedOn" != "$thisinstallerdistro" ]; then
-  echo "*** This installer is only for $thisinstallerdistro and you are running $DistroBasedOn, please run \"$gitreporoot\install-powershell.sh\" to see if your distro is supported AND to auto-select the appropriate installer if it is."
-  exit 0
+  echo "*** This installer is only for $thisinstallerdistro and you are running $DistroBasedOn, please run \"$gitreposcriptroot\install-powershell.sh\" to see if your distro is supported AND to auto-select the appropriate installer if it is."
+  exit 1
 fi
 
 ## Check requirements and prerequisites
 
-#Only do SUDO if we are not root
-SUDO=''
-if (( $EUID != 0 )); then
-    SUDO='sudo'
+echo "*** Installing PowerShell for $DistroBasedOn..."
+
+if [[ "'$*'" =~ preview ]] ; then
+    echo
+    echo "-preview was used, the latest preview release will be installed (side-by-side with your production release)"
+    powershellpackageid=powershell-preview
 fi
-
-#Check that sudo is available
-#if [[ "$SUDO" -eq "sudo" ]]; then
-#    $SUDO -v
-#    if [ $? -ne 0 ]; then
-#      echo "ERROR: You must either be root or be able to use sudo" >&2
-#      exit 5
-#    fi
-#fi
-
-#END Collect any variation details if required for this distro
-
-#If there are known incompatible versions of this distro, put the test, message and script exit here:
-
-#END Verify The Installer Choice
-
-##END Check requirements and prerequisites
-
-echo "*** Installing PowerShell Core for $DistroBasedOn..."
-
-#release=`curl https://api.github.com/repos/powershell/powershell/releases/latest | sed '/tag_name/!d' | sed s/\"tag_name\"://g | sed s/\"//g | sed s/v// | sed s/,//g | sed s/\ //g`
 
 if ! hash brew 2>/dev/null; then
     echo "Homebrew is not found, installing..."
@@ -125,7 +110,7 @@ if ! hash brew 2>/dev/null; then
     exit 3
 fi
 
-# Suppress output, it's very noisy on travis-ci
+# Suppress output, it's very noisy on Azure DevOps
 echo "Refreshing Homebrew cache..."
 for count in {1..2}; do
     # Try the update twice if the first time fails
@@ -145,18 +130,9 @@ for count in {1..2}; do
     sleep 5
 done
 
-# Suppress output, it's very noisy on travis-ci
-if [[ ! -d $(brew --prefix cask) ]]; then
-    echo "Installing cask..."
-    if ! brew tap caskroom/cask >/dev/null; then
-        echo "ERROR: Cask failed to install! Cannot install powershell..." >&2
-        exit 2
-    fi
-fi
-
 if ! hash pwsh 2>/dev/null; then
     echo "Installing PowerShell..."
-    if ! brew cask install powershell; then
+    if ! brew cask install ${powershellpackageid}; then
         echo "ERROR: PowerShell failed to install! Cannot install powershell..." >&2
     fi
 else
@@ -176,8 +152,14 @@ if [[ "'$*'" =~ includeide ]] ; then
 
     echo "*** Installing VS Code PowerShell Extension"
     code --install-extension ms-vscode.PowerShell
+    if [[ "'$*'" =~ -interactivetesting ]] ; then
+        echo "*** Loading test code in VS Code"
+        curl -O ./testpowershell.ps1 https://raw.githubusercontent.com/DarwinJS/CloudyWindowsAutomationCode/master/pshcoredevenv/testpowershell.ps1
+        code ./testpowershell.ps1
+    fi
 fi
 
+# shellcheck disable=SC2016
 pwsh -noprofile -c '"Congratulations! PowerShell is installed at $PSHOME.
 Run `"pwsh`" to start a PowerShell session."'
 
@@ -188,13 +170,7 @@ if [[ "$success" != 0 ]]; then
     exit "$success"
 fi
 
-if [[ "'$*'" =~ -interactivetesting ]] ; then
-    echo "*** Loading test code in VS Code"
-    $SUDO curl -O ./testpowershell.ps1 https://raw.githubusercontent.com/DarwinJS/CloudyWindowsAutomationCode/master/pshcoredevenv/testpowershell.ps1
-    code ./testpowershell.ps1        
-fi
-
 if [[ "$repobased" == true ]] ; then
-  echo "*** NOTE: Run your regular package manager update cycle to update PowerShell Core"
+  echo "*** NOTE: Run your regular package manager update cycle to update PowerShell"
 fi
 echo "*** Install Complete"

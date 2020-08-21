@@ -1,28 +1,28 @@
-# Copyright (c) Microsoft Corporation. All rights reserved.
+# Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 Describe "Clear-Variable DRT Unit Tests" -Tags "CI" {
 	It "Clear-Variable normal variable Name should works"{
 		Set-Variable foo bar
 		Clear-Variable -Name foo
 		$var1=Get-Variable -Name foo
-		$var1.Name|Should -BeExactly "foo"
-		$var1.Value|Should -BeNullOrEmpty
-		$var1.Options|Should -BeExactly "None"
-		$var1.Description|Should -BeNullOrEmpty
+		$var1.Name | Should -BeExactly "foo"
+		$var1.Value | Should -BeNullOrEmpty
+		$var1.Options | Should -BeExactly "None"
+		$var1.Description | Should -BeNullOrEmpty
 	}
 
 	It "Clear-Variable ReadOnly variable Name should throw exception and force Clear-Variable should works"{
 		Set-Variable foo bar -Option ReadOnly
 
-		$e = { Clear-Variable -Name foo -Scope 1 -EA Stop } | ShouldBeErrorId "VariableNotWritable,Microsoft.PowerShell.Commands.ClearVariableCommand"
+		$e = { Clear-Variable -Name foo -Scope 1 -ErrorAction Stop } | Should -Throw -ErrorId "VariableNotWritable,Microsoft.PowerShell.Commands.ClearVariableCommand" -PassThru
 		$e.CategoryInfo | Should -Match "SessionStateUnauthorizedAccessException"
 
 		Clear-Variable -Name foo -Force
 		$var1=Get-Variable -Name foo
-		$var1.Name|Should -BeExactly "foo"
-		$var1.Value|Should -BeNullOrEmpty
-		$var1.Options|Should -BeExactly "ReadOnly"
-		$var1.Description| Should -BeNullOrEmpty
+		$var1.Name | Should -BeExactly "foo"
+		$var1.Value | Should -BeNullOrEmpty
+		$var1.Options | Should -BeExactly "ReadOnly"
+		$var1.Description | Should -BeNullOrEmpty
 	}
 
 	It "Clear-Variable normal variable Name with local scope should works"{
@@ -33,32 +33,32 @@ Describe "Clear-Variable DRT Unit Tests" -Tags "CI" {
 			Clear-Variable -Name foo -Scope "local"
 
 			$var1=Get-Variable -Name foo -Scope "local"
-			$var1.Name|Should -BeExactly "foo"
-			$var1.Value|Should -BeNullOrEmpty
-			$var1.Options|Should -BeExactly "None"
-			$var1.Description|Should -BeNullOrEmpty
+			$var1.Name | Should -BeExactly "foo"
+			$var1.Value | Should -BeNullOrEmpty
+			$var1.Options | Should -BeExactly "None"
+			$var1.Description | Should -BeNullOrEmpty
 		}
 
 		$var1=Get-Variable -Name foo
-		$var1.Name|Should -BeExactly "foo"
-		$var1.Value|Should -BeExactly "bar"
-		$var1.Options|Should -BeExactly "None"
-		$var1.Description|Should -BeNullOrEmpty
+		$var1.Name | Should -BeExactly "foo"
+		$var1.Value | Should -BeExactly "bar"
+		$var1.Options | Should -BeExactly "None"
+		$var1.Description | Should -BeNullOrEmpty
 	}
 
 	It "Clear-Variable Private variable Name should works and Get-Variable with local scope should throw exception"{
 		Set-Variable foo bar -Option Private
 		&{
-			$e = { Get-Variable -Name foo -Scope local -EA Stop } |
-				ShouldBeErrorId "VariableNotFound,Microsoft.PowerShell.Commands.GetVariableCommand"
+			$e = { Get-Variable -Name foo -Scope local -ErrorAction Stop } |
+				Should -Throw -ErrorId "VariableNotFound,Microsoft.PowerShell.Commands.GetVariableCommand" -PassThru
 			$e.CategoryInfo | Should -Match "ItemNotFoundException"
 		}
 
 		$var1=Get-Variable -Name foo
-		$var1.Name|Should -BeExactly "foo"
-		$var1.Value|Should -BeExactly "bar"
-		$var1.Options|Should -BeExactly "Private"
-		$var1.Description|Should -BeNullOrEmpty
+		$var1.Name | Should -BeExactly "foo"
+		$var1.Value | Should -BeExactly "bar"
+		$var1.Options | Should -BeExactly "Private"
+		$var1.Description | Should -BeNullOrEmpty
 	}
 
 	It "Clear-Variable normal variable Name with local scope should works in different scope"{
@@ -68,23 +68,23 @@ Describe "Clear-Variable DRT Unit Tests" -Tags "CI" {
 			Clear-Variable -Name foo -Scope "local"
 
 			$var1=Get-Variable -Name foo -Scope "local"
-			$var1.Name|Should -BeExactly "foo"
-			$var1.Value|Should -BeNullOrEmpty
-			$var1.Options|Should -BeExactly "None"
-			$var1.Description|Should -BeNullOrEmpty
+			$var1.Name | Should -BeExactly "foo"
+			$var1.Value | Should -BeNullOrEmpty
+			$var1.Options | Should -BeExactly "None"
+			$var1.Description | Should -BeNullOrEmpty
 		}
 
 		$var1=Get-Variable -Name foo
-		$var1.Name|Should -BeExactly "foo"
-		$var1.Value|Should -BeExactly "bar"
-		$var1.Options|Should -BeExactly "None"
-		$var1.Description|Should -BeNullOrEmpty
+		$var1.Name | Should -BeExactly "foo"
+		$var1.Value | Should -BeExactly "bar"
+		$var1.Options | Should -BeExactly "None"
+		$var1.Description | Should -BeNullOrEmpty
 
 		$var1=Get-Variable -Name foo -Scope "local"
-		$var1.Name|Should -BeExactly "foo"
-		$var1.Value|Should -BeExactly "bar"
-		$var1.Options|Should -BeExactly "None"
-		$var1.Description|Should -BeNullOrEmpty
+		$var1.Name | Should -BeExactly "foo"
+		$var1.Value | Should -BeExactly "bar"
+		$var1.Options | Should -BeExactly "None"
+		$var1.Description | Should -BeNullOrEmpty
 	}
 }
 
@@ -176,7 +176,7 @@ Describe "Clear-Variable" -Tags "CI" {
 
 	It "Should throw error when trying to clear variable that is read-only without using the Force parameter" {
 		New-Variable -Name var2 -Option ReadOnly -Value 100
-		{ Clear-Variable -Name var2 -Scope 1 -ea stop } | Should -Throw -ErrorId "VariableNotWritable,Microsoft.PowerShell.Commands.ClearVariableCommand"
+		{ Clear-Variable -Name var2 -Scope 1 -ErrorAction stop } | Should -Throw -ErrorId "VariableNotWritable,Microsoft.PowerShell.Commands.ClearVariableCommand"
 
 		$var2 | Should -Not -BeNullOrEmpty
 

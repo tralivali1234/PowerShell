@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
 #if !UNIX
@@ -57,7 +57,6 @@ namespace Microsoft.PowerShell.Commands
         /// <param name="info">
         /// The serialization information.
         /// </param>
-        ///
         /// <param name="context">
         /// The streaming context.
         /// </param>
@@ -132,7 +131,6 @@ namespace Microsoft.PowerShell.Commands
         /// <param name="info">
         /// The serialization information.
         /// </param>
-        ///
         /// <param name="context">
         /// The streaming context.
         /// </param>
@@ -207,7 +205,6 @@ namespace Microsoft.PowerShell.Commands
         /// <param name="info">
         /// The serialization information.
         /// </param>
-        ///
         /// <param name="context">
         /// The streaming context.
         /// </param>
@@ -282,7 +279,6 @@ namespace Microsoft.PowerShell.Commands
         /// <param name="info">
         /// The serialization information.
         /// </param>
-        ///
         /// <param name="context">
         /// The streaming context.
         /// </param>

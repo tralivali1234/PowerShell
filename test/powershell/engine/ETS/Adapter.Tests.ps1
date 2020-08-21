@@ -1,4 +1,4 @@
-# Copyright (c) Microsoft Corporation. All rights reserved.
+# Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 Describe "Adapter Tests" -tags "CI" {
     Context "Property Adapter Tests" {
@@ -21,7 +21,7 @@ Describe "Adapter Tests" -tags "CI" {
             $testmethod = [TestCodeMethodClass].GetMethod("TestCodeMethod")
             $psmemberset | Add-Member -MemberType CodeMethod -Name TestCodeMethod -Value $testmethod
 
-            $document = new-object System.Xml.XmlDocument
+            $document = New-Object System.Xml.XmlDocument
             $document.LoadXml("<book ISBN='12345'><title>Pride And Prejudice</title><price>19.95</price></book>")
             $doc = $document.DocumentElement
         }
@@ -162,7 +162,7 @@ Describe "Adapter Tests" -tags "CI" {
         It "Common ForEach magic method tests" -Pending:$true {
         }
 
-        It "ForEach magic method works for singletions" {
+        It "ForEach magic method works for singletons" {
             $x = 5
             $x.ForEach({$_}) | Should -Be 5
             (5).ForEach({$_}) | Should -Be 5
@@ -174,7 +174,7 @@ Describe "Adapter Tests" -tags "CI" {
             $x.Count | Should -Be 1
             $x[0].foo | Should -BeExactly "bar"
 
-            $x = ([pscustomobject]@{ foo = 'bar' }).Foreach({$_ | Add-Member -NotePropertyName "foo2" -NotePropertyValue "bar2" -PassThru})
+            $x = ([pscustomobject]@{ foo = 'bar' }).ForEach({$_ | Add-Member -NotePropertyName "foo2" -NotePropertyValue "bar2" -PassThru})
             $x.Count | Should -Be 1
             $x[0].foo | Should -BeExactly "bar"
             $x[0].foo2 | Should -BeExactly "bar2"
@@ -187,13 +187,26 @@ Describe "Adapter Tests" -tags "CI" {
                 } -PassThru -Force
             $x.ForEach(5) | Should -Be 10
         }
+
+        # Pending: https://github.com/PowerShell/PowerShell/issues/6567
+        It "ForEach magic method works for dynamic (DLR) things" -Pending:$true {
+            Add-TestDynamicType
+
+            $dynObj = [TestDynamic]::new()
+            $results = @($dynObj, $dynObj).ForEach('FooProp')
+            $results.Count | Should -Be 2
+            $results[0] | Should -Be 123
+            $results[1] | Should -Be 123
+
+            # TODO: dynamic method calls
+        }
     }
 
     Context "Where Magic Method Adapter Tests" {
         It "Common Where magic method tests" -Pending:$true {
         }
 
-        It "Where magic method works for singletions" {
+        It "Where magic method works for singletons" {
             $x = 5
             $x.Where({$true}) | Should -Be 5
             (5).Where({$true}) | Should -Be 5

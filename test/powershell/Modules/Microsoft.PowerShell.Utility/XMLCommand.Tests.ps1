@@ -1,4 +1,4 @@
-# Copyright (c) Microsoft Corporation. All rights reserved.
+# Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 Describe "XmlCommand DRT basic functionality Tests" -Tags "CI" {
 
@@ -32,7 +32,7 @@ Describe "XmlCommand DRT basic functionality Tests" -Tags "CI" {
 	}
 
     AfterEach {
-		remove-item $testfile -Force -ErrorAction SilentlyContinue
+		Remove-Item $testfile -Force -ErrorAction SilentlyContinue
     }
 
  	It "Import with CliXml directive should work" {
@@ -56,11 +56,11 @@ Describe "XmlCommand DRT basic functionality Tests" -Tags "CI" {
         $ps = [PowerShell]::Create()
         $null = $ps.AddScript("1..10")
         $null = $ps.AddCommand("foreach-object")
-        $null = $ps.AddParameter("Process", { $_; start-sleep 1 })
+        $null = $ps.AddParameter("Process", { $_; Start-Sleep -Seconds 1 })
         $null = $ps.AddCommand("Export-CliXml")
         $null = $ps.AddParameter("Path", $testfile)
         $null = $ps.BeginInvoke()
-        Start-Sleep 1
+        Start-Sleep -Seconds 1
         $null = $ps.Stop()
         $ps.InvocationStateInfo.State | Should -Be "Stopped"
         $ps.Dispose()
@@ -106,7 +106,7 @@ Describe "XmlCommand DRT basic functionality Tests" -Tags "CI" {
 
 	It "Import-Clixml should work with XML serialization from pwsh.exe" {
 		# need to create separate process so that current powershell doesn't interpret clixml output
-		Start-Process -FilePath $pshome\pwsh -RedirectStandardOutput $testfile -Args "-noprofile -nologo -outputformat xml -command get-command import-clixml" -Wait
+		Start-Process -FilePath $PSHOME\pwsh -RedirectStandardOutput $testfile -Args "-noprofile -nologo -outputformat xml -command get-command import-clixml" -Wait
 		$out = Import-Clixml -Path $testfile
 		$out.Name | Should -Be "Import-CliXml"
 		$out.CommandType.ToString() | Should -Be "Cmdlet"

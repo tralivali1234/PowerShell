@@ -1,14 +1,15 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Reflection;
-using System.Management.Automation.Host;
 using System.Globalization;
-using System.Security;
+using System.Management.Automation.Host;
+using System.Reflection;
 using System.Runtime.Serialization;
+using System.Security;
+
 using Dbg = System.Management.Automation.Diagnostics;
 
 namespace System.Management.Automation.Remoting
@@ -93,6 +94,7 @@ namespace System.Management.Automation.Remoting
             {
                 FieldInfo fieldInfo = type.GetField(propertyInfo.Name, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
                 if (propertyInfo.Value == null) { throw RemoteHostExceptions.NewDecodingFailedException(); }
+
                 object fieldValue = DecodeObject(propertyInfo.Value, fieldInfo.FieldType);
                 if (fieldValue == null) { throw RemoteHostExceptions.NewDecodingFailedException(); }
 
@@ -107,7 +109,7 @@ namespace System.Management.Automation.Remoting
         /// </summary>
         private static bool IsCollection(Type type)
         {
-            return type.GetTypeInfo().IsGenericType && type.GetGenericTypeDefinition().Equals(typeof(Collection<>));
+            return type.IsGenericType && type.GetGenericTypeDefinition().Equals(typeof(Collection<>));
         }
 
         private static bool IsGenericIEnumerableOfInt(Type type)
@@ -155,7 +157,7 @@ namespace System.Management.Automation.Remoting
         /// </summary>
         private static bool IsDictionary(Type type)
         {
-            return type.GetTypeInfo().IsGenericType && type.GetGenericTypeDefinition().Equals(typeof(Dictionary<,>));
+            return type.IsGenericType && type.GetGenericTypeDefinition().Equals(typeof(Dictionary<,>));
         }
 
         /// <summary>
@@ -335,7 +337,7 @@ namespace System.Management.Automation.Remoting
             {
                 return obj;
             }
-            else if (type.GetTypeInfo().IsEnum)
+            else if (type.IsEnum)
             {
                 return (int)obj;
             }
@@ -440,16 +442,17 @@ namespace System.Management.Automation.Remoting
                 PSCredential cred = null;
                 try
                 {
-                    cred = new PSCredential((String)objAsPSObject.Properties["UserName"].Value,
+                    cred = new PSCredential((string)objAsPSObject.Properties["UserName"].Value,
                                             (SecureString)objAsPSObject.Properties["Password"].Value);
                 }
                 catch (GetValueException)
                 {
                     cred = null;
                 }
+
                 return cred;
             }
-            else if (obj is int && type.GetTypeInfo().IsEnum)
+            else if (obj is int && type.IsEnum)
             {
                 return Enum.ToObject(type, (int)obj);
             }
@@ -684,8 +687,10 @@ namespace System.Management.Automation.Remoting
         {
             // True if the value-type of the dictionary is object; false otherwise.
             if (!IsDictionary(dictionaryType)) { return false; }
+
             Type[] elementTypes = dictionaryType.GetGenericArguments();
             if (elementTypes.Length != 2) { return false; }
+
             Type valueType = elementTypes[1];
             return valueType == typeof(object);
         }

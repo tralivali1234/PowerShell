@@ -1,8 +1,8 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Runtime.Serialization;
 using System.Management.Automation.Internal;
+using System.Runtime.Serialization;
 using System.Security.Permissions;
 
 namespace System.Management.Automation.Remoting
@@ -127,6 +127,7 @@ namespace System.Management.Automation.Remoting
         CannotSetStdOutHandle = 822,
         CannotSetStdErrHandle = 823,
         InvalidConfigurationName = 824,
+        ConnectSkipCheckFailed = 825,
         // Error codes added to support new WSMan Fan-In Model API
         CreateSessionFailed = 851,
         CreateExFailed = 853,
@@ -208,7 +209,6 @@ namespace System.Management.Automation.Remoting
         RemoteRunspaceHasMultipleMatchesForSpecifiedName = 955,
         RemoteRunspaceDoesNotSupportPushRunspace = 956,
         HostInNestedPrompt = 957,
-        RemoteHostDoesNotSupportPushRunspace = 958,
         InvalidVMId = 959,
         InvalidVMNameNoVM = 960,
         InvalidVMNameMultipleVM = 961,
@@ -475,7 +475,7 @@ namespace System.Management.Automation.Remoting
         {
             if (info == null)
             {
-                throw new PSArgumentNullException("info");
+                throw new PSArgumentNullException(nameof(info));
             }
 
             _errorCode = info.GetInt32("ErrorCode");
@@ -487,14 +487,14 @@ namespace System.Management.Automation.Remoting
         /// <summary>
         /// Serializes the exception data.
         /// </summary>
-        /// <param name="info"> serialization information </param>
-        /// <param name="context"> streaming context </param>
+        /// <param name="info">Serialization information.</param>
+        /// <param name="context">Streaming context.</param>
         [SecurityPermissionAttribute(SecurityAction.Demand, SerializationFormatter = true)]
         public override void GetObjectData(SerializationInfo info, StreamingContext context)
         {
             if (info == null)
             {
-                throw new PSArgumentNullException("info");
+                throw new PSArgumentNullException(nameof(info));
             }
 
             base.GetObjectData(info, context);
@@ -521,6 +521,7 @@ namespace System.Management.Automation.Remoting
             {
                 return _errorCode;
             }
+
             set
             {
                 _errorCode = value;
@@ -536,6 +537,7 @@ namespace System.Management.Automation.Remoting
             {
                 return _transportMessage;
             }
+
             set
             {
                 _transportMessage = value;
@@ -616,7 +618,7 @@ namespace System.Management.Automation.Remoting
         {
             if (info == null)
             {
-                throw new PSArgumentNullException("info");
+                throw new PSArgumentNullException(nameof(info));
             }
 
             RedirectLocation = info.GetString("RedirectLocation");
@@ -650,14 +652,14 @@ namespace System.Management.Automation.Remoting
         /// <summary>
         /// Serializes the exception data.
         /// </summary>
-        /// <param name="info"> serialization information </param>
-        /// <param name="context"> streaming context </param>
+        /// <param name="info">Serialization information.</param>
+        /// <param name="context">Streaming context.</param>
         [SecurityPermissionAttribute(SecurityAction.Demand, SerializationFormatter = true)]
         public override void GetObjectData(SerializationInfo info, StreamingContext context)
         {
             if (info == null)
             {
-                throw new PSArgumentNullException("info");
+                throw new PSArgumentNullException(nameof(info));
             }
 
             base.GetObjectData(info, context);
